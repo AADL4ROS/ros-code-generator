@@ -1,4 +1,6 @@
-import logging as log
+import logging
+log = logging.getLogger("root")
+
 from threads.AADLThread import AADLThread
 from lxml import etree
 
@@ -25,5 +27,22 @@ class Publisher(AADLThread):
             self.source_text = source_text_property.find(self.tags['TAG_PROPERTY_VALUE']).text
         except AttributeError:
             return (False, "Unable to find property Source_Text");
+
+        # Period
+        try:
+            period_property = self.thread.find("./" +
+                                                self.tags['TAG_PROPERTIES'] + "/" +
+                                                    self.tags['TAG_PROPERTY'] + "/" +
+                                                        "[" + self.tags['TAG_PROPERTY_NAME'] + "='Period']")
+            self.period      = period_property.find(self.tags['TAG_PROPERTY_VALUE']).text
+            self.period_unit = period_property.find(self.tags['TAG_PROPERTY_UNIT']).text
+        except AttributeError:
+            return (False, "Unable to find property Period with relative value and unit");
+
+        log.info("Period: {} {}".format( self.period, self.period_unit) )
+        log.info("Source Text: {}".format(self.source_text) )
+
+
+        
 
         return (True, "");

@@ -1,4 +1,6 @@
-import logging as log
+import logging
+log = logging.getLogger("root")
+
 from threads.AADLThread import AADLThread
 from lxml import etree
 

@@ -1,5 +1,6 @@
 import importlib
-import logging as log
+import log
+logger = log.setup_custom_logger("root")
 
 # Threads
 from threads.AADLThread import AADLThreadMapping;
@@ -50,8 +51,8 @@ def creaNuovoThread( process, thread, classname ):
 
     (status, error_desc) = new_thread.generate_code()
     if not status:
-        log.error("Errore durante la generazione del codice")
-        log.error(error_desc)
+        logger.error("Errore durante la generazione del codice")
+        logger.error(error_desc)
 
     # Aggiungo il nuovo thread alla lista con tutti i thread creati sino ad ora
     created_threads.append( new_thread )
