@@ -6,7 +6,7 @@
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
 
-#define NODE_NAME talker_node_A
+#define NODE_NAME "talker_node_A"
 
 class Talker_Node_A : public ros_base::ROSNode {
 private:

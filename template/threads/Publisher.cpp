@@ -2,7 +2,7 @@
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
 
-#define NODE_NAME {{__NODE_NAME__}}
+#define NODE_NAME "{{__NODE_NAME__}}"
 
 class {{__CLASS_NAME__}} : public ros_base::ROSNode {
 private:
