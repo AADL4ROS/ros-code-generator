@@ -5,8 +5,8 @@ from threads.AADLThread import AADLThread
 from lxml import etree
 
 class Generic(AADLThread):
-    def __init__(self, process, thread, tags):
-        super().__init__(process, thread, tags)
+    def __init__(self, process, thread):
+        super().__init__(process, thread)
         log.warning("Thread type NOT recognized: {}".format( self.name ))
 
     def generate_code(self):

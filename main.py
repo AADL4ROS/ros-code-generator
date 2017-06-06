@@ -6,9 +6,11 @@ logger = log.setup_custom_logger("root")
 from threads.AADLThread import AADLThreadMapping;
 
 import datetime
-import json
+import XMLTags
 
 from lxml import etree
+
+
 
 #################
 ### PARAMETRI ###
@@ -27,15 +29,6 @@ today           = datetime.datetime.now()
 generated_on    = today.strftime("%d/%m/%Y %H:%M:%S")
 print( "Avvio generazione: {}".format(generated_on) )
 
-# Leggo il file JSON generato dal backend di Ocarina che contiene le mappature fra elementi e nomi
-# nel file XML
-with open(ocarina_ros_path + json_filename) as data_file:
-    tags = json.load( data_file )
-
-# Stampo a schermo i tag per controllo
-for tag in tags:
-    print("{}: {}".format(tag, tags[tag]))
-
 created_threads = []
 
 def creaNuovoThread( process, thread, classname ):
@@ -47,7 +40,7 @@ def creaNuovoThread( process, thread, classname ):
 
     # Creo una nuova istanza della classe relativa al thread e lancio quindi la procedura di
     # creazione effettiva del codice
-    new_thread      = thread_class(process, thread, tags)
+    new_thread      = thread_class(process, thread)
 
     (status, error_desc) = new_thread.generate_code()
     if not status:
@@ -70,20 +63,20 @@ root = tree.getroot()
 
 # Ricerco tutti i processi all'interno del system
 processes = root.findall("./" +
-                            tags['TAG_SUBCOMPONENTS'] + "/" +
-                                tags['TAG_SUBCOMPONENT'] + "/" +
-                                    "[" + tags['TAG_CATEGORY'] + "='process']")
+                         XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
+                         XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
+                                    "[" + XMLTags.tags['TAG_CATEGORY'] + "='process']")
 
 # Scorro ogni processo. Per ogni processo controllo i subcomponent: in base alle varie tipologie
 # di subcomponent avvio la generazione di diversi nodi ROS
 for process in processes:
     threads = process.findall("./" +
-                                tags['TAG_SUBCOMPONENTS'] + "/" +
-                                    tags['TAG_SUBCOMPONENT'] + "/" +
-                                        "[" + tags['TAG_CATEGORY'] + "='thread']")
+                              XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
+                              XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
+                                        "[" + XMLTags.tags['TAG_CATEGORY'] + "='thread']")
 
     for thread in threads:
-        name = (thread.find( tags['TAG_NAME'] ).text).lower()
+        name = (thread.find( XMLTags.tags['TAG_NAME'] ).text).lower()
 
         creaNuovoThread( process,
                          thread,

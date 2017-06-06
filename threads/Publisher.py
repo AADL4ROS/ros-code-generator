@@ -8,9 +8,11 @@ ureg = UnitRegistry()
 from threads.AADLThread import AADLThread
 from lxml import etree
 
+import threads.AADLThreadFunctionsSupport as tfs
+
 class Publisher(AADLThread):
-    def __init__(self, process, thread, tags):
-        super().__init__(process, thread, tags)
+    def __init__(self, process, thread):
+        super().__init__(process, thread)
 
         # Imposto le path per la lettura del template ed il salvataggio del file
         # finale generato
@@ -20,39 +22,46 @@ class Publisher(AADLThread):
         log.info("Publisher thread {}".format( self.name ) )
 
     def generate_code(self):
+        ###################
+        ### MAIN THREAD ###
+        ###################
+
+        # Ottento tutti i dati relativi al main thread
+        self.populateMainThreadData()
+
+        if self.main_thread == None:
+            return (False, "Unable to find the right Main Thread")
+
+        self.prepare_source_text = tfs.getSourceText( self.prepare )
+
+        if self.prepare_source_text != None:
+            print("Aggiungerò il contenuto di questo file nel mio thread")
+
         # Ottengo le informazioni necessarie per i thread di tipo Publisher:
         # - Source Text
         # - Period
 
-        thread_function = self.thread.find("./" +
-                                            self.tags['TAG_SUBCOMPONENTS'] + "/" +
-                                                self.tags['TAG_SUBCOMPONENT'] + "/" +
-                                                    "[" + self.tags['TAG_CATEGORY'] + "='subprogram']");
+        thread_function = tfs.getSubprogram( self.thread )
+        if thread_function == None:
+            return (False, "Unable to find the right Subprogram")
+
         ###################
         ### Source Text ###
         ###################
-        try:
-            source_text_property = thread_function.find("./" +
-                                                        self.tags['TAG_PROPERTIES'] + "/" +
-                                                            self.tags['TAG_PROPERTY'] + "/" +
-                                                                "[" + self.tags['TAG_PROPERTY_NAME'] + "='Source_Text']")
 
-            self.source_text = source_text_property.find(self.tags['TAG_PROPERTY_VALUE']).text
-        except AttributeError:
-            return (False, "Unable to find property Source_Text");
+        self.source_text = tfs.getSourceText( thread_function )
+
+        if self.source_text == None:
+            return (False, "Unable to find property Source_Text")
 
         ##############
         ### Period ###
         ##############
-        try:
-            period_property = self.thread.find("./" +
-                                                self.tags['TAG_PROPERTIES'] + "/" +
-                                                    self.tags['TAG_PROPERTY'] + "/" +
-                                                        "[" + self.tags['TAG_PROPERTY_NAME'] + "='Period']")
-            self.period      = period_property.find(self.tags['TAG_PROPERTY_VALUE']).text
-            self.period_unit = period_property.find(self.tags['TAG_PROPERTY_UNIT']).text
-        except AttributeError:
-            return (False, "Unable to find property Period with relative value and unit");
+
+        (self.period, self.period_unit) = tfs.getPeriod( self.thread )
+
+        if self.period == None or self.period_unit == None:
+            return (False, "Unable to find property Period with relative value and unit")
 
         # Conversione in secondi della frequenza a partire da qualunque unità di misura
         try:
@@ -81,4 +90,4 @@ class Publisher(AADLThread):
         with open(self.source_output_path, 'w+') as file:
             file.write( output_source )
 
-        return (True, self.source_output_path);
+        return (True, self.source_output_path)
