@@ -26,23 +26,27 @@ class AADLThread():
         dir = os.path.dirname(__file__)
         self.template_folder = os.path.join(dir, "..", "template", "threads")
         self.output_folder   = os.path.join(dir, "..", "src")
+        self.output_source   = None
 
         try:
             os.mkdir( self.output_folder )
         except FileExistsError:
             pass
 
+        # Processo e thread relaviti
         self.process        = process
         self.thread         = thread
 
+        # Main Thread
         self.main_thread    = None
         self.prepare        = None
         self.tearDown       = None
         self.errorHandler   = None
 
-        self.name = process.find(XMLTags.tags['TAG_NAME']).text
-
-        self.disclaimer = self.generate_disclaimer()
+        # Proprietà thread
+        self.type       = None
+        self.name       = process.find(XMLTags.tags['TAG_NAME']).text
+        self.disclaimer = self.generateDisclaimer()
 
     def populateMainThreadData(self):
         # Ottengo il main thread
@@ -53,10 +57,13 @@ class AADLThread():
 
         (self.prepare, self.tearDown, self.errorHandler) = tfs.getMainThreadFunctions(self.main_thread)
 
-    def generate_code(self):
-        raise NotImplementedError("generate_code deve essere implementata da ogni subclass di Thread")
+    def generateCode(self):
+        raise NotImplementedError("generateCode deve essere implementata da ogni subclass di Thread")
 
-    def generate_disclaimer(self):
+    def getDescriptionForComparison(self):
+        raise NotImplementedError("getDescriptionForComparison deve essere implementata da ogni subclass di Thread")
+
+    def generateDisclaimer(self):
         today = datetime.datetime.now()
         generated_on = today.strftime("%d/%m/%Y %H:%M:%S")
 
@@ -67,8 +74,13 @@ class AADLThread():
 
         return disclaimer
 
-    def replace_placeholders(self, text, dict_replacements):
+    def replacePlaceholders(self, text, dict_replacements):
         text_output = text
         for key, value in dict_replacements.items():
             text_output = text_output.replace(key, value)
         return text_output
+
+    def saveOutputSource(self):
+        # Salvo il file finale
+        with open(self.source_output_path, 'w+') as file:
+            file.write(self.output_source)

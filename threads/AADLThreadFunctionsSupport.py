@@ -1,6 +1,30 @@
 import XMLTags
 from lxml import etree
 
+"""
+    COMPARISON
+"""
+
+def areThreadsEqual(thread1, thread2):
+    dict_thread1 = thread1.getDescriptionForComparison()
+    dict_thread2 = thread2.getDescriptionForComparison()
+
+    if len(dict_thread1) != len(dict_thread2):
+        return False
+
+    for key, value in dict_thread1.items():
+        if (key not in dict_thread2):
+            return False
+        if dict_thread2[key] != value:
+            return False
+
+    return True
+
+
+"""
+    MAIN THREAD
+"""
+
 def getMainThread(process):
     # Cerco inoltre il MAIN_THREAD che deve essere presente
     main_thread = process.find("./" +
@@ -45,6 +69,37 @@ def getSubprogram(thread):
 
     return thread_function
 
+"""
+    FEATURES
+"""
+
+####################
+### Port by Name ###
+####################
+
+def getFeatureByName(start, name):
+    try:
+        feature_port_by_name = start.find("./" +
+                                            XMLTags.tags['TAG_FEATURES'] + "/" +
+                                                XMLTags.tags['TAG_FEATURE'] + "/" +
+                                                    "[" + XMLTags.tags['TAG_PROPERTY_NAME'] + "='" + name +  "']")
+
+        return feature_port_by_name
+    except AttributeError:
+        return None
+
+def getPortNameByPort(port):
+    try:
+        return port.find(XMLTags.tags['TAG_FEATURE_NAME']).text
+    except AttributeError:
+        return None
+
+def getPortDatatypeByPort(port):
+    try:
+        return (port.find(XMLTags.tags['TAG_FEATURE_PORT_DATA_TYPE_NAMESPACE']).text,
+                port.find(XMLTags.tags['TAG_FEATURE_PORT_DATA_TYPE']).text)
+    except AttributeError:
+        return None
 
 """
     PROPERTIES

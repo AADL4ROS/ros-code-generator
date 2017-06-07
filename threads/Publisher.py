@@ -6,13 +6,17 @@ from pint import UnitRegistry
 ureg = UnitRegistry()
 
 from threads.AADLThread import AADLThread
+from threads.AADLThread import AADLThreadType
 from lxml import etree
 
 import threads.AADLThreadFunctionsSupport as tfs
 
+import datatypes.Datatype as dt
+
 class Publisher(AADLThread):
     def __init__(self, process, thread):
         super().__init__(process, thread)
+        self.type = AADLThreadType.PUBLISHER
 
         # Imposto le path per la lettura del template ed il salvataggio del file
         # finale generato
@@ -21,7 +25,19 @@ class Publisher(AADLThread):
 
         log.info("Publisher thread {}".format( self.name ) )
 
-    def generate_code(self):
+    def getDescriptionForComparison(self):
+        desc = {}
+        desc['type']                            = self.type
+        desc['main_thread_prepare']             = self.prepare_source_text
+        desc['main_thread_teardown']            = self.teardown_source_text
+        desc['main_thread_errorhandler']        = self.errorhandler_source_text
+        desc['output_port_datatype']            = self.output_port_datatype
+        desc['output_port_datatype_namespace']  = self.output_port_datatype_namespace
+        desc['source_text']                     = self.source_text
+        desc['frequency']                       = self.frequency_in_hz
+        return desc
+
+    def generateCode(self):
         ###################
         ### MAIN THREAD ###
         ###################
@@ -32,10 +48,9 @@ class Publisher(AADLThread):
         if self.main_thread == None:
             return (False, "Unable to find the right Main Thread")
 
-        self.prepare_source_text = tfs.getSourceText( self.prepare )
-
-        if self.prepare_source_text != None:
-            print("Aggiungerò il contenuto di questo file nel mio thread")
+        self.prepare_source_text        = tfs.getSourceText( self.prepare )
+        self.teardown_source_text       = tfs.getSourceText( self.tearDown )
+        self.errorhandler_source_text   = tfs.getSourceText( self.errorHandler )
 
         # Ottengo le informazioni necessarie per i thread di tipo Publisher:
         # - Source Text
@@ -44,6 +59,22 @@ class Publisher(AADLThread):
         thread_function = tfs.getSubprogram( self.thread )
         if thread_function == None:
             return (False, "Unable to find the right Subprogram")
+
+        ###################
+        ### Output Port ###
+        ###################
+
+        # Ottengo la porta in output per i thread di tipo Publisher
+        aadl_output_port = tfs.getFeatureByName(self.thread, name = "msg")
+
+        if aadl_output_port == None:
+            return (False, "Unable to find the default output port named msg")
+
+        (aadl_output_port_datatype_namespace, aadl_output_port_datatype) = tfs.getPortDatatypeByPort( aadl_output_port )
+
+        (self.output_port_datatype_namespace,
+         self.output_port_datatype) = dt.getROSDatatypeFromAADLDatatype( (aadl_output_port_datatype_namespace,
+                                                                          aadl_output_port_datatype) )
 
         ###################
         ### Source Text ###
@@ -82,12 +113,10 @@ class Publisher(AADLThread):
         dict_replacements = {   "{{__DISCLAIMER__}}"    : self.disclaimer,
                                 "{{__NODE_NAME__}}"     : self.name,
                                 "{{__CLASS_NAME__}}"    : self.name.title(),
-                                "{{__FREQUENCY__}}"     : str(int( self.frequency_in_hz )) }
+                                "{{__FREQUENCY__}}"     : str(int( self.frequency_in_hz )),
+                                "{{__DT_NAMESPACE__}}"  : self.output_port_datatype_namespace,
+                                "{{__DATATYPE__}}"      : self.output_port_datatype }
 
-        output_source = self.replace_placeholders(template_source, dict_replacements)
-
-        # Salvo il file finale
-        with open(self.source_output_path, 'w+') as file:
-            file.write( output_source )
+        self.output_source = self.replacePlaceholders(template_source, dict_replacements)
 
         return (True, self.source_output_path)

@@ -3,14 +3,15 @@ import log
 logger = log.setup_custom_logger("root")
 
 # Threads
-from threads.AADLThread import AADLThreadMapping;
+from threads.AADLThread import AADLThreadMapping
+from threads.AADLThread import AADLThreadType
+
+from threads.AADLThreadFunctionsSupport import areThreadsEqual
 
 import datetime
 import XMLTags
 
 from lxml import etree
-
-
 
 #################
 ### PARAMETRI ###
@@ -42,13 +43,27 @@ def creaNuovoThread( process, thread, classname ):
     # creazione effettiva del codice
     new_thread      = thread_class(process, thread)
 
-    (status, error_desc) = new_thread.generate_code()
+    (status, error_desc) = new_thread.generateCode()
     if not status:
+        # Si è verificato un errore, per il momento lo scrivo a schermo
         logger.error("Errore durante la generazione del codice")
         logger.error(error_desc)
+    else:
+        # Se tutto è andato a buon fine proseguo
 
-    # Aggiungo il nuovo thread alla lista con tutti i thread creati sino ad ora
-    created_threads.append( new_thread )
+        # Il nuovo thread viene generato e salvato solamente se non ne esiste già uno identico,
+        # in tal caso significherebbe avere due nodi identici lanciati due volte che non hanno
+        # bisogno di codice separato (basti pensare a due sensori uguali ad esempio).
+        save_new_thread = True
+        for t in created_threads:
+            if areThreadsEqual(new_thread, t):
+                save_new_thread = False
+                break
+
+        if save_new_thread:
+            new_thread.saveOutputSource()
+            # Aggiungo il nuovo thread alla lista con tutti i thread creati sino ad ora
+            created_threads.append( new_thread )
 
 
 ###################
@@ -75,9 +90,14 @@ for process in processes:
                               XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
                                         "[" + XMLTags.tags['TAG_CATEGORY'] + "='thread']")
 
+    # Se ho più di un thread significa che uno dei due è sicuramente un main thread mentre
+    # l'altro specifica meglio il nodo. Avere solo un thread vuol dire che ho solamente
+    # il main thread
+
     for thread in threads:
         name = (thread.find( XMLTags.tags['TAG_NAME'] ).text).lower()
 
-        creaNuovoThread( process,
-                         thread,
-                         AADLThreadMapping.NAME_TO_CLASS.get(name, "Generic") )
+        if name != AADLThreadType.MAIN_THREAD:
+            creaNuovoThread(    process,
+                                thread,
+                                AADLThreadMapping.NAME_TO_CLASS.get(name, "Generic") )

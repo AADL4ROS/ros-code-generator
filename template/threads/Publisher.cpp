@@ -31,7 +31,7 @@ public:
 }
 
 void {{__CLASS_NAME__}}::pubCallback(const ros::TimerEvent&) {
-    std_msgs::String msg;
+    {{__DT_NAMESPACE__}}::{{__DATATYPE__}} msg;
     std::stringstream ss;
     ss << "current time: " << (ros::Time::now().toSec() - vars.starting_time);
     msg.data = ss.str().c_str();
@@ -45,7 +45,7 @@ bool {{__CLASS_NAME__}}::prepare() {
     handle.getParam("node_name", params.node_name);
     handle.getParam("frequency", params.frequency);
     
-    pub = handle.advertise<std_msgs::String>("/chatter", 10);
+    pub = handle.advertise<{{__DT_NAMESPACE__}}::{{__DATATYPE__}}>("/chatter", 10);
     timer = handle.createTimer(ros::Duration(1/params.frequency), &{{__CLASS_NAME__}}::pubCallback, this);
     
     vars.starting_time = ros::Time::now().toSec();
