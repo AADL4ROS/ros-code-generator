@@ -32,7 +32,7 @@ def getMainThread(process):
                                     XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
                                         "[" + XMLTags.tags['TAG_CATEGORY']  + "='thread']"       + "/" +
                                         "[" + XMLTags.tags['TAG_NAME']      + "='main_thread']" + "/" +
-                                        "[" + XMLTags.tags['TAG_NAMESPACE'] + "='core']")
+                                        "[" + XMLTags.tags['TAG_NAMESPACE'] + "='ros']")
 
     return main_thread
 

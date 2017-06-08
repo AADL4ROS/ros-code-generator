@@ -1,14 +1,18 @@
 /**
- * Node talker_node_B
- * File auto-generated on 06/06/2017 17:31:07
+ * Node talker_node
+ * File auto-generated on 08/06/2017 10:58:06
  */
 
 #include "ros_base/ROSNode.h"
+
+/**
+ * Automatically imported from message datatype
+ */
 #include "std_msgs/String.h"
 
-#define NODE_NAME "talker_node_B"
+#define NODE_NAME "talker_node"
 
-class Talker_Node_B : public ros_base::ROSNode {
+class Talker_Node : public ros_base::ROSNode {
 private:
     bool prepare();
     void errorHandling();
@@ -27,14 +31,14 @@ private:
     ros::Timer timer;
     void pubCallback(const ros::TimerEvent&);
 public:
-    Talker_Node_B();
+    Talker_Node();
 };
 
-Talker_Node_B::Talker_Node_B() {
+Talker_Node::Talker_Node() {
     setName(NODE_NAME);
 }
 
-void Talker_Node_B::pubCallback(const ros::TimerEvent&) {
+void Talker_Node::pubCallback(const ros::TimerEvent&) {
     std_msgs::String msg;
     std::stringstream ss;
     ss << "current time: " << (ros::Time::now().toSec() - vars.starting_time);
@@ -42,25 +46,25 @@ void Talker_Node_B::pubCallback(const ros::TimerEvent&) {
     pub.publish(msg);
 }
 
-bool Talker_Node_B::prepare() {
+bool Talker_Node::prepare() {
     params.node_name = NODE_NAME;
-    params.frequency = 20;
+    params.frequency = 100;
     
     handle.getParam("node_name", params.node_name);
     handle.getParam("frequency", params.frequency);
     
     pub = handle.advertise<std_msgs::String>("/chatter", 10);
-    timer = handle.createTimer(ros::Duration(1/params.frequency), &Talker_Node_B::pubCallback, this);
+    timer = handle.createTimer(ros::Duration(1/params.frequency), &Talker_Node::pubCallback, this);
     
     vars.starting_time = ros::Time::now().toSec();
     return true;
 }
 
-void Talker_Node_B::errorHandling() {
+void Talker_Node::errorHandling() {
     ROSNode::errorHandling();
 }
 
-void Talker_Node_B::tearDown() {
+void Talker_Node::tearDown() {
     ROS_INFO("Node is shutting down");
     return;
 }
@@ -74,7 +78,7 @@ int main(int argc, char **argv) {
     while(!ros::master::check())
         usleep(1000);
     signal(SIGINT, nodeSigintHandler);
-    Talker_Node_B node;
+    Talker_Node node;
     node.start();
     return 0;
 }

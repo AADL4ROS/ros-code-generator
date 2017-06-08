@@ -13,16 +13,10 @@ private:
     
     struct params {
         std::string node_name;
-        int frequency;
     } params;
     
-    struct vars {
-        double starting_time;
-    } vars;
-    
-    ros::Publisher pub;
-    ros::Timer timer;
-    void pubCallback(const ros::TimerEvent&);
+    ros::Subscriber sub;
+    void subCallback(const {{__DT_NAMESPACE__}}::{{__DATATYPE__}}::ConstPtr& msg);
 public:
     {{__CLASS_NAME__}}();
 };
@@ -31,25 +25,17 @@ public:
     setName(NODE_NAME);
 }
 
-void {{__CLASS_NAME__}}::pubCallback(const ros::TimerEvent&) {
-    {{__DT_NAMESPACE__}}::{{__DATATYPE__}} msg;
-    std::stringstream ss;
-    ss << "current time: " << (ros::Time::now().toSec() - vars.starting_time);
-    msg.data = ss.str().c_str();
-    pub.publish(msg);
+void {{__CLASS_NAME__}}::subCallback(const {{__DT_NAMESPACE__}}::{{__DATATYPE__}}::ConstPtr& msg) {
+    ROS_INFO("%s", msg->data.c_str());
 }
 
 bool {{__CLASS_NAME__}}::prepare() {
     params.node_name = NODE_NAME;
-    params.frequency = {{__FREQUENCY__}};
     
     handle.getParam("node_name", params.node_name);
-    handle.getParam("frequency", params.frequency);
     
-    pub = handle.advertise<{{__DT_NAMESPACE__}}::{{__DATATYPE__}}>("/chatter", 10);
-    timer = handle.createTimer(ros::Duration(1/params.frequency), &{{__CLASS_NAME__}}::pubCallback, this);
+    sub = handle.subscribe("/chatter", 10, &{{__CLASS_NAME__}}::subCallback, this);
     
-    vars.starting_time = ros::Time::now().toSec();
     return true;
 }
 
@@ -75,4 +61,3 @@ int main(int argc, char **argv) {
     node.start();
     return 0;
 }
-

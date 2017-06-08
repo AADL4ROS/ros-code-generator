@@ -1,3 +1,4 @@
+import os
 import importlib
 import log
 logger = log.setup_custom_logger("root")
@@ -24,6 +25,18 @@ json_filename       = "tag_ever_xml.json"
 #############
 ### SETUP ###
 #############
+
+# Elimino i vecchi file generati
+dir             = os.path.dirname(__file__)
+output_folder   = os.path.join(dir, "src")
+
+for the_file in os.listdir(output_folder):
+    file_path = os.path.join(output_folder, the_file)
+    try:
+        if os.path.isfile(file_path):
+            os.unlink(file_path)
+    except Exception as e:
+        print(e)
 
 # Salvo il momento della generazione automatica, in modo da poterlo segnare nel file
 today           = datetime.datetime.now()

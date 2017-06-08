@@ -12,13 +12,16 @@ class AADLThreadType():
 
     PUBLISHER   = 'publisher'   # Identifica i thread di tipo publisher
 
+    SUBSCRIBER    = 'subscriber'  # Identifica i thread di tipo publisher
+
 # In questa classe è presente il nome del modulo e della classe che gestisce la creazione di quel
 # particolare tipo di thread. Un caso di esempio è il seguente.
 # Thread di tipo publisher.
 # Il nome del modulo che lo gestisce è threads.Publisher
 # Il nome della classe all'interno del modulo è Publisher
 class AADLThreadMapping():
-    NAME_TO_CLASS = { AADLThreadType.PUBLISHER : "Publisher" }
+    NAME_TO_CLASS = {AADLThreadType.PUBLISHER   : "Publisher",
+                     AADLThreadType.SUBSCRIBER  : "Subscriber"}
 
 # Classe da cui ereditano tutti i thread
 class AADLThread():
@@ -50,7 +53,7 @@ class AADLThread():
 
     def populateMainThreadData(self):
         # Ottengo il main thread
-        self.main_thread = tfs.getMainThread(self.process)
+        self.main_thread = tfs.getMainThread( self.process )
 
         if self.main_thread == None:
             return
@@ -63,16 +66,27 @@ class AADLThread():
     def getDescriptionForComparison(self):
         raise NotImplementedError("getDescriptionForComparison deve essere implementata da ogni subclass di Thread")
 
+    def generateCommentFromString(self, string):
+        splitted_string = string.split("\n")
+        comment = "/**\n"
+
+        for s in splitted_string:
+            comment += " * " + s + "\n"
+
+        comment += " */\n"
+        return comment
+
+    def generateInclude(self, file):
+        return "#include \"" + file + "\""
+
     def generateDisclaimer(self):
         today = datetime.datetime.now()
         generated_on = today.strftime("%d/%m/%Y %H:%M:%S")
 
-        disclaimer  = "/**\n"
-        disclaimer += " * Node {}\n".format(self.name)
-        disclaimer += " * File auto-generated on {}\n".format(generated_on)
-        disclaimer += " */\n"
+        disclaimer  = "Node {}\n".format(self.name)
+        disclaimer += "File auto-generated on {}".format(generated_on)
 
-        return disclaimer
+        return self.generateCommentFromString( disclaimer )
 
     def replacePlaceholders(self, text, dict_replacements):
         text_output = text

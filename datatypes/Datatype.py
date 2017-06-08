@@ -6,4 +6,4 @@ def getROSDatatypeFromAADLDatatype(aadl_datatype):
 
     #@TODO: Gestione dei Datatype
 
-    return ("std_msgs", "String")
+    return ("std_msgs", "String", "std_msgs/String.h")
