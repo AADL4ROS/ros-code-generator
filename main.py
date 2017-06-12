@@ -9,6 +9,8 @@ from threads.AADLThread import AADLThreadType
 
 from threads.AADLThreadFunctionsSupport import areThreadsEqual
 
+from threads.AADLProcess import AADLProcess
+
 import datetime
 import XMLTags
 
@@ -45,7 +47,7 @@ print( "Avvio generazione: {}".format(generated_on) )
 
 created_threads = []
 
-def creaNuovoThread( process, thread, classname ):
+def creaNuovoThread( process, thread, classname, associated_class ):
     # Importo il modulo che contiene la tipologia di thread che voglio aggiungere
     thread_module   = importlib.import_module("threads." + classname)
 
@@ -54,29 +56,30 @@ def creaNuovoThread( process, thread, classname ):
 
     # Creo una nuova istanza della classe relativa al thread e lancio quindi la procedura di
     # creazione effettiva del codice
-    new_thread      = thread_class(process, thread)
+    new_thread      = thread_class(process, thread, associated_class)
+    created_threads.append(new_thread)
 
-    (status, error_desc) = new_thread.generateCode()
-    if not status:
-        # Si è verificato un errore, per il momento lo scrivo a schermo
-        logger.error("Errore durante la generazione del codice")
-        logger.error(error_desc)
-    else:
-        # Se tutto è andato a buon fine proseguo
-
-        # Il nuovo thread viene generato e salvato solamente se non ne esiste già uno identico,
-        # in tal caso significherebbe avere due nodi identici lanciati due volte che non hanno
-        # bisogno di codice separato (basti pensare a due sensori uguali ad esempio).
-        save_new_thread = True
-        for t in created_threads:
-            if areThreadsEqual(new_thread, t):
-                save_new_thread = False
-                break
-
-        if save_new_thread:
-            new_thread.saveOutputSource()
-            # Aggiungo il nuovo thread alla lista con tutti i thread creati sino ad ora
-            created_threads.append( new_thread )
+    # (status, error_desc) = new_thread.generateCode()
+    # if not status:
+    #     # Si è verificato un errore, per il momento lo scrivo a schermo
+    #     logger.error("Errore durante la generazione del codice")
+    #     logger.error(error_desc)
+    # else:
+    #     # Se tutto è andato a buon fine proseguo
+    #
+    #     # Il nuovo thread viene generato e salvato solamente se non ne esiste già uno identico,
+    #     # in tal caso significherebbe avere due nodi identici lanciati due volte che non hanno
+    #     # bisogno di codice separato (basti pensare a due sensori uguali ad esempio).
+    #     save_new_thread = True
+    #     for t in created_threads:
+    #         if areThreadsEqual(new_thread, t):
+    #             save_new_thread = False
+    #             break
+    #
+    #     if save_new_thread:
+    #         new_thread.saveOutputSource()
+    #         # Aggiungo il nuovo thread alla lista con tutti i thread creati sino ad ora
+    #         created_threads.append( new_thread )
 
 
 ###################
@@ -103,14 +106,24 @@ for process in processes:
                               XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
                                         "[" + XMLTags.tags['TAG_CATEGORY'] + "='thread']")
 
-    # Se ho più di un thread significa che uno dei due è sicuramente un main thread mentre
-    # l'altro specifica meglio il nodo. Avere solo un thread vuol dire che ho solamente
-    # il main thread
+
+    # Cerco il main thread, che formerà la base per tutti gli altri thread.
+    main_thread = process.find("./" +
+                               XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
+                               XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
+                               "[" + XMLTags.tags['TAG_CATEGORY'] + "='thread']" + "/" +
+                               "[" + XMLTags.tags['TAG_NAME'] + "='main_thread']" + "/" +
+                               "[" + XMLTags.tags['TAG_NAMESPACE'] + "='ros']")
+
+    p = AADLProcess(process)
 
     for thread in threads:
         name = (thread.find( XMLTags.tags['TAG_NAME'] ).text).lower()
 
-        if name != AADLThreadType.MAIN_THREAD:
+        if name == AADLThreadType.MAIN_THREAD:
             creaNuovoThread(    process,
                                 thread,
-                                AADLThreadMapping.NAME_TO_CLASS.get(name, "Generic") )
+                                AADLThreadMapping.NAME_TO_CLASS.get(name, "Generic"),
+                                p)
+
+    p.generateCode()

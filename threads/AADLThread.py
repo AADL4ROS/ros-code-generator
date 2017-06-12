@@ -20,81 +20,25 @@ class AADLThreadType():
 # Il nome del modulo che lo gestisce è threads.Publisher
 # Il nome della classe all'interno del modulo è Publisher
 class AADLThreadMapping():
-    NAME_TO_CLASS = {AADLThreadType.PUBLISHER   : "Publisher",
-                     AADLThreadType.SUBSCRIBER  : "Subscriber"}
+    NAME_TO_CLASS = {   AADLThreadType.MAIN_THREAD  : "MainThread",
+                        AADLThreadType.PUBLISHER    : "Publisher",
+                        AADLThreadType.SUBSCRIBER   : "Subscriber"}
 
 # Classe da cui ereditano tutti i thread
 class AADLThread():
-    def __init__(self, process, thread):
-        dir = os.path.dirname(__file__)
-        self.template_folder = os.path.join(dir, "..", "template", "threads")
-        self.output_folder   = os.path.join(dir, "..", "src")
-        self.output_source   = None
+    def __init__(self, _process, _thread, _type, _associated_class):
+        # AADLProcess a cui un AADLThread fa riferimento
+        self.associated_class = _associated_class
 
-        try:
-            os.mkdir( self.output_folder )
-        except FileExistsError:
-            pass
+        # Processo e thread relativi
+        self.process    = _process
+        self.thread     = _thread
 
-        # Processo e thread relaviti
-        self.process        = process
-        self.thread         = thread
+        # Tipo thread
+        self.type       = _type
 
-        # Main Thread
-        self.main_thread    = None
-        self.prepare        = None
-        self.tearDown       = None
-        self.errorHandler   = None
+        # Nome del thread
+        self.name       = self.thread.find( XMLTags.tags['TAG_NAME'] ).text
 
-        # Proprietà thread
-        self.type       = None
-        self.name       = process.find(XMLTags.tags['TAG_NAME']).text
-        self.disclaimer = self.generateDisclaimer()
-
-    def populateMainThreadData(self):
-        # Ottengo il main thread
-        self.main_thread = tfs.getMainThread( self.process )
-
-        if self.main_thread == None:
-            return
-
-        (self.prepare, self.tearDown, self.errorHandler) = tfs.getMainThreadFunctions(self.main_thread)
-
-    def generateCode(self):
-        raise NotImplementedError("generateCode deve essere implementata da ogni subclass di Thread")
-
-    def getDescriptionForComparison(self):
-        raise NotImplementedError("getDescriptionForComparison deve essere implementata da ogni subclass di Thread")
-
-    def generateCommentFromString(self, string):
-        splitted_string = string.split("\n")
-        comment = "/**\n"
-
-        for s in splitted_string:
-            comment += " * " + s + "\n"
-
-        comment += " */\n"
-        return comment
-
-    def generateInclude(self, file):
-        return "#include \"" + file + "\""
-
-    def generateDisclaimer(self):
-        today = datetime.datetime.now()
-        generated_on = today.strftime("%d/%m/%Y %H:%M:%S")
-
-        disclaimer  = "Node {}\n".format(self.name)
-        disclaimer += "File auto-generated on {}".format(generated_on)
-
-        return self.generateCommentFromString( disclaimer )
-
-    def replacePlaceholders(self, text, dict_replacements):
-        text_output = text
-        for key, value in dict_replacements.items():
-            text_output = text_output.replace(key, value)
-        return text_output
-
-    def saveOutputSource(self):
-        # Salvo il file finale
-        with open(self.source_output_path, 'w+') as file:
-            file.write(self.output_source)
+    def populateData(self):
+        raise NotImplementedError("populateData deve essere implementata da ogni subclass di Thread")
