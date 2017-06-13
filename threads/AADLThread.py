@@ -10,9 +10,9 @@ class AADLThreadType():
                                 # passato al costruttore delle altre tipologie di thread in quanto contiene riferimenti
                                 # alle funzioni base come prepare, tearDown e errorHandling
 
-    PUBLISHER   = 'publisher'   # Identifica i thread di tipo publisher
+    PUBLISHER   = 'publisher.impl'   # Identifica i thread di tipo publisher
 
-    SUBSCRIBER    = 'subscriber'  # Identifica i thread di tipo publisher
+    SUBSCRIBER    = 'subscriber.impl'  # Identifica i thread di tipo publisher
 
 # In questa classe è presente il nome del modulo e della classe che gestisce la creazione di quel
 # particolare tipo di thread. Un caso di esempio è il seguente.
@@ -38,7 +38,7 @@ class AADLThread():
         self.type       = _type
 
         # Nome del thread
-        self.name       = self.thread.find( XMLTags.tags['TAG_NAME'] ).text
+        self.name       = tfs.getName( self.thread )
 
     def populateData(self):
         raise NotImplementedError("populateData deve essere implementata da ogni subclass di Thread")

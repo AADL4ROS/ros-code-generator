@@ -57,7 +57,11 @@ def creaNuovoThread( process, thread, classname, associated_class ):
     # Creo una nuova istanza della classe relativa al thread e lancio quindi la procedura di
     # creazione effettiva del codice
     new_thread      = thread_class(process, thread, associated_class)
-    created_threads.append(new_thread)
+
+    new_thread.populateData()
+
+    return new_thread
+    #created_threads.append(new_thread)
 
     # (status, error_desc) = new_thread.generateCode()
     # if not status:
@@ -81,6 +85,13 @@ def creaNuovoThread( process, thread, classname, associated_class ):
     #         # Aggiungo il nuovo thread alla lista con tutti i thread creati sino ad ora
     #         created_threads.append( new_thread )
 
+def saveNode(p, source):
+    output_folder       = os.path.join(dir, "src")
+    filename            = "{}.cpp".format( p.class_name )
+    source_output_path  = os.path.join(output_folder, filename)
+
+    with open(source_output_path, 'w+') as file:
+        file.write(source)
 
 ###################
 ### LETTURA XML ###
@@ -114,16 +125,28 @@ for process in processes:
                                "[" + XMLTags.tags['TAG_CATEGORY'] + "='thread']" + "/" +
                                "[" + XMLTags.tags['TAG_NAME'] + "='main_thread']" + "/" +
                                "[" + XMLTags.tags['TAG_NAMESPACE'] + "='ros']")
+    if main_thread != None:
 
-    p = AADLProcess(process)
+        p = AADLProcess(process)
 
-    for thread in threads:
-        name = (thread.find( XMLTags.tags['TAG_NAME'] ).text).lower()
+        gen_main_thread = creaNuovoThread(  process,
+                                            main_thread,
+                                            AADLThreadMapping.NAME_TO_CLASS.get(AADLThreadType.MAIN_THREAD, "Generic"),
+                                            p)
+        p.threads.append(gen_main_thread)
 
-        if name == AADLThreadType.MAIN_THREAD:
-            creaNuovoThread(    process,
-                                thread,
-                                AADLThreadMapping.NAME_TO_CLASS.get(name, "Generic"),
-                                p)
+        for thread in threads:
+            name        = (thread.find(XMLTags.tags['TAG_NAME']).text).lower()
+            type        = (thread.find( XMLTags.tags['TAG_TYPE'] ).text).lower()
+            namespace   = (thread.find(XMLTags.tags['TAG_NAMESPACE']).text).lower()
 
-    p.generateCode()
+            if type == AADLThreadType.PUBLISHER and namespace == "ros":
+                print(name)
+                new_thread = creaNuovoThread(   process,
+                                                thread,
+                                                AADLThreadMapping.NAME_TO_CLASS.get(type, "Generic"),
+                                                p)
+
+                p.threads.append( new_thread )
+
+        saveNode(p, p.generateCode())

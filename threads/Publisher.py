@@ -1,4 +1,3 @@
-import os
 import logging
 log = logging.getLogger("root")
 
@@ -11,46 +10,30 @@ from lxml import etree
 
 import threads.AADLThreadFunctionsSupport as tfs
 
-import datatypes.Datatype as dt
+import datatypes.DatatypeFromPort as dt
+
+from datatypes.Type import Int, Double, ROS_TimerEvent, ROS_Timer, ROS_Publisher
+
+from variables.Variable import Variable
+from methods.Method import Method
 
 class Publisher(AADLThread):
-    def __init__(self, process, thread):
-        super().__init__(process, thread)
-        self.type = AADLThreadType.PUBLISHER
+    def __init__(self, _process, _thread, _associated_class):
+        super().__init__(_process, _thread, AADLThreadType.MAIN_THREAD, _associated_class)
+        log.info("Publisher thread {}".format(self.name))
 
-        # Imposto le path per la lettura del template ed il salvataggio del file
-        # finale generato
-        self.source_template_path   = os.path.join(self.template_folder, "Publisher.cpp")
-        self.source_output_path     = os.path.join(self.output_folder, self.name + ".cpp")
+        # Parametri del Publisher
+        self.source_text        = None
+        self.frequency_in_hz    = None
+        self.topic              = None
+        self.publisherCallback  = None
+        self.output_type        = None
 
-        log.info("Publisher thread {}".format( self.name ) )
+    def populateData(self):
+        main_thread = self.associated_class.getMainThread()
 
-    def getDescriptionForComparison(self):
-        desc = {}
-        desc['type']                            = self.type
-        desc['main_thread_prepare']             = self.prepare_source_text
-        desc['main_thread_teardown']            = self.teardown_source_text
-        desc['main_thread_errorhandler']        = self.errorhandler_source_text
-        desc['output_port_datatype']            = self.output_port_datatype
-        desc['output_port_datatype_namespace']  = self.output_port_datatype_namespace
-        desc['source_text']                     = self.source_text
-        desc['frequency']                       = self.frequency_in_hz
-        return desc
-
-    def generateCode(self):
-        ###################
-        ### MAIN THREAD ###
-        ###################
-
-        # Ottento tutti i dati relativi al main thread
-        self.populateMainThreadData()
-
-        if self.main_thread == None:
-            return (False, "Unable to find the right Main Thread")
-
-        self.prepare_source_text        = tfs.getSourceText( self.prepare )
-        self.teardown_source_text       = tfs.getSourceText( self.tearDown )
-        self.errorhandler_source_text   = tfs.getSourceText( self.errorHandler )
+        if main_thread == None:
+            return (False, "Unable to get the Main Thread")
 
         # Ottengo le informazioni necessarie per i thread di tipo Publisher:
         # - Source Text
@@ -72,15 +55,8 @@ class Publisher(AADLThread):
 
         (aadl_output_port_datatype_namespace, aadl_output_port_datatype) = tfs.getPortDatatypeByPort( aadl_output_port )
 
-        (self.output_port_datatype_namespace,
-         self.output_port_datatype,
-         output_port_datatype_include) = dt.getROSDatatypeFromAADLDatatype( (aadl_output_port_datatype_namespace,
-                                                                          aadl_output_port_datatype) )
-
-        # Il tipo del messaggio inviato va anche importato
-        commento_import_datatype = self.generateCommentFromString("Automatically imported from message datatype")
-        datatype_include = self.generateInclude( output_port_datatype_include )
-
+        self.output_type = dt.getROSDatatypeFromAADLDatatype( (aadl_output_port_datatype_namespace, aadl_output_port_datatype),
+                                                                self.associated_class )
         ###################
         ### Source Text ###
         ###################
@@ -90,39 +66,86 @@ class Publisher(AADLThread):
         if self.source_text == None:
             return (False, "Unable to find property Source_Text")
 
-        ##############
-        ### Period ###
-        ##############
+        #################
+        ### FREQUENCY ###
+        #################
 
-        (self.period, self.period_unit) = tfs.getPeriod( self.thread )
+        (period, period_unit) = tfs.getPeriod( self.thread )
 
-        if self.period == None or self.period_unit == None:
+        if period == None or period_unit == None:
             return (False, "Unable to find property Period with relative value and unit")
 
         # Conversione in secondi della frequenza a partire da qualunque unità di misura
         try:
-            period_quantity = ureg("{} {}".format(self.period, self.period_unit))
+            period_quantity = ureg("{} {}".format(period, period_unit))
             period_quantity.ito( ureg.second )
             self.frequency_in_hz = 1.0 / period_quantity.magnitude
         except ValueError:
-            return (False, "Unable to convert Period in seconds");
+            return (False, "Unable to convert Period in seconds")
 
-        log.info("Period: {} {} -> {} Hz".format( self.period, self.period_unit, self.frequency_in_hz) )
-        log.info("Source Text: {}".format(self.source_text) )
+        param_freq = Variable( self.associated_class )
+        param_freq.setName("frequency")
+        param_freq.setType( Int( self.associated_class ))
+        self.associated_class.addParameter( param_freq )
 
-        # Leggo il file source template
-        with open(self.source_template_path, 'r') as template_file:
-            template_source = template_file.read()
+        #############
+        ### TOPIC ###
+        #############
 
-        # Sostituisco i placeholder presenti nel file con i valori che ho letto del file AADL
-        dict_replacements = {   "{{__DISCLAIMER__}}"        : self.disclaimer,
-                                "{{__NODE_NAME__}}"         : self.name,
-                                "{{__CLASS_NAME__}}"        : self.name.title(),
-                                "{{__FREQUENCY__}}"         : str(int( self.frequency_in_hz )),
-                                "{{__DT_NAMESPACE__}}"      : self.output_port_datatype_namespace,
-                                "{{__DATATYPE__}}"          : self.output_port_datatype,
-                                "{{__DATATYPE_INCLUDES__}}" : commento_import_datatype + datatype_include}
+        #@TODO Aggiungere supporto al topic
+        self.topic = "/chatter"
 
-        self.output_source = self.replacePlaceholders(template_source, dict_replacements)
+        #####################
+        ### STARTING TIME ###
+        #####################
 
-        return (True, self.source_output_path)
+        var_starting_time = Variable(self.associated_class)
+        var_starting_time.setName("starting_time")
+        var_starting_time.setType( Double(self.associated_class) )
+        self.associated_class.addVariable( var_starting_time )
+
+        #####################
+        ### PUBLISHER VAR ###
+        #####################
+
+        var_publisher_pub = Variable(self.associated_class)
+        var_publisher_pub.setName( "pub_{}".format(self.name) )
+        var_publisher_pub.setType( ROS_Publisher( self.associated_class) )
+        self.associated_class.addInternalVariable( var_publisher_pub )
+
+        #######################
+        ### PUBLISHER TIMER ###
+        #######################
+
+        var_timer_pub = Variable(self.associated_class)
+        var_timer_pub.setName("timer_{}".format(self.name))
+        var_timer_pub.setType(ROS_Timer(self.associated_class))
+        self.associated_class.addInternalVariable(var_timer_pub)
+
+        ##########################
+        ### PUBLISHER CALLBACK ###
+        ##########################
+
+        self.publisherCallback = Method( self.associated_class )
+        self.publisherCallback.method_name = "{}_callback".format( self.name )
+        self.publisherCallback.namespace = self.associated_class.class_name
+        self.publisherCallback.addInputParameter( ROS_TimerEvent( self.associated_class ) )
+
+        self.publisherCallback.addMiddleCode("std_msgs::String msg;\n"
+                                             "std::stringstream ss;\n"
+                                             "ss << \"current time: \" << (ros::Time::now().toSec() - vars.starting_time);\n"
+                                             "msg.data = ss.str().c_str();\n"
+                                             "{}.publish(msg);".format( var_publisher_pub.name ))
+
+        main_thread.prepare.addTopCode( "params.frequency = {};".format(self.frequency_in_hz) )
+        main_thread.prepare.addMiddleCode("handle.getParam(\"frequency\", params.frequency);")
+
+        main_thread.prepare.addMiddleCode("{} = handle.advertise < {} > (\"{}\", 10);"
+                                          .format(var_publisher_pub.name, self.output_type.generateCode(), self.topic))
+
+        main_thread.prepare.addMiddleCode("{} = handle.createTimer(ros::Duration(1/params.frequency), {}, this);"
+                                            .format(var_timer_pub.name, self.publisherCallback.getThreadPointer() ))
+
+        main_thread.prepare.addMiddleCode("vars.starting_time = ros::Time::now().toSec();")
+
+        return (True, "")

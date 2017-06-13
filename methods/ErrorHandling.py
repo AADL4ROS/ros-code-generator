@@ -9,4 +9,4 @@ class ErrorHandling(Method):
         self.return_type    = Void( self.associated_class )
 
         # @TODO: Codice provvisorio
-        self.codice  = "ROSNode::errorHandling();\n"
+        self.addTopCode( "ROSNode::errorHandling();" )

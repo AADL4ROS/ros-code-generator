@@ -11,7 +11,7 @@ from lxml import etree
 
 import threads.AADLThreadFunctionsSupport as tfs
 
-import datatypes.Datatype as dt
+import datatypes.DatatypeFromPort as dt
 
 class Subscriber(AADLThread):
     def __init__(self, process, thread):

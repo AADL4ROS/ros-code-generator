@@ -102,6 +102,14 @@ def getPortDatatypeByPort(port):
         return None
 
 """
+    NAME
+"""
+
+def getName(start):
+    return start.find( XMLTags.tags['TAG_NAME'] ).text
+
+
+"""
     PROPERTIES
 """
 

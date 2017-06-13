@@ -8,5 +8,5 @@ class TearDown(Method):
         self.method_name    = "tearDown"
         self.return_type    = Void( self.associated_class )
 
-        self.codice  = "ROS_INFO(\"Node is shutting down\");\n"
-        self.codice += "return;\n"
+        self.addTopCode( "ROS_INFO(\"Node is shutting down\");");
+        self.addBottomCode( "return;" );
