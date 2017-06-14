@@ -85,7 +85,7 @@ class Publisher(AADLThread):
             return (False, "Unable to convert Period in seconds")
 
         param_freq = Variable( self.associated_class )
-        param_freq.setName("frequency")
+        param_freq.setName( "frequency_{}".format(self.name) )
         param_freq.setType( Int( self.associated_class ))
         self.associated_class.addParameter( param_freq )
 
@@ -101,7 +101,7 @@ class Publisher(AADLThread):
         #####################
 
         var_starting_time = Variable(self.associated_class)
-        var_starting_time.setName("starting_time")
+        var_starting_time.setName( "starting_time_{}".format(self.name) )
         var_starting_time.setType( Double(self.associated_class) )
         self.associated_class.addVariable( var_starting_time )
 
@@ -140,9 +140,9 @@ class Publisher(AADLThread):
 
         self.publisherCallback.addMiddleCode("std_msgs::String msg;\n"
                                              "std::stringstream ss;\n"
-                                             "ss << \"current time: \" << (ros::Time::now().toSec() - vars.starting_time);\n"
+                                             "ss << \"current time: \" << (ros::Time::now().toSec() - vars.{});\n"
                                              "msg.data = ss.str().c_str();\n"
-                                             "{}.publish(msg);".format( var_publisher_pub.name ))
+                                             "{}.publish(msg);".format(var_starting_time.name, var_publisher_pub.name ))
 
 
         comment_source_code = Comment( self.associated_class )
@@ -151,15 +151,15 @@ class Publisher(AADLThread):
 
         self.associated_class.addPrivateMethod( self.publisherCallback )
 
-        main_thread.prepare.addTopCode( "params.frequency = {};".format(self.frequency_in_hz) )
-        main_thread.prepare.addMiddleCode("handle.getParam(\"frequency\", params.frequency);")
+        main_thread.prepare.addTopCode( "params.{} = {};".format(param_freq, self.frequency_in_hz) )
+        main_thread.prepare.addMiddleCode("handle.getParam(\"{}\", params.{});".format(param_freq.name, param_freq.name))
 
         main_thread.prepare.addMiddleCode("{} = handle.advertise < {} > (\"{}\", 10);"
                                           .format(var_publisher_pub.name, self.output_type.generateCode(), self.topic))
 
-        main_thread.prepare.addMiddleCode("{} = handle.createTimer(ros::Duration(1/params.frequency), {}, this);"
-                                            .format(var_timer_pub.name, self.publisherCallback.getThreadPointer() ))
+        main_thread.prepare.addMiddleCode("{} = handle.createTimer(ros::Duration(1/params.{}), {}, this);"
+                                            .format(var_timer_pub.name, param_freq.name, self.publisherCallback.getThreadPointer() ))
 
-        main_thread.prepare.addMiddleCode("vars.starting_time = ros::Time::now().toSec();")
+        main_thread.prepare.addMiddleCode("vars.{} = ros::Time::now().toSec();".format(var_starting_time.name))
 
         return (True, "")
