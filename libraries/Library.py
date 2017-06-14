@@ -8,6 +8,9 @@ class Library(CObject):
     def setPath(self, _path):
         self.path = _path
 
+    def isEqual(self, _other_library):
+        return (self.path == _other_library.path)
+
     def generateCode(self):
         return "#include \"{}\"\n".format( self.path )
 

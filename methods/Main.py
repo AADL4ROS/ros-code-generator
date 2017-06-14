@@ -13,11 +13,13 @@ class Main(Method):
 
         # int argc
         input_argc = Variable( self.associated_class )
+        input_argc.setIsParameter()
         input_argc.setName("argc")
         input_argc.setType( Int( self.associated_class ) )
 
         # char **argv
         input_argv = Variable(self.associated_class)
+        input_argv.setIsParameter()
         input_argv.setName("**argv")
         input_argv.setType( Char(self.associated_class) )
 

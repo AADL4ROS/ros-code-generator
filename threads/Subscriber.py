@@ -1,4 +1,3 @@
-import os
 import logging
 log = logging.getLogger("root")
 
@@ -13,47 +12,33 @@ import threads.AADLThreadFunctionsSupport as tfs
 
 import datatypes.DatatypeFromPort as dt
 
+from datatypes.Type import Int, Double, Void, ROS_Subscriber
+
+from variables.Variable import Variable
+from methods.Method import Method
+from comments.Comment import Comment
+
 class Subscriber(AADLThread):
-    def __init__(self, process, thread):
-        super().__init__(process, thread)
-        self.type = AADLThreadType.SUBSCRIBER
+    def __init__(self, _process, _thread, _associated_class):
+        super().__init__(_process, _thread, AADLThreadType.SUBSCRIBER, _associated_class)
+        log.info("Subscriber thread {}".format(self.name))
 
-        # Imposto le path per la lettura del template ed il salvataggio del file
-        # finale generato
-        self.source_template_path   = os.path.join(self.template_folder, "Subscriber.cpp")
-        self.source_output_path     = os.path.join(self.output_folder, self.name + ".cpp")
+        # Parametri del Subscriber
+        self.source_text        = None
+        self.topic              = None
+        self.subscriberCallback = None
+        self.input_type         = None
 
-        log.info("Publisher thread {}".format( self.name ) )
+    def populateData(self):
+        main_thread = self.associated_class.getMainThread()
 
-    def getDescriptionForComparison(self):
-        desc = {}
-        desc['type']                            = self.type
-        desc['main_thread_prepare']             = self.prepare_source_text
-        desc['main_thread_teardown']            = self.teardown_source_text
-        desc['main_thread_errorhandler']        = self.errorhandler_source_text
-        desc['input_port_datatype']             = self.input_port_datatype
-        desc['input_port_datatype_namespace']   = self.input_port_datatype_namespace
-        desc['source_text']                     = self.source_text
-        return desc
+        if main_thread == None:
+            return (False, "Unable to get the Main Thread")
 
-    def generateCode(self):
-        ###################
-        ### MAIN THREAD ###
-        ###################
-
-        # Ottento tutti i dati relativi al main thread
-        self.populateMainThreadData()
-
-        if self.main_thread == None:
-            return (False, "Unable to find the right Main Thread")
-
-        self.prepare_source_text        = tfs.getSourceText( self.prepare )
-        self.teardown_source_text       = tfs.getSourceText( self.tearDown )
-        self.errorhandler_source_text   = tfs.getSourceText( self.errorHandler )
-
-        # Ottengo le informazioni necessarie per i thread di tipo Publisher:
+        # Ottengo le informazioni necessarie per i thread di tipo Subscriber:
         # - Source Text
-        # - Period
+        # - Topic
+        # - Input Type
 
         thread_function = tfs.getSubprogram( self.thread )
         if thread_function == None:
@@ -63,7 +48,7 @@ class Subscriber(AADLThread):
         ### Output Port ###
         ###################
 
-        # Ottengo la porta in output per i thread di tipo Publisher
+        # Ottengo la porta in output per i thread di tipo Subscriber
         aadl_input_port = tfs.getFeatureByName(self.thread, name = "msg")
 
         if aadl_input_port == None:
@@ -71,15 +56,11 @@ class Subscriber(AADLThread):
 
         (aadl_input_port_datatype_namespace, aadl_input_port_datatype) = tfs.getPortDatatypeByPort( aadl_input_port )
 
-        (self.input_port_datatype_namespace,
-         self.input_port_datatype,
-         input_port_datatype_include) = dt.getROSDatatypeFromAADLDatatype( (aadl_input_port_datatype_namespace,
-                                                                            aadl_input_port_datatype) )
+        self.input_type = dt.getROSDatatypeFromAADLDatatype( (aadl_input_port_datatype_namespace, aadl_input_port_datatype),
+                                                                self.associated_class )
 
-        # Il tipo del messaggio inviato va anche importato
-        commento_import_datatype = self.generateCommentFromString("Automatically imported from message datatype")
-        datatype_include = self.generateInclude( input_port_datatype_include )
-
+        self.input_type.setConst(_const=True)
+        self.input_type.setAfterTypeName(":ConstPtr&")
         ###################
         ### Source Text ###
         ###################
@@ -89,20 +70,47 @@ class Subscriber(AADLThread):
         if self.source_text == None:
             return (False, "Unable to find property Source_Text")
 
-        log.info("Source Text: {}".format(self.source_text) )
+        #############
+        ### TOPIC ###
+        #############
 
-        # Leggo il file source template
-        with open(self.source_template_path, 'r') as template_file:
-            template_source = template_file.read()
+        #@TODO Aggiungere supporto al topic
+        self.topic = "/chatter"
 
-        # Sostituisco i placeholder presenti nel file con i valori che ho letto del file AADL
-        dict_replacements = {   "{{__DISCLAIMER__}}"        : self.disclaimer,
-                                "{{__NODE_NAME__}}"         : self.name,
-                                "{{__CLASS_NAME__}}"        : self.name.title(),
-                                "{{__DT_NAMESPACE__}}"      : self.input_port_datatype_namespace,
-                                "{{__DATATYPE__}}"          : self.input_port_datatype,
-                                "{{__DATATYPE_INCLUDES__}}" : commento_import_datatype + datatype_include}
+        ######################
+        ### SUBSCRIBER VAR ###
+        ######################
 
-        self.output_source = self.replacePlaceholders(template_source, dict_replacements)
+        var_subscriber_pub = Variable(self.associated_class)
+        var_subscriber_pub.setName( "sub_{}".format(self.name) )
+        var_subscriber_pub.setType( ROS_Subscriber( self.associated_class) )
+        self.associated_class.addInternalVariable( var_subscriber_pub )
 
-        return (True, self.source_output_path)
+        ###########################
+        ### SUBSCRIBER CALLBACK ###
+        ###########################
+
+        self.subscriberCallback = Method( self.associated_class )
+        self.subscriberCallback.method_name = "{}_callback".format( self.name )
+        self.subscriberCallback.return_type = Void( self.associated_class )
+        self.subscriberCallback.namespace = self.associated_class.class_name
+
+        input_var = Variable( self.associated_class )
+        input_var.setType( self.input_type )
+        input_var.setName( "msg" )
+        input_var.setIsParameter()
+
+        self.subscriberCallback.addInputParameter( input_var )
+
+        self.subscriberCallback.addMiddleCode("ROS_INFO(\"%s\", {}->data.c_str());".format( input_var.name ))
+
+        comment_source_code = Comment( self.associated_class )
+        comment_source_code.setComment( "Source text: {}".format( self.source_text ) )
+        self.subscriberCallback.addMiddleCode( comment_source_code )
+
+        self.associated_class.addPrivateMethod( self.subscriberCallback )
+
+        main_thread.prepare.addMiddleCode("{} = handle.subscribe(\"{}\", 10, {}, this);"
+                                          .format(var_subscriber_pub.name, self.topic, self.subscriberCallback.getThreadPointer()))
+
+        return (True, "")

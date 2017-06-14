@@ -48,6 +48,9 @@ print( "Avvio generazione: {}".format(generated_on) )
 created_threads = []
 
 def creaNuovoThread( process, thread, classname, associated_class ):
+    if classname == None:
+        return None
+
     # Importo il modulo che contiene la tipologia di thread che voglio aggiungere
     thread_module   = importlib.import_module("threads." + classname)
 
@@ -58,32 +61,13 @@ def creaNuovoThread( process, thread, classname, associated_class ):
     # creazione effettiva del codice
     new_thread      = thread_class(process, thread, associated_class)
 
-    new_thread.populateData()
+    (status, desc) = new_thread.populateData()
+
+    if not status:
+        logger.error("Error during the generation of thread: {}\n\t{}".format( new_thread.name, desc ))
+        return None
 
     return new_thread
-    #created_threads.append(new_thread)
-
-    # (status, error_desc) = new_thread.generateCode()
-    # if not status:
-    #     # Si è verificato un errore, per il momento lo scrivo a schermo
-    #     logger.error("Errore durante la generazione del codice")
-    #     logger.error(error_desc)
-    # else:
-    #     # Se tutto è andato a buon fine proseguo
-    #
-    #     # Il nuovo thread viene generato e salvato solamente se non ne esiste già uno identico,
-    #     # in tal caso significherebbe avere due nodi identici lanciati due volte che non hanno
-    #     # bisogno di codice separato (basti pensare a due sensori uguali ad esempio).
-    #     save_new_thread = True
-    #     for t in created_threads:
-    #         if areThreadsEqual(new_thread, t):
-    #             save_new_thread = False
-    #             break
-    #
-    #     if save_new_thread:
-    #         new_thread.saveOutputSource()
-    #         # Aggiungo il nuovo thread alla lista con tutti i thread creati sino ad ora
-    #         created_threads.append( new_thread )
 
 def saveNode(p, source):
     output_folder       = os.path.join(dir, "src")
@@ -140,13 +124,12 @@ for process in processes:
             type        = (thread.find( XMLTags.tags['TAG_TYPE'] ).text).lower()
             namespace   = (thread.find(XMLTags.tags['TAG_NAMESPACE']).text).lower()
 
-            if type == AADLThreadType.PUBLISHER and namespace == "ros":
-                print(name)
+            if namespace == "ros":
                 new_thread = creaNuovoThread(   process,
                                                 thread,
-                                                AADLThreadMapping.NAME_TO_CLASS.get(type, "Generic"),
+                                                AADLThreadMapping.NAME_TO_CLASS.get(type, None),
                                                 p)
-
-                p.threads.append( new_thread )
+                if new_thread != None:
+                    p.threads.append( new_thread )
 
         saveNode(p, p.generateCode())

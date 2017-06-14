@@ -33,13 +33,22 @@ class Method(CObject):
         return (self.library != None)
 
     def addTopCode(self, _codes):
-        self.codice_at_top.extend( _codes.split("\n") )
+        if isinstance(_codes, str):
+            self.codice_at_top.extend( _codes.split("\n") )
+        elif isinstance(_codes, CObject):
+            self.codice_at_top.append( _codes )
 
     def addMiddleCode(self, _codes):
-        self.codice_at_middle.extend( _codes.split("\n") )
+        if isinstance(_codes, str):
+            self.codice_at_middle.extend( _codes.split("\n") )
+        elif isinstance(_codes, CObject):
+            self.codice_at_middle.append( _codes )
 
     def addBottomCode(self, _codes):
-        self.codice_at_bottom.extend( _codes.split("\n") )
+        if isinstance(_codes, str):
+            self.codice_at_bottom.extend( _codes.split("\n") )
+        elif isinstance(_codes, CObject):
+            self.codice_at_bottom.append( _codes )
 
     def getThreadPointer(self):
         namespace = ""
@@ -75,8 +84,11 @@ class Method(CObject):
         code += "{} {{\n".format( self.getIntestazione(with_namespace = True) )
 
         for s in self.codice_at_top + self.codice_at_middle + self.codice_at_bottom:
-            if len(s) > 0:
-                code += "\t" + s + "\n"
+            if isinstance(s, str):
+                if len(s) > 0:
+                    code += "\t" + s + "\n"
+            elif isinstance(s, CObject):
+                code += "".join(["\t" + gen_s + "\n" for gen_s in s.generateCode().split("\n")])
 
         code += "}\n"
         code += "\n"

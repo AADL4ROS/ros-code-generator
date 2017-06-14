@@ -37,8 +37,11 @@ class AADLProcess():
     ### LIBRARY ###
     ###############
     def addLibrary(self, _lib):
-        if _lib not in self.class_libraries:
-            self.class_libraries.append( _lib )
+        for l in self.class_libraries:
+            if l.isEqual(_lib):
+                return False
+
+        self.class_libraries.append( _lib )
 
     def removeLibrary(self, _lib):
         try:
@@ -217,6 +220,6 @@ class AADLProcess():
         for m in self.class_private_methods + self.class_public_methods:
             code += m.generateCode()
 
-        print( code )
+        #print( code )
         return code
 

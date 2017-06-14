@@ -12,7 +12,7 @@ class AADLThreadType():
 
     PUBLISHER   = 'publisher.impl'   # Identifica i thread di tipo publisher
 
-    SUBSCRIBER    = 'subscriber.impl'  # Identifica i thread di tipo publisher
+    SUBSCRIBER    = 'callback.impl'  # Identifica i thread di tipo publisher
 
 # In questa classe è presente il nome del modulo e della classe che gestisce la creazione di quel
 # particolare tipo di thread. Un caso di esempio è il seguente.

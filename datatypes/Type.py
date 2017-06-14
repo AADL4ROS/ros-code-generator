@@ -10,6 +10,10 @@ class Type(CObject):
         self.namespace  = _namespace
         self.type_name  = _type_name
         self.library    = None
+        self.afterTypeName = ""
+
+    def setAfterTypeName(self, _text):
+        self.afterTypeName = _text
 
     def setConst(self, _const = True):
         self.isConst = _const
@@ -37,9 +41,9 @@ class Type(CObject):
             const_str = "const "
 
         if ( self.namespace == None ):
-            return "{}{}".format(const_str, self.type_name)
+            return "{}{}{}".format(const_str, self.type_name, self.afterTypeName)
         else:
-            return "{}{}::{}".format(const_str, self.namespace, self.type_name)
+            return "{}{}::{}{}".format(const_str, self.namespace, self.type_name, self.afterTypeName)
 
 
 class Nothing(Type):
@@ -97,3 +101,9 @@ class ROS_Publisher(Type):
         super().__init__( _associated_class )
         self.setNamespace("ros")
         self.setTypeName( "Publisher" )
+
+class ROS_Subscriber(Type):
+    def __init__(self, _associated_class):
+        super().__init__( _associated_class )
+        self.setNamespace("ros")
+        self.setTypeName( "Subscriber" )

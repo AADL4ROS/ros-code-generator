@@ -6,6 +6,10 @@ class Variable(CObject):
         self.type           = None
         self.name           = None
         self.default_value  = None
+        self.is_function_param = False
+
+    def setIsParameter(self, _param = True):
+        self.is_function_param = _param
 
     def setType(self, _type):
         self.type = _type
@@ -21,4 +25,8 @@ class Variable(CObject):
         if self.default_value != None:
             default = " = {}".format( self.default_value )
 
-        return "{} {}{};".format( self.type.generateCode(), self.name, default )
+        punto_e_virgola = ";"
+        if self.is_function_param:
+            punto_e_virgola = ""
+
+        return "{} {}{}{}".format( self.type.generateCode(), self.name, default, punto_e_virgola )

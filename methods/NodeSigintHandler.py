@@ -11,6 +11,7 @@ class NodeSigintHandler(Method):
         self.return_type    = Void( self.associated_class )
 
         input_sig = Variable( self.associated_class )
+        input_sig.setIsParameter()
         input_sig.setName("sig")
         input_sig.setType( Int( self.associated_class ) )
 

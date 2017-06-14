@@ -12,14 +12,15 @@ import threads.AADLThreadFunctionsSupport as tfs
 
 import datatypes.DatatypeFromPort as dt
 
-from datatypes.Type import Int, Double, ROS_TimerEvent, ROS_Timer, ROS_Publisher
+from datatypes.Type import Int, Double, Void, ROS_TimerEvent, ROS_Timer, ROS_Publisher
 
 from variables.Variable import Variable
 from methods.Method import Method
+from comments.Comment import Comment
 
 class Publisher(AADLThread):
     def __init__(self, _process, _thread, _associated_class):
-        super().__init__(_process, _thread, AADLThreadType.MAIN_THREAD, _associated_class)
+        super().__init__(_process, _thread, AADLThreadType.PUBLISHER, _associated_class)
         log.info("Publisher thread {}".format(self.name))
 
         # Parametri del Publisher
@@ -128,14 +129,27 @@ class Publisher(AADLThread):
 
         self.publisherCallback = Method( self.associated_class )
         self.publisherCallback.method_name = "{}_callback".format( self.name )
+        self.publisherCallback.return_type = Void( self.associated_class )
         self.publisherCallback.namespace = self.associated_class.class_name
-        self.publisherCallback.addInputParameter( ROS_TimerEvent( self.associated_class ) )
+
+        input_par = Variable( self.associated_class )
+        input_par.setIsParameter()
+        input_par.setType( ROS_TimerEvent( self.associated_class ) )
+        input_par.setName("")
+        self.publisherCallback.addInputParameter( input_par )
 
         self.publisherCallback.addMiddleCode("std_msgs::String msg;\n"
                                              "std::stringstream ss;\n"
                                              "ss << \"current time: \" << (ros::Time::now().toSec() - vars.starting_time);\n"
                                              "msg.data = ss.str().c_str();\n"
                                              "{}.publish(msg);".format( var_publisher_pub.name ))
+
+
+        comment_source_code = Comment( self.associated_class )
+        comment_source_code.setComment( "Source text: {}".format( self.source_text ) )
+        self.publisherCallback.addMiddleCode( comment_source_code )
+
+        self.associated_class.addPrivateMethod( self.publisherCallback )
 
         main_thread.prepare.addTopCode( "params.frequency = {};".format(self.frequency_in_hz) )
         main_thread.prepare.addMiddleCode("handle.getParam(\"frequency\", params.frequency);")
