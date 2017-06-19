@@ -1,6 +1,6 @@
 /**
  * Node Listener_Node
- * File auto-generated on 19/06/2017 15:18:11
+ * File auto-generated on 19/06/2017 16:02:36
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
 bool Listener_Node::prepare() {
 	params.node_name = NODE_NAME;
 	handle.getParam("node_name", params.node_name);
-	sub_subscriber = handle.subscribe("/chatter", 10, &Listener_Node::subscriber_callback, this);
+	sub_subscriber = handle.subscribe("/chatter", 1, &Listener_Node::subscriber_callback, this);
 	return true;
 }
 

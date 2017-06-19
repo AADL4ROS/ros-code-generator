@@ -61,6 +61,7 @@ class Subscriber(AADLThread):
 
         self.input_type.setConst(_const=True)
         self.input_type.setAfterTypeName(":ConstPtr&")
+
         ###################
         ### Source Text ###
         ###################
@@ -80,6 +81,17 @@ class Subscriber(AADLThread):
             return (False, "Unable to get topic name")
 
         self.topic = topic_name
+
+        ##################
+        ### QUEUE SIZE ###
+        ##################
+
+        queue_size_default_value = 1
+        self.queue_size = tfs.getSubscriberQueueSize( self.thread )
+
+        if self.queue_size == None:
+            self.queue_size = queue_size_default_value
+            log.info("Queue size set to default value: {}".format(self.queue_size))
 
         ######################
         ### SUBSCRIBER VAR ###
@@ -114,7 +126,8 @@ class Subscriber(AADLThread):
 
         self.associated_class.addPrivateMethod( self.subscriberCallback )
 
-        main_thread.prepare.addMiddleCode("{} = handle.subscribe(\"{}\", 10, {}, this);"
-                                          .format(var_subscriber_pub.name, self.topic, self.subscriberCallback.getThreadPointer()))
+        main_thread.prepare.addMiddleCode("{} = handle.subscribe(\"{}\", {}, {}, this);"
+                                          .format(var_subscriber_pub.name, self.topic, self.queue_size,
+                                                  self.subscriberCallback.getThreadPointer()))
 
         return (True, "")

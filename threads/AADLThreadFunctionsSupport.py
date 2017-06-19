@@ -146,3 +146,21 @@ def getTopicName(start):
         return (TOPIC_PROPERTIES_NAMESPACE, topic)
     except AttributeError:
         return (None, None)
+
+##################
+### QUEUE SIZE ###
+##################
+
+def getSubscriberQueueSize(start):
+    try:
+        queue_size_property = start.find("./" + XMLTags.tags['TAG_FEATURES'] + "/" +
+                                                XMLTags.tags['TAG_FEATURE'] + "/" +
+                                                "[" + XMLTags.tags['TAG_FEATURE_NAME'] + "='msg']" + "/" +
+                                                    XMLTags.tags['TAG_PROPERTIES'] + "/" +
+                                                        XMLTags.tags['TAG_PROPERTY'] + "/" +
+                                                            "[" + XMLTags.tags['TAG_PROPERTY_NAME'] + "='Queue_size']")
+
+        queue_size = queue_size_property.find(XMLTags.tags['TAG_PROPERTY_VALUE']).text
+        return queue_size
+    except AttributeError:
+        return None

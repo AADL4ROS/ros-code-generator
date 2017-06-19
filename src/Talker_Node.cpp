@@ -1,6 +1,6 @@
 /**
  * Node Talker_Node
- * File auto-generated on 19/06/2017 15:18:11
+ * File auto-generated on 19/06/2017 16:02:36
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
  */
 bool Talker_Node::prepare() {
 	params.node_name = NODE_NAME;
-	params.<variables.Variable.Variable object at 0x1096f4b00> = 100.0;
+	params.<variables.Variable.Variable object at 0x10d496a58> = 100.0;
 	handle.getParam("node_name", params.node_name);
 	handle.getParam("frequency_publisher", params.frequency_publisher);
 	pub_publisher = handle.advertise < std::string > ("/chatter", 10);
