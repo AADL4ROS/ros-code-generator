@@ -2,26 +2,6 @@ import XMLTags
 from lxml import etree
 
 """
-    COMPARISON
-"""
-
-def areThreadsEqual(thread1, thread2):
-    dict_thread1 = thread1.getDescriptionForComparison()
-    dict_thread2 = thread2.getDescriptionForComparison()
-
-    if len(dict_thread1) != len(dict_thread2):
-        return False
-
-    for key, value in dict_thread1.items():
-        if (key not in dict_thread2):
-            return False
-        if dict_thread2[key] != value:
-            return False
-
-    return True
-
-
-"""
     MAIN THREAD
 """
 
@@ -144,4 +124,25 @@ def getPeriod(start):
         return (period, period_unit)
 
     except AttributeError:
-        return (None, None);
+        return (None, None)
+
+#############
+### TOPIC ###
+#############
+
+TOPIC_PROPERTIES_NAMESPACE = "topic_properties"
+
+def getTopicName(start):
+    try:
+        topic_property = start.find("./" + XMLTags.tags['TAG_CONNECTIONS'] + "/" +
+                                                XMLTags.tags['TAG_CONNECTION'] + "/" +
+                                                    XMLTags.tags['TAG_PROPERTIES'] + "/" +
+                                                        XMLTags.tags['TAG_PROPERTY'] + "/" +
+                                                            "[" + XMLTags.tags['TAG_PROPERTY_NAME'] + "='Name']" +
+                                                                "[" + XMLTags.tags['TAG_PROPERTY_NAMESPACE'] + "='" +
+                                                                                    TOPIC_PROPERTIES_NAMESPACE + "']")
+
+        topic = topic_property.find(XMLTags.tags['TAG_PROPERTY_VALUE']).text
+        return (TOPIC_PROPERTIES_NAMESPACE, topic)
+    except AttributeError:
+        return (None, None)

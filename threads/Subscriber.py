@@ -19,8 +19,8 @@ from methods.Method import Method
 from comments.Comment import Comment
 
 class Subscriber(AADLThread):
-    def __init__(self, _process, _thread, _associated_class):
-        super().__init__(_process, _thread, AADLThreadType.SUBSCRIBER, _associated_class)
+    def __init__(self, _system_root, _process, _thread, _associated_class):
+        super().__init__(_system_root, _process, _thread, AADLThreadType.SUBSCRIBER, _associated_class)
         log.info("Subscriber thread {}".format(self.name))
 
         # Parametri del Subscriber
@@ -74,8 +74,12 @@ class Subscriber(AADLThread):
         ### TOPIC ###
         #############
 
-        #@TODO Aggiungere supporto al topic
-        self.topic = "/chatter"
+        (topic_namespace, topic_name) = tfs.getTopicName( self.system_root )
+
+        if topic_namespace == None or topic_name == None:
+            return (False, "Unable to get topic name")
+
+        self.topic = topic_name
 
         ######################
         ### SUBSCRIBER VAR ###

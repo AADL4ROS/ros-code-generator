@@ -7,8 +7,6 @@ logger = log.setup_custom_logger("root")
 from threads.AADLThread import AADLThreadMapping
 from threads.AADLThread import AADLThreadType
 
-from threads.AADLThreadFunctionsSupport import areThreadsEqual
-
 from threads.AADLProcess import AADLProcess
 
 import datetime
@@ -47,7 +45,7 @@ print( "Avvio generazione: {}".format(generated_on) )
 
 created_threads = []
 
-def creaNuovoThread( process, thread, classname, associated_class ):
+def creaNuovoThread( system_root, process, thread, classname, associated_class ):
     if classname == None:
         return None
 
@@ -59,7 +57,7 @@ def creaNuovoThread( process, thread, classname, associated_class ):
 
     # Creo una nuova istanza della classe relativa al thread e lancio quindi la procedura di
     # creazione effettiva del codice
-    new_thread      = thread_class(process, thread, associated_class)
+    new_thread      = thread_class(system_root, process, thread, associated_class)
 
     (status, desc) = new_thread.populateData()
 
@@ -85,13 +83,13 @@ def saveNode(p, source):
 tree = etree.parse(ocarina_ros_path + xml_filename)
 
 # Ottengo la root del system preso in considerazione
-root = tree.getroot()
+system_root = tree.getroot()
 
 # Ricerco tutti i processi all'interno del system
-processes = root.findall("./" +
-                         XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
-                         XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
-                                    "[" + XMLTags.tags['TAG_CATEGORY'] + "='process']")
+processes = system_root.findall("./" +
+                                    XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
+                                        XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
+                                            "[" + XMLTags.tags['TAG_CATEGORY'] + "='process']")
 
 # Scorro ogni processo. Per ogni processo controllo i subcomponent: in base alle varie tipologie
 # di subcomponent avvio la generazione di diversi nodi ROS
@@ -113,7 +111,8 @@ for process in processes:
 
         p = AADLProcess(process)
 
-        gen_main_thread = creaNuovoThread(  process,
+        gen_main_thread = creaNuovoThread(  system_root,
+                                            process,
                                             main_thread,
                                             AADLThreadMapping.NAME_TO_CLASS.get(AADLThreadType.MAIN_THREAD, "Generic"),
                                             p)
@@ -125,7 +124,8 @@ for process in processes:
             namespace   = (thread.find(XMLTags.tags['TAG_NAMESPACE']).text).lower()
 
             if namespace == "ros":
-                new_thread = creaNuovoThread(   process,
+                new_thread = creaNuovoThread(   system_root,
+                                                process,
                                                 thread,
                                                 AADLThreadMapping.NAME_TO_CLASS.get(type, None),
                                                 p)

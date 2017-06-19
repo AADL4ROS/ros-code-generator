@@ -21,8 +21,8 @@ from variables.Std_String   import Std_String
 ### MAIN THREAD ###
 ###################
 class MainThread(AADLThread):
-    def __init__(self, _process, _thread, _associated_class):
-        super().__init__(_process, _thread, AADLThreadType.MAIN_THREAD, _associated_class)
+    def __init__(self, _system_root, _process, _thread, _associated_class):
+        super().__init__(_system_root, _process, _thread, AADLThreadType.MAIN_THREAD, _associated_class)
         log.info("Main thread {}".format(self.name))
 
         # Parametri del main thread

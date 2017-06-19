@@ -26,13 +26,14 @@ class AADLThreadMapping():
 
 # Classe da cui ereditano tutti i thread
 class AADLThread():
-    def __init__(self, _process, _thread, _type, _associated_class):
+    def __init__(self, _system_root, _process, _thread, _type, _associated_class):
         # AADLProcess a cui un AADLThread fa riferimento
         self.associated_class = _associated_class
 
         # Processo e thread relativi
-        self.process    = _process
-        self.thread     = _thread
+        self.system_root    = _system_root
+        self.process        = _process
+        self.thread         = _thread
 
         # Tipo thread
         self.type       = _type
