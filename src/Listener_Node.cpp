@@ -1,9 +1,8 @@
 /**
  * Node Listener_Node
- * File auto-generated on 25/09/2017 15:30:58
+ * File auto-generated on 25/09/2017 17:47:04
  */
 #include "ros_base/ROSNode.h"
-#include "std/string.h"
 #include "std_msgs/String.h"
 #define NODE_NAME "Listener_Node"
 class Listener_Node : public ros_base::ROSNode {
@@ -30,7 +29,7 @@ void nodeSigintHandler(int sig) {
 /**
  * Method main auto-generated
  */
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
 	ros::init(argc, argv, NODE_NAME, ros::init_options::NoSigintHandler);
 	while(!ros::master::check())
 		usleep(1000);

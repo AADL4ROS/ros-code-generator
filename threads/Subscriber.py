@@ -28,6 +28,7 @@ class Subscriber(AADLThread):
         self.topic              = None
         self.subscriberCallback = None
         self.input_type         = None
+        self.asn1_source_file   = None
 
     def populateData(self):
         main_thread = self.associated_class.getMainThread()
@@ -44,9 +45,33 @@ class Subscriber(AADLThread):
         if thread_function == None:
             return (False, "Unable to find the right Subprogram")
 
-        ###################
-        ### Output Port ###
-        ###################
+        ##################
+        ### Input Port ###
+        ##################
+
+        # Ottengo la connesione che mappa la porta di input del thread subscriber
+        # con quella che entra nel process
+        process_input_port = tfs.getConnectionPortInfoByDest(self.process, self.type, "msg")
+        if process_input_port == None:
+            return (False, "Unable to find the right binding between process input port and thread input port")
+
+        (source_parent_name, source_name) = tfs.getSourceFromPortInfo(process_input_port)
+
+        if source_parent_name == None or source_name == None:
+            return (False, "Unable to find the process input port name")
+
+        process_port = tfs.getFeatureByName(self.process, name=source_name)
+        if process_port == None:
+            return (False, "Unable to find the process input port name feature")
+
+        self.asn1_source_file = tfs.getSourceText( process_port )
+
+        if self.asn1_source_file == None:
+            #return (False, "Unable to find the ASN.1 file specification.")
+            log.warning("Unable to find the ASN.1 file specification.")
+
+        # @TODO: leggere il file ASN.1 ed utilizzarlo per la porta
+        log.info("ASN.1 file: {}".format(self.asn1_source_file) )
 
         # Ottengo la porta in output per i thread di tipo Subscriber
         aadl_input_port = tfs.getFeatureByName(self.thread, name = "msg")

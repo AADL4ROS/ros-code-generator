@@ -1,27 +1,32 @@
 /**
- * Node Talker_Node
+ * Node Talker_Node_2
  * File auto-generated on 25/09/2017 17:47:04
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
-#define NODE_NAME "Talker_Node"
-class Talker_Node : public ros_base::ROSNode {
+#define NODE_NAME "Talker_Node_2"
+class Talker_Node_2 : public ros_base::ROSNode {
 private:
 	bool prepare();
 	void tearDown();
 	void errorHandling();
 	void publisher_callback(const ros::TimerEvent& );
+	void publisher_1_callback(const ros::TimerEvent& );
 	struct params {
 		std::string node_name;
 		int frequency_publisher;
+		int frequency_publisher_1;
 	} params;
 	struct vars {
 		double starting_time_publisher;
+		double starting_time_publisher_1;
 	} vars;
 	ros::Publisher pub_publisher;
 	ros::Timer timer_publisher;
+	ros::Publisher pub_publisher_1;
+	ros::Timer timer_publisher_1;
 public:
-	 Talker_Node();
+	 Talker_Node_2();
 };
 
 /**
@@ -39,7 +44,7 @@ int main(int argc, char** argv) {
 	while(!ros::master::check())
 		usleep(1000);
 	signal(SIGINT, nodeSigintHandler);
-	Talker_Node node;
+	Talker_Node_2 node;
 	node.start();
 	return 0;
 }
@@ -47,21 +52,26 @@ int main(int argc, char** argv) {
 /**
  * Method prepare auto-generated
  */
-bool Talker_Node::prepare() {
+bool Talker_Node_2::prepare() {
 	params.node_name = NODE_NAME;
 	params.frequency_publisher = 100.0;
+	params.frequency_publisher_1 = 100.0;
 	handle.getParam("node_name", params.node_name);
 	handle.getParam("frequency_publisher", params.frequency_publisher);
 	pub_publisher = handle.advertise < std_msgs::String > ("/chatter", 10);
-	timer_publisher = handle.createTimer(ros::Duration(1/params.frequency_publisher), &Talker_Node::publisher_callback, this);
+	timer_publisher = handle.createTimer(ros::Duration(1/params.frequency_publisher), &Talker_Node_2::publisher_callback, this);
 	vars.starting_time_publisher = ros::Time::now().toSec();
+	handle.getParam("frequency_publisher_1", params.frequency_publisher_1);
+	pub_publisher_1 = handle.advertise < std_msgs::String > ("/chatter", 10);
+	timer_publisher_1 = handle.createTimer(ros::Duration(1/params.frequency_publisher_1), &Talker_Node_2::publisher_1_callback, this);
+	vars.starting_time_publisher_1 = ros::Time::now().toSec();
 	return true;
 }
 
 /**
  * Method tearDown auto-generated
  */
-void Talker_Node::tearDown() {
+void Talker_Node_2::tearDown() {
 	ROS_INFO("Node is shutting down");
 	return;
 }
@@ -69,29 +79,44 @@ void Talker_Node::tearDown() {
 /**
  * Method errorHandling auto-generated
  */
-void Talker_Node::errorHandling() {
+void Talker_Node_2::errorHandling() {
 	ROSNode::errorHandling();
 }
 
 /**
  * Method publisher_callback auto-generated
  */
-void Talker_Node::publisher_callback(const ros::TimerEvent& ) {
+void Talker_Node_2::publisher_callback(const ros::TimerEvent& ) {
 	std_msgs::String msg;
 	std::stringstream ss;
 	ss << "current time: " << (ros::Time::now().toSec() - vars.starting_time_publisher);
 	msg.data = ss.str().c_str();
 	pub_publisher.publish(msg);
 	/**
-	 * Source text: talker_sys.cpp
+	 * Source text: talker.cpp
 	 */
 	
 }
 
 /**
- * Method Talker_Node auto-generated
+ * Method publisher_1_callback auto-generated
  */
- Talker_Node::Talker_Node() {
+void Talker_Node_2::publisher_1_callback(const ros::TimerEvent& ) {
+	std_msgs::String msg;
+	std::stringstream ss;
+	ss << "current time: " << (ros::Time::now().toSec() - vars.starting_time_publisher_1);
+	msg.data = ss.str().c_str();
+	pub_publisher_1.publish(msg);
+	/**
+	 * Source text: talker_2.cpp
+	 */
+	
+}
+
+/**
+ * Method Talker_Node_2 auto-generated
+ */
+ Talker_Node_2::Talker_Node_2() {
 	setName(NODE_NAME);
 }
 

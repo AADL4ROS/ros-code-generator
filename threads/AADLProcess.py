@@ -23,6 +23,9 @@ class AADLProcess():
         # Contiene la lista dei threads che compongono ogni processo
         self.threads        = []
 
+        # Se già esiste il file nella cartella di output con lo stesso nome, aggiungo un
+        # indice incrementale in modo che non venga sovrascritto
+
     #######################
     ### GET MAIN THREAD ###
     #######################

@@ -79,7 +79,66 @@ def getPortDatatypeByPort(port):
         return (port.find(XMLTags.tags['TAG_FEATURE_PORT_DATA_TYPE_NAMESPACE']).text,
                 port.find(XMLTags.tags['TAG_FEATURE_PORT_DATA_TYPE']).text)
     except AttributeError:
+        return (None, None)
+
+"""
+    CONNECTIONS
+"""
+
+def getConnectionPortInfoBySource(start, parent_source, name):
+    try:
+        conn_by_source = start.find("./" +
+                                    XMLTags.tags['TAG_CONNECTIONS'] + "/" +
+                                    XMLTags.tags['TAG_CONNECTION'] + "/" +
+                                    XMLTags.tags['TAG_CONNECTION_PORT_INFO'] + "/" +
+                                    "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_PARENT_SOURCE'] + "='" + parent_source +  "']" +
+                                    "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_SOURCE'] + "='" + name + "']")
+
+        return conn_by_source
+    except AttributeError:
         return None
+
+def getConnectionPortInfoByDest(start, parent_dest, name):
+    try:
+        conn_by_dest = start.find("./" +
+                                    XMLTags.tags['TAG_CONNECTIONS'] + "/" +
+                                    XMLTags.tags['TAG_CONNECTION'] + "/" +
+                                    XMLTags.tags['TAG_CONNECTION_PORT_INFO'] + "/" +
+                                    "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_PARENT_DEST'] + "='" + parent_dest +  "']" +
+                                    "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_DEST'] + "='" + name + "']")
+
+        return conn_by_dest
+    except AttributeError:
+        return None
+
+def getSourceFromPortInfo(port_info):
+    try:
+        return (port_info.find(XMLTags.tags['TAG_CONNECTION_PORT_INFO_PARENT_SOURCE']).text,
+                port_info.find(XMLTags.tags['TAG_CONNECTION_PORT_INFO_SOURCE']).text)
+    except:
+        return (None, None)
+
+def getDestFromPortInfo(port_info):
+    try:
+        return (port_info.find(XMLTags.tags['TAG_CONNECTION_PORT_INFO_PARENT_DEST']).text,
+                port_info.find(XMLTags.tags['TAG_CONNECTION_PORT_INFO_DEST']).text)
+    except:
+        return (None, None)
+
+"""
+    NAMESPACE
+"""
+
+def getNamespace(start):
+    return start.find(XMLTags.tags['TAG_NAMESPACE']).text
+
+"""
+    TYPE
+"""
+
+def getType(start):
+    return start.find(XMLTags.tags['TAG_TYPE']).text
+
 
 """
     NAME

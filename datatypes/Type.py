@@ -76,7 +76,6 @@ class String(Type):
         super().__init__( _associated_class )
         self.setNamespace( "std" )
         self.setTypeName( "string" )
-        self.setLibrary( lib.Std_String() )
 
 class StdMsgString(Type):
     def __init__(self, _associated_class):
@@ -89,6 +88,11 @@ class Char(Type):
     def __init__(self, _associated_class):
         super().__init__( _associated_class )
         self.setTypeName( "char" )
+
+class PointerToCharPointer(Type): #char **
+    def __init__(self, _associated_class):
+        super().__init__( _associated_class )
+        self.setTypeName( "char**" )
 
 class ROS_TimerEvent(Type):
     def __init__(self, _associated_class):
