@@ -1,8 +1,9 @@
 /**
  * Node Listener_Node
- * File auto-generated on 19/06/2017 16:02:36
+ * File auto-generated on 25/09/2017 15:30:58
  */
 #include "ros_base/ROSNode.h"
+#include "std/string.h"
 #include "std_msgs/String.h"
 #define NODE_NAME "Listener_Node"
 class Listener_Node : public ros_base::ROSNode {
@@ -10,7 +11,7 @@ private:
 	bool prepare();
 	void tearDown();
 	void errorHandling();
-	void subscriber_callback(const std::string:ConstPtr& msg);
+	void subscriber_callback(const std_msgs::String::ConstPtr& msg);
 	struct params {
 		std::string node_name;
 	} params;
@@ -67,7 +68,7 @@ void Listener_Node::errorHandling() {
 /**
  * Method subscriber_callback auto-generated
  */
-void Listener_Node::subscriber_callback(const std::string:ConstPtr& msg) {
+void Listener_Node::subscriber_callback(const std_msgs::String::ConstPtr& msg) {
 	ROS_INFO("%s", msg->data.c_str());
 	/**
 	 * Source text: listener.cpp

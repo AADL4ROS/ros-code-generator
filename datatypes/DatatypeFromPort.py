@@ -1,4 +1,4 @@
-from datatypes.Type import String
+from datatypes.Type import String, StdMsgString
 
 # In input ho una tupla del tipo (datatype, datatype_namespace): a partire da questa devo
 # fare la traduzione in tipi supportati da ROS
@@ -8,4 +8,4 @@ def getROSDatatypeFromAADLDatatype(_aadl_datatype, _associated_class):
 
     #@TODO: Gestione dei Datatype
 
-    return String( _associated_class )
+    return StdMsgString( _associated_class )

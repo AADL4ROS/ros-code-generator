@@ -19,6 +19,11 @@ class StdMsgs_String(Library):
         super().__init__(_associated_class)
         self.path = "std_msgs/String.h"
 
+class Std_String(Library):
+    def __init__(self, _associated_class = None):
+        super().__init__(_associated_class)
+        self.path = "std/string.h"
+
 class ROSBase_ROSNode(Library):
     def __init__(self, _associated_class = None):
         super().__init__(_associated_class)

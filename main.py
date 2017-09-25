@@ -80,7 +80,7 @@ def saveNode(p, source):
 ###################
 
 # Leggo il file XML generato dal backend ever_xml
-tree = etree.parse(ocarina_ros_path + xml_filename)
+tree = etree.parse( os.path.join(ocarina_ros_path, xml_filename) )
 
 # Ottengo la root del system preso in considerazione
 system_root = tree.getroot()

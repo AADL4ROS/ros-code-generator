@@ -155,7 +155,7 @@ class Publisher(AADLThread):
 
         self.associated_class.addPrivateMethod( self.publisherCallback )
 
-        main_thread.prepare.addTopCode( "params.{} = {};".format(param_freq, self.frequency_in_hz) )
+        main_thread.prepare.addTopCode( "params.{} = {};".format(param_freq.name, self.frequency_in_hz) )
         main_thread.prepare.addMiddleCode("handle.getParam(\"{}\", params.{});".format(param_freq.name, param_freq.name))
 
         main_thread.prepare.addMiddleCode("{} = handle.advertise < {} > (\"{}\", 10);"

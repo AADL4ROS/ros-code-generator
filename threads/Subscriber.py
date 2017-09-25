@@ -60,7 +60,7 @@ class Subscriber(AADLThread):
                                                                 self.associated_class )
 
         self.input_type.setConst(_const=True)
-        self.input_type.setAfterTypeName(":ConstPtr&")
+        self.input_type.setAfterTypeName("::ConstPtr&")
 
         ###################
         ### Source Text ###
