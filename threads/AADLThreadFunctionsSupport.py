@@ -188,18 +188,47 @@ def getPeriod(start):
 #############
 ### TOPIC ###
 #############
-
 TOPIC_PROPERTIES_NAMESPACE = "topic_properties"
 
+def getAllConnectionsPerPort(start, process_name, port_name, input = False, output = False):
+    try:
+        # Cerco tutte le connessioni
+        system_connections = start.findall("./" + XMLTags.tags['TAG_CONNECTIONS'] + "/" +
+                                                XMLTags.tags['TAG_CONNECTION'])
+
+        # Per ogni connessione controllo se ha come porta di input oppure di output
+        # quella relativa alla connessione che cerco
+        conn = []
+        for c in system_connections:
+            port_info   = None
+
+            if input:
+                port_info = c.find("./" + XMLTags.tags['TAG_CONNECTION_PORT_INFO'] + "/" +
+                                   "[" + XMLTags.tags[
+                                        'TAG_CONNECTION_PORT_INFO_PARENT_DEST_NAME'] + "='" + process_name + "']" +
+                                    "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_DEST'] + "='" + port_name + "']")
+            elif output:
+                port_info = c.find("./" + XMLTags.tags['TAG_CONNECTION_PORT_INFO'] + "/" +
+                                   "[" + XMLTags.tags[
+                                       'TAG_CONNECTION_PORT_INFO_PARENT_SOURCE_NAME'] + "='" + process_name + "']" +
+                                   "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_SOURCE'] + "='" + port_name + "']")
+
+            if port_info is not None:
+                conn.append(c)
+
+        return conn
+    except:
+        return None
+
+# getTopicName
+# start: è un oggetto XML di tipo connessione
 def getTopicName(start):
     try:
-        topic_property = start.find("./" + XMLTags.tags['TAG_CONNECTIONS'] + "/" +
-                                                XMLTags.tags['TAG_CONNECTION'] + "/" +
-                                                    XMLTags.tags['TAG_PROPERTIES'] + "/" +
-                                                        XMLTags.tags['TAG_PROPERTY'] + "/" +
-                                                            "[" + XMLTags.tags['TAG_PROPERTY_NAME'] + "='Name']" +
-                                                                "[" + XMLTags.tags['TAG_PROPERTY_NAMESPACE'] + "='" +
-                                                                                    TOPIC_PROPERTIES_NAMESPACE + "']")
+        topic_property = start.find("./" + XMLTags.tags['TAG_PROPERTIES'] + "/" +
+                                    XMLTags.tags['TAG_PROPERTY'] + "/" +
+                                    "[" + XMLTags.tags['TAG_PROPERTY_NAME'] + "='Name']" +
+                                    "[" + XMLTags.tags['TAG_PROPERTY_NAMESPACE'] + "='" +
+                                    TOPIC_PROPERTIES_NAMESPACE + "']")
 
         topic = topic_property.find(XMLTags.tags['TAG_PROPERTY_VALUE']).text
         return (TOPIC_PROPERTIES_NAMESPACE, topic)
@@ -210,11 +239,11 @@ def getTopicName(start):
 ### QUEUE SIZE ###
 ##################
 
-def getSubscriberQueueSize(start):
+def getSubscriberQueueSize(start, port_name = "msg"):
     try:
         queue_size_property = start.find("./" + XMLTags.tags['TAG_FEATURES'] + "/" +
                                                 XMLTags.tags['TAG_FEATURE'] + "/" +
-                                                "[" + XMLTags.tags['TAG_FEATURE_NAME'] + "='msg']" + "/" +
+                                                "[" + XMLTags.tags['TAG_FEATURE_NAME'] + "='" + port_name + "']" + "/" +
                                                     XMLTags.tags['TAG_PROPERTIES'] + "/" +
                                                         XMLTags.tags['TAG_PROPERTY'] + "/" +
                                                             "[" + XMLTags.tags['TAG_PROPERTY_NAME'] + "='Queue_size']")

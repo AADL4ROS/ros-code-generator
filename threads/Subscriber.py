@@ -10,7 +10,7 @@ from lxml import etree
 
 import threads.AADLThreadFunctionsSupport as tfs
 
-import datatypes.DatatypeFromPort as dt
+import datatypes.DatatypeFromASN1 as dt
 
 from datatypes.Type import Int, Double, Void, ROS_Subscriber
 
@@ -23,12 +23,16 @@ class Subscriber(AADLThread):
         super().__init__(_system_root, _process, _thread, AADLThreadType.SUBSCRIBER, _associated_class)
         log.info("Subscriber thread {}".format(self.name))
 
+        self.input_port_name = "msg"
+
         # Parametri del Subscriber
+        self.process_port       = None
         self.source_text        = None
         self.topic              = None
         self.subscriberCallback = None
         self.input_type         = None
         self.asn1_source_file   = None
+        self.queue_size         = None
 
     def populateData(self):
         main_thread = self.associated_class.getMainThread()
@@ -51,7 +55,7 @@ class Subscriber(AADLThread):
 
         # Ottengo la connesione che mappa la porta di input del thread subscriber
         # con quella che entra nel process
-        process_input_port = tfs.getConnectionPortInfoByDest(self.process, self.type, "msg")
+        process_input_port = tfs.getConnectionPortInfoByDest(self.process, self.type, self.input_port_name)
         if process_input_port == None:
             return (False, "Unable to find the right binding between process input port and thread input port")
 
@@ -60,11 +64,12 @@ class Subscriber(AADLThread):
         if source_parent_name == None or source_name == None:
             return (False, "Unable to find the process input port name")
 
-        process_port = tfs.getFeatureByName(self.process, name=source_name)
-        if process_port == None:
+        self.process_port = tfs.getFeatureByName(self.process, name=source_name)
+
+        if self.process_port == None:
             return (False, "Unable to find the process input port name feature")
 
-        self.asn1_source_file = tfs.getSourceText( process_port )
+        self.asn1_source_file = tfs.getSourceText( self.process_port )
 
         if self.asn1_source_file == None:
             #return (False, "Unable to find the ASN.1 file specification.")
@@ -73,17 +78,7 @@ class Subscriber(AADLThread):
         # @TODO: leggere il file ASN.1 ed utilizzarlo per la porta
         log.info("ASN.1 file: {}".format(self.asn1_source_file) )
 
-        # Ottengo la porta in output per i thread di tipo Subscriber
-        aadl_input_port = tfs.getFeatureByName(self.thread, name = "msg")
-
-        if aadl_input_port == None:
-            return (False, "Unable to find the default input port named msg")
-
-        (aadl_input_port_datatype_namespace, aadl_input_port_datatype) = tfs.getPortDatatypeByPort( aadl_input_port )
-
-        self.input_type = dt.getROSDatatypeFromAADLDatatype( (aadl_input_port_datatype_namespace, aadl_input_port_datatype),
-                                                                self.associated_class )
-
+        self.input_type = dt.getROSDatatypeFromASN1(self.asn1_source_file, self.associated_class)
         self.input_type.setConst(_const=True)
         self.input_type.setAfterTypeName("::ConstPtr&")
 
@@ -100,19 +95,17 @@ class Subscriber(AADLThread):
         ### TOPIC ###
         #############
 
-        (topic_namespace, topic_name) = tfs.getTopicName( self.system_root )
-
-        if topic_namespace == None or topic_name == None:
-            return (False, "Unable to get topic name")
-
-        self.topic = topic_name
+        process_port_name = tfs.getName(self.process_port)
+        (status, desc) = self.getTopicName(process_port_name, input=True)
+        if status == False:
+            return (status, desc)
 
         ##################
         ### QUEUE SIZE ###
         ##################
 
         queue_size_default_value = 1
-        self.queue_size = tfs.getSubscriberQueueSize( self.thread )
+        self.queue_size = tfs.getSubscriberQueueSize( self.thread, port_name=self.input_port_name )
 
         if self.queue_size == None:
             self.queue_size = queue_size_default_value

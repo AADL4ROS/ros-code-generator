@@ -10,7 +10,7 @@ from lxml import etree
 
 import threads.AADLThreadFunctionsSupport as tfs
 
-import datatypes.DatatypeFromPort as dt
+import datatypes.DatatypeFromASN1 as dt
 
 from datatypes.Type import Int, Double, Void, ROS_TimerEvent, ROS_Timer, ROS_Publisher
 
@@ -23,7 +23,10 @@ class Publisher(AADLThread):
         super().__init__(_system_root, _process, _thread, AADLThreadType.PUBLISHER, _associated_class)
         log.info("Publisher thread {}".format(self.name))
 
+        self.output_port_name = "msg"
+
         # Parametri del Publisher
+        self.process_port       = None
         self.source_text        = None
         self.frequency_in_hz    = None
         self.topic              = None
@@ -51,7 +54,7 @@ class Publisher(AADLThread):
 
         # Ottengo la connesione che mappa la porta di input del thread subscriber
         # con quella che entra nel process
-        process_output_port = tfs.getConnectionPortInfoBySource(self.process, self.type, "msg")
+        process_output_port = tfs.getConnectionPortInfoBySource(self.process, self.type, self.output_port_name)
         if process_output_port == None:
             return (False, "Unable to find the right binding between process input port and thread input port")
 
@@ -60,11 +63,11 @@ class Publisher(AADLThread):
         if dest_parent_name == None or dest_name == None:
             return (False, "Unable to find the process input port name")
 
-        process_port = tfs.getFeatureByName(self.process, name=dest_name)
-        if process_port == None:
+        self.process_port = tfs.getFeatureByName(self.process, name=dest_name)
+        if self.process_port == None:
             return (False, "Unable to find the process input port name feature")
 
-        self.asn1_source_file = tfs.getSourceText(process_port)
+        self.asn1_source_file = tfs.getSourceText(self.process_port)
 
         if self.asn1_source_file == None:
             #return (False, "Unable to find the ASN.1 file specification.")
@@ -73,16 +76,8 @@ class Publisher(AADLThread):
         # @TODO: leggere il file ASN.1 ed utilizzarlo per la porta
         log.info("ASN.1 file: {}".format(self.asn1_source_file))
 
-        # Ottengo la porta in output per i thread di tipo Publisher
-        aadl_output_port = tfs.getFeatureByName(self.thread, name = "msg")
+        self.output_type = dt.getROSDatatypeFromASN1( self.asn1_source_file, self.associated_class )
 
-        if aadl_output_port == None:
-            return (False, "Unable to find the default output port named msg")
-
-        (aadl_output_port_datatype_namespace, aadl_output_port_datatype) = tfs.getPortDatatypeByPort( aadl_output_port )
-
-        self.output_type = dt.getROSDatatypeFromAADLDatatype( (aadl_output_port_datatype_namespace, aadl_output_port_datatype),
-                                                                self.associated_class )
         ###################
         ### Source Text ###
         ###################
@@ -118,12 +113,10 @@ class Publisher(AADLThread):
         ### TOPIC ###
         #############
 
-        (topic_namespace, topic_name) = tfs.getTopicName( self.system_root )
-
-        if topic_namespace == None or topic_name == None:
-            return (False, "Unable to get topic name")
-
-        self.topic = topic_name
+        process_port_name = tfs.getName(self.process_port)
+        (status, desc) = self.getTopicName(process_port_name, output=True)
+        if status == False:
+            return (status, desc)
 
         #####################
         ### STARTING TIME ###

@@ -22,7 +22,7 @@ from lxml import etree
 
 # Input
 ocarina_ros_path    = "../ocarina-ros/"
-xml_filename        = "container2.tlk_lis_ever_xml.xml"
+xml_filename        = "container.tlk_lis_ever_xml.xml"
 json_filename       = "tag_ever_xml.json"
 
 # Output
@@ -164,6 +164,8 @@ while len(systems) > 0:
     s = systems.pop(0)
 
     generateCodeForSystem(s)
+
+    # @TODO: una volta generato un system controllo le connessioni
 
     # Mi cerco eventuali system dentro ad altri system. Questo serve nel caso in cui un
     # system sia usato come subcomponents di un altro system. La cosa è ricorsiva, poiché

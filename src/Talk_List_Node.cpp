@@ -1,22 +1,23 @@
 /**
- * Node Listener_Node
- * File auto-generated on 01/10/2017 13:45:56
+ * Node Talk_List_Node
+ * File auto-generated on 01/10/2017 13:45:57
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
-#define NODE_NAME "Listener_Node"
-class Listener_Node : public ros_base::ROSNode {
+#define NODE_NAME "Talk_List_Node"
+class Talk_List_Node : public ros_base::ROSNode {
 private:
 	bool prepare();
 	void tearDown();
 	void errorHandling();
-	void subscriber_callback(const std_msgs::String::ConstPtr& msg);
+	void call_pub_callback(const std_msgs::String::ConstPtr& msg);
 	struct params {
 		std::string node_name;
 	} params;
-	ros::Subscriber sub_subscriber;
+	ros::Subscriber sub_call_pub;
+	ros::Publisher pub_call_pub;
 public:
-	 Listener_Node();
+	 Talk_List_Node();
 };
 
 /**
@@ -34,7 +35,7 @@ int main(int argc, char** argv) {
 	while(!ros::master::check())
 		usleep(1000);
 	signal(SIGINT, nodeSigintHandler);
-	Listener_Node node;
+	Talk_List_Node node;
 	node.start();
 	return 0;
 }
@@ -42,17 +43,18 @@ int main(int argc, char** argv) {
 /**
  * Method prepare auto-generated
  */
-bool Listener_Node::prepare() {
+bool Talk_List_Node::prepare() {
 	params.node_name = NODE_NAME;
 	handle.getParam("node_name", params.node_name);
-	sub_subscriber = handle.subscribe("/chatter_pubsub", 1, &Listener_Node::subscriber_callback, this);
+	sub_call_pub = handle.subscribe("/chatter", 1, &Talk_List_Node::call_pub_callback, this);
+	pub_call_pub = handle.advertise < std_msgs::String > ("/chatter_pubsub", 10);
 	return true;
 }
 
 /**
  * Method tearDown auto-generated
  */
-void Listener_Node::tearDown() {
+void Talk_List_Node::tearDown() {
 	ROS_INFO("Node is shutting down");
 	return;
 }
@@ -60,25 +62,26 @@ void Listener_Node::tearDown() {
 /**
  * Method errorHandling auto-generated
  */
-void Listener_Node::errorHandling() {
+void Talk_List_Node::errorHandling() {
 	ROSNode::errorHandling();
 }
 
 /**
- * Method subscriber_callback auto-generated
+ * Method call_pub_callback auto-generated
  */
-void Listener_Node::subscriber_callback(const std_msgs::String::ConstPtr& msg) {
+void Talk_List_Node::call_pub_callback(const std_msgs::String::ConstPtr& msg) {
 	ROS_INFO("%s", msg->data.c_str());
 	/**
-	 * Source text: listener.cpp
+	 * Source text: talk_list.cpp
 	 */
 	
+	pub_call_pub.publish(msg);
 }
 
 /**
- * Method Listener_Node auto-generated
+ * Method Talk_List_Node auto-generated
  */
- Listener_Node::Listener_Node() {
+ Talk_List_Node::Talk_List_Node() {
 	setName(NODE_NAME);
 }
 

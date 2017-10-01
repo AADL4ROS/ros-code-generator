@@ -1,6 +1,6 @@
 /**
  * Node Talker_Node
- * File auto-generated on 25/09/2017 17:47:04
+ * File auto-generated on 01/10/2017 13:45:56
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
@@ -83,7 +83,7 @@ void Talker_Node::publisher_callback(const ros::TimerEvent& ) {
 	msg.data = ss.str().c_str();
 	pub_publisher.publish(msg);
 	/**
-	 * Source text: talker_sys.cpp
+	 * Source text: talker.cpp
 	 */
 	
 }
