@@ -95,8 +95,7 @@ class Subscriber(AADLThread):
         ### TOPIC ###
         #############
 
-        process_port_name = tfs.getName(self.process_port)
-        (status, desc) = self.getTopicName(process_port_name, input=True)
+        (status, desc) = self.getDefaultTopicName(self.input_port_name, input=True)
         if status == False:
             return (status, desc)
 

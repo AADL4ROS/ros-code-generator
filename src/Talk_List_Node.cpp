@@ -1,6 +1,6 @@
 /**
  * Node Talk_List_Node
- * File auto-generated on 01/10/2017 13:45:57
+ * File auto-generated on 04/10/2017 14:29:19
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
@@ -46,8 +46,8 @@ int main(int argc, char** argv) {
 bool Talk_List_Node::prepare() {
 	params.node_name = NODE_NAME;
 	handle.getParam("node_name", params.node_name);
-	sub_call_pub = handle.subscribe("/chatter", 1, &Talk_List_Node::call_pub_callback, this);
-	pub_call_pub = handle.advertise < std_msgs::String > ("/chatter_pubsub", 10);
+	sub_call_pub = handle.subscribe("/in_topic", 1, &Talk_List_Node::call_pub_callback, this);
+	pub_call_pub = handle.advertise < std_msgs::String > ("/out_topic", 10);
 	return true;
 }
 

@@ -90,8 +90,7 @@ class SubscriberPublisher(AADLThread):
         ### SUBSCRIBER TOPIC ###
         ########################
 
-        process_port_name = tfs.getName( self.sub_process_port )
-        (status, desc) = self.getTopicName(process_port_name, input=True)
+        (status, desc) = self.getDefaultTopicName(self.input_port_name, input=True)
         if status == False:
             return (status, desc)
 
@@ -183,8 +182,7 @@ class SubscriberPublisher(AADLThread):
         ### TOPIC ###
         #############
 
-        process_port_name = tfs.getName(self.pub_process_port)
-        (status, desc) = self.getTopicName( process_port_name, output=True )
+        (status, desc) = self.getDefaultTopicName( self.output_port_name, output=True )
         if status == False:
             return (status, desc)
 

@@ -125,6 +125,51 @@ def getDestFromPortInfo(port_info):
     except:
         return (None, None)
 
+def getPortInfoByDestPortInfo(start, dest_name, dest):
+    try:
+        port_info = start.find("./" + XMLTags.tags['TAG_CONNECTION_PORT_INFO'] + "/" +
+                           "[" + XMLTags.tags[
+                               'TAG_CONNECTION_PORT_INFO_PARENT_DEST_NAME'] + "='" + dest_name + "']" +
+                           "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_DEST'] + "='" + dest + "']")
+        return port_info
+    except:
+        return None
+
+def getPortInfoBySourcePortInfo(start, source_name, source):
+    try:
+        port_info = start.find("./" + XMLTags.tags['TAG_CONNECTION_PORT_INFO'] + "/" +
+                           "[" + XMLTags.tags[
+                               'TAG_CONNECTION_PORT_INFO_PARENT_SOURCE_NAME'] + "='" + source_name + "']" +
+                           "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_SOURCE'] + "='" + source + "']")
+        return port_info
+    except:
+        return None
+
+def getAllConnectionsPerPort(start, process_name, port_name, input = False, output = False):
+    try:
+        # Cerco tutte le connessioni
+        system_connections = start.findall("./" + XMLTags.tags['TAG_CONNECTIONS'] + "/" +
+                                                XMLTags.tags['TAG_CONNECTION'])
+
+        # Per ogni connessione controllo se ha come porta di input oppure di output
+        # quella relativa alla connessione che cerco
+        conn = []
+        for c in system_connections:
+            port_info   = None
+
+            if input:
+                port_info = getPortInfoByDestPortInfo(c, process_name, port_name)
+            elif output:
+                port_info = getPortInfoBySourcePortInfo(c, process_name, port_name)
+
+            if port_info is not None:
+                conn.append(c)
+
+        return conn
+    except:
+        return None
+
+
 """
     NAMESPACE
 """
@@ -188,45 +233,31 @@ def getPeriod(start):
 #############
 ### TOPIC ###
 #############
-TOPIC_PROPERTIES_NAMESPACE = "topic_properties"
-
-def getAllConnectionsPerPort(start, process_name, port_name, input = False, output = False):
-    try:
-        # Cerco tutte le connessioni
-        system_connections = start.findall("./" + XMLTags.tags['TAG_CONNECTIONS'] + "/" +
-                                                XMLTags.tags['TAG_CONNECTION'])
-
-        # Per ogni connessione controllo se ha come porta di input oppure di output
-        # quella relativa alla connessione che cerco
-        conn = []
-        for c in system_connections:
-            port_info   = None
-
-            if input:
-                port_info = c.find("./" + XMLTags.tags['TAG_CONNECTION_PORT_INFO'] + "/" +
-                                   "[" + XMLTags.tags[
-                                        'TAG_CONNECTION_PORT_INFO_PARENT_DEST_NAME'] + "='" + process_name + "']" +
-                                    "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_DEST'] + "='" + port_name + "']")
-            elif output:
-                port_info = c.find("./" + XMLTags.tags['TAG_CONNECTION_PORT_INFO'] + "/" +
-                                   "[" + XMLTags.tags[
-                                       'TAG_CONNECTION_PORT_INFO_PARENT_SOURCE_NAME'] + "='" + process_name + "']" +
-                                   "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_SOURCE'] + "='" + port_name + "']")
-
-            if port_info is not None:
-                conn.append(c)
-
-        return conn
-    except:
-        return None
+TOPIC_PROPERTIES_NAMESPACE  = "topic_properties"
+TOPIC_NAME                  = "Name"
+TOPIC_DEFAULT_NAME          = "Default_Name"
 
 # getTopicName
-# start: è un oggetto XML di tipo connessione
 def getTopicName(start):
     try:
         topic_property = start.find("./" + XMLTags.tags['TAG_PROPERTIES'] + "/" +
                                     XMLTags.tags['TAG_PROPERTY'] + "/" +
-                                    "[" + XMLTags.tags['TAG_PROPERTY_NAME'] + "='Name']" +
+                                    "[" + XMLTags.tags['TAG_PROPERTY_NAME'] + "='" + TOPIC_NAME + "']" +
+                                    "[" + XMLTags.tags['TAG_PROPERTY_NAMESPACE'] + "='" +
+                                    TOPIC_PROPERTIES_NAMESPACE + "']")
+
+        topic = topic_property.find(XMLTags.tags['TAG_PROPERTY_VALUE']).text
+        return (TOPIC_PROPERTIES_NAMESPACE, topic)
+    except AttributeError:
+        return (None, None)
+
+# getTopicName
+# start: è un oggetto XML di tipo connessione
+def getDefaultTopicName(start):
+    try:
+        topic_property = start.find("./" + XMLTags.tags['TAG_PROPERTIES'] + "/" +
+                                    XMLTags.tags['TAG_PROPERTY'] + "/" +
+                                    "[" + XMLTags.tags['TAG_PROPERTY_NAME'] + "='" + TOPIC_DEFAULT_NAME + "']" +
                                     "[" + XMLTags.tags['TAG_PROPERTY_NAMESPACE'] + "='" +
                                     TOPIC_PROPERTIES_NAMESPACE + "']")
 

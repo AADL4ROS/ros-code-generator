@@ -46,21 +46,42 @@ class AADLThread():
         # Nome del thread
         self.name       = tfs.getName( self.thread )
 
-    # getTopicName
-    # A partire dal processo attuale, cerca il nome del topic associato alla connessione
-    # Ha bisogno del nome della porta specificato fra le features del processo ed il nome
-    # del processo. I parametri input, output definiscono se la porta da cercare è una porta
+    # getDefaultTopicName
+    # A partire dal thread attuale, cerca il nome di default del topic associato alla connessione
+    # Ha bisogno del nome della porta specificato per quel particolare thread (è un nome statico
+    # deciso a priori). I parametri input, output definiscono se la porta da cercare è una porta
     # di input (nel caso di un Subscriber), oppure di output (nel caso di un Publisher)
-    def getTopicName(self, process_port_name, input=False, output=False):
-        process_name = tfs.getName(self.process)
+    def getDefaultTopicName(self, thread_port_name, input=False, output=False):
+        if not input and not output:
+            return (False, "No direction specified")
 
-        connections = tfs.getAllConnectionsPerPort(self.system_root, process_name, process_port_name,
+        thread_name = tfs.getName(self.thread)
+
+        # Ottengo tutte le connesioni di un processo che mappano la porta specificata in process_port_name
+        # del thread associato a questo processo con una porta qualunque del thread.
+        connections = tfs.getAllConnectionsPerPort(self.process, thread_name, thread_port_name,
                                                     input=input,
                                                     output=output)
 
         names = []
+
+        # Per ognuna delle connesioni trovate sopra bisogna cercare la porta verso cui (o da cui) è presente
+        # la connessione e poi cercare la proprietà del topic name su di essa
         for c in connections:
-            (topic_namespace, topic_name) = tfs.getTopicName(c)
+
+            process_port_name = None
+            # Ottengo il nome della porta
+            if input:
+                port_info = tfs.getPortInfoByDestPortInfo(c, thread_name, thread_port_name)
+                (process_name, process_port_name) = tfs.getSourceFromPortInfo(port_info)
+            elif output:
+                port_info = tfs.getPortInfoBySourcePortInfo(c, thread_name, thread_port_name)
+                (process_name, process_port_name) = tfs.getDestFromPortInfo(port_info)
+
+            # La porta è una feature, quindi si usa getFeatureByName
+            process_port = tfs.getFeatureByName(self.process, process_port_name)
+
+            (topic_namespace, topic_name) = tfs.getDefaultTopicName(process_port)
 
             if topic_namespace == None or topic_name == None:
                 return (False, "Unable to get topic name")
