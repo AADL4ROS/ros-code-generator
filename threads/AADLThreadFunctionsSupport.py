@@ -251,8 +251,7 @@ def getTopicName(start):
     except AttributeError:
         return (None, None)
 
-# getTopicName
-# start: è un oggetto XML di tipo connessione
+# getDefaultTopicName
 def getDefaultTopicName(start):
     try:
         topic_property = start.find("./" + XMLTags.tags['TAG_PROPERTIES'] + "/" +
