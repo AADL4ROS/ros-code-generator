@@ -45,6 +45,10 @@ class Type(CObject):
         else:
             return "{}{}::{}{}".format(const_str, self.namespace, self.type_name, self.afterTypeName)
 
+class Object(Type):
+    def __init__(self, _associated_class, name):
+        super().__init__( _associated_class )
+        self.setTypeName( name )
 
 class Nothing(Type):
     def __init__(self, _associated_class):

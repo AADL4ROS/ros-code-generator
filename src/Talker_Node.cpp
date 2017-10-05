@@ -1,6 +1,6 @@
 /**
  * Node Talker_Node
- * File auto-generated on 04/10/2017 14:29:18
+ * File auto-generated on 05/10/2017 23:07:11
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
@@ -12,7 +12,6 @@ private:
 	void errorHandling();
 	void publisher_callback(const ros::TimerEvent& );
 	struct params {
-		std::string node_name;
 		int frequency_publisher;
 	} params;
 	struct vars {
@@ -48,9 +47,7 @@ int main(int argc, char** argv) {
  * Method prepare auto-generated
  */
 bool Talker_Node::prepare() {
-	params.node_name = NODE_NAME;
 	params.frequency_publisher = 100.0;
-	handle.getParam("node_name", params.node_name);
 	handle.getParam("frequency_publisher", params.frequency_publisher);
 	pub_publisher = handle.advertise < std_msgs::String > ("/out_topic", 10);
 	timer_publisher = handle.createTimer(ros::Duration(1/params.frequency_publisher), &Talker_Node::publisher_callback, this);

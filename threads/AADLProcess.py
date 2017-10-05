@@ -23,9 +23,6 @@ class AADLProcess():
         # Contiene la lista dei threads che compongono ogni processo
         self.threads        = []
 
-        # Se già esiste il file nella cartella di output con lo stesso nome, aggiungo un
-        # indice incrementale in modo che non venga sovrascritto
-
     #######################
     ### GET MAIN THREAD ###
     #######################
@@ -82,7 +79,7 @@ class AADLProcess():
         except ValueError:
             return False
 
-    def removenternalVariable(self, _var):
+    def removeInternalVariable(self, _var):
         try:
             self.class_internal_vars.remove(_var)
             return True

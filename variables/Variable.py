@@ -20,6 +20,9 @@ class Variable(CObject):
     def setDefaultValue(self, _default_value):
         self.default_value = _default_value
 
+    def hasDefaultValue(self):
+        return (self.default_value != None)
+
     def generateCode(self):
         default = ""
         if self.default_value != None:

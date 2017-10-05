@@ -1,6 +1,6 @@
 /**
  * Node Listener_Node
- * File auto-generated on 04/10/2017 14:29:19
+ * File auto-generated on 05/10/2017 23:07:12
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
@@ -11,9 +11,6 @@ private:
 	void tearDown();
 	void errorHandling();
 	void subscriber_callback(const std_msgs::String::ConstPtr& msg);
-	struct params {
-		std::string node_name;
-	} params;
 	ros::Subscriber sub_subscriber;
 public:
 	 Listener_Node();
@@ -43,8 +40,6 @@ int main(int argc, char** argv) {
  * Method prepare auto-generated
  */
 bool Listener_Node::prepare() {
-	params.node_name = NODE_NAME;
-	handle.getParam("node_name", params.node_name);
 	sub_subscriber = handle.subscribe("/in_topic", 1, &Listener_Node::subscriber_callback, this);
 	return true;
 }
