@@ -12,7 +12,8 @@ def getROSDatatypeFromASN1(_asn1_source, _associated_class, _custom_types = {}):
         "REAL"              : "Double",
         "INTEGER"           : "Int",
         "BOOLEAN"           : "Bool",
-        "STRING"            : "String"
+        "STRING"            : "String",
+        "UTF8STRING"        : "String"
     }
 
     # Se è un tipo custom definito dall'utente (un oggetto), allora

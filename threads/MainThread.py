@@ -16,11 +16,13 @@ from methods.NodeSigintHandler import NodeSigintHandler
 from methods.Main           import Main
 from constants.Constant     import Constant
 from variables.Std_String   import Std_String
-
 import asn1tools
 import os
 from datatypes.DatatypeFromASN1 import getROSDatatypeFromASN1
 from variables.Variable import Variable
+
+from datatypes.Type import String, StdMsgString
+import re
 
 ###################
 ### MAIN THREAD ###
@@ -83,6 +85,8 @@ class MainThread(AADLThread):
         ocarina_ros_path = "../ocarina-ros/"
         parsed_asn = asn1tools.parse_file(os.path.join(ocarina_ros_path, asn_file))
 
+        print(parsed_asn)
+
         # Estraggo tutti i tipi che NON sono Params o Vars
         custom_types = []
         for t in parsed_asn[self.STATE_ASN_DEFINITION]['types']:
@@ -92,6 +96,9 @@ class MainThread(AADLThread):
 
         params_asn  = parsed_asn[self.STATE_ASN_DEFINITION]['types'][self.STATE_ASN_PARAMS]['members']
         vars_asn    = parsed_asn[self.STATE_ASN_DEFINITION]['types'][self.STATE_ASN_VARS]['members']
+
+        # RegEx per controllare se una stringa inizia e finisce con le virgolette
+        string_apex_regex = re.compile("\"(.+)\"")
 
         for index, p_v in enumerate(params_asn + vars_asn):
             var_type    = p_v['type']
@@ -106,6 +113,17 @@ class MainThread(AADLThread):
             tmp_param = Variable(self)
             tmp_param.setType(getROSDatatypeFromASN1(var_type, self, _custom_types=custom_types))
             tmp_param.setName(var_name)
+
+            # Aggiungo le virgolette alle stringhe nel caso non le abbiano
+            if isinstance(tmp_param.type, String) or \
+                    isinstance(tmp_param.type, StdMsgString):
+                try:
+                    res = string_apex_regex.match(default_val)
+                    if res == None:
+                        default_val = "\"{}\"".format(default_val)
+                except:
+                    pass
+
             tmp_param.setDefaultValue(default_val)
 
             if index < len(params_asn):

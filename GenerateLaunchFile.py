@@ -20,7 +20,7 @@ from lxml import etree
 
 # Input
 ocarina_ros_path    = "../ocarina-ros/"
-xml_filename        = "container.tlk_lis_ever_xml.xml"
+xml_filename        = "container2.tlk_lis_ever_xml.xml"
 json_filename       = "tag_ever_xml.json"
 
 # Output
@@ -62,7 +62,7 @@ def getSubcomponentByName(system_root, process_name):
         sub_category = subcomponent.find(XMLTags.tags['TAG_CATEGORY']).text
         return (sub_category, subcomponent)
     except Exception:
-        return None
+        return (None, None)
 
 def getInvolvedProcessNamePerConnection(system_root, c):
     try:
@@ -108,6 +108,10 @@ def generateLaunchFileForSystem(system_root):
         for p in process_name_list:
             (sub_category, subcomponent) = getSubcomponentByName(system_root, p['name'] )
 
+            # Se non trovo nulla salto
+            if sub_category == None or subcomponent == None:
+                continue
+
             if sub_category.lower() == "process":
                 n = Node(subcomponent)
                 status = True
@@ -132,7 +136,7 @@ def generateLaunchFileForSystem(system_root):
                     logger.error("Node {} encountered an error and it was not added to the launch file"
                                  .format(p['name']))
 
-    saveLaunchFile(launchFile)
+    return launchFile
 
 
 ###################
@@ -148,20 +152,48 @@ system_root = tree.getroot()
 # Siccome itererò su tutti i vari system disponbili, inzio ad aggiungere
 # la mia system root, dopo mano a mano aggiungerò anche tutti gli altri system su
 # cui fare code-generation
-systems = [system_root]
+systems = [{
+    'system' : system_root,
+    'parent' : None
+}]
+
+# Mi salvo tutto l'albero dei launch file in modo da poterli includere
+# uno dentro l'altro
+launch_files = []
 
 while len(systems) > 0:
-    s = systems.pop(0)
+    system_struct = systems.pop(0)
 
-    generateLaunchFileForSystem(s)
+    s       = system_struct['system']
+    parent  = system_struct['parent']
+
+    launch_file = generateLaunchFileForSystem(s)
+
+    launch_files.append(launch_file)
+
+    # Se ho un genitore, ovvero un system che mi ha incluso,
+    # lo avviso che dovrà includermi
+    if parent != None:
+        parent.addSubSystem( launch_files[-1] )
+        pass
 
     # Mi cerco eventuali system dentro ad altri system. Questo serve nel caso in cui un
     # system sia usato come subcomponents di un altro system. La cosa è ricorsiva, poiché
     # di volta in volta la system_root diventa il system considerato.
     # La prima visita si fa comunque alla system root, dopo si passa a visitare ricorsivamente
     # tutti i vari system
-    systems.extend( s.findall("./" +
+    sub_systems = s.findall("./" +
                           XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
                           XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
                             XMLTags.tags['TAG_SYSTEM'] + "/" +
-                          "[" + XMLTags.tags['TAG_CATEGORY'] + "='system']") )
+                          "[" + XMLTags.tags['TAG_CATEGORY'] + "='system']")
+
+    for sub_sys in sub_systems:
+        systems.append( {
+            'system' : sub_sys,
+            'parent' : launch_files[-1]
+        } )
+
+# Una volta temrminata l'esplorazione di tutti i system, vado a generare i launch file
+for f in launch_files:
+    saveLaunchFile(f)

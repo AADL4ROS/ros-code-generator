@@ -1,6 +1,6 @@
 /**
  * Node Talker_Node_B
- * File auto-generated on 05/10/2017 23:07:11
+ * File auto-generated on 06/10/2017 17:09:35
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"

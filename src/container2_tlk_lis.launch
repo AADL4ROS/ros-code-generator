@@ -1,0 +1,7 @@
+<launch>
+	<include file="$(find example_node_system_of_system)/launch/dentro_il_container_impl.launch" />
+	<node name="talker_node" type="talker_ext.impl" pkg="example_node_system_of_system">
+		<remap from="/out_topic" to="/chatter_pubsub" />
+	</node>
+	
+</launch>

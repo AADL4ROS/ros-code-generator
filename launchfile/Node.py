@@ -14,14 +14,14 @@ class Node():
         self.namespace  = process.find(XMLTags.tags['TAG_NAMESPACE']).text
 
         self.remap = []
-        self.topic_ports = []
+        self.topic_ports = {}
 
     def addRemap(self, remap):
         self.remap.append(remap)
 
-    def hasPortForTopic(self, port):
+    def hasPortForTopic(self, port_name):
         for n in self.topic_ports:
-            if port.find(XMLTags.tags['TAG_NAME']).text == n.find(XMLTags.tags['TAG_NAME']).text:
+            if port_name == n:
                 return True
         return False
 
@@ -34,20 +34,28 @@ class Node():
         except Exception:
             return False
 
-        # Se ho già controllato quella porta vado oltre
-        if self.hasPortForTopic(port):
-            return True
-
-        self.topic_ports.append(port)
-
         (topic_properties_namespace, default_topic_name) = self.getDefaultTopicName(port)
         (topic_properties_namespace, new_topic_name)     = self.getTopicName(connection)
 
         if default_topic_name is None or \
             new_topic_name is None:
-            return False
+            log.warning("No topic remap for port {} of process {}"
+                        .format(port_name, self.name))
+            return True
+
+        # Se ho già controllato quella porta vado oltre
+        if self.hasPortForTopic(port_name):
+            if self.topic_ports[port_name] == new_topic_name:
+                return True
+            else:
+                log.error("Multiple topics defined for port {} of process {}"
+                            .format(port_name, self.name))
+                return False
 
         r = Remap(default_topic_name, new_topic_name)
+
+        self.topic_ports[port_name] = new_topic_name
+
         self.addRemap(r)
 
         return True

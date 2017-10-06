@@ -1,6 +1,6 @@
 /**
  * Node Talk_List_Node
- * File auto-generated on 05/10/2017 23:07:12
+ * File auto-generated on 06/10/2017 17:09:36
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
@@ -12,13 +12,12 @@ private:
 	void errorHandling();
 	void call_pub_callback(const std_msgs::String::ConstPtr& msg);
 	struct params {
-		std::string stringName = "ciao";
-		std::string nodeName = NODE_NAME;
-		double testReal = 0;
+		std::string stringName = "Ciao 'Hello World' bello";
+		double testReal = 0.1;
 		bool testNoDefault;
 	} params;
 	struct vars {
-		double publisherFrequency = 0;
+		int publisherFrequency = 0;
 		MyObject myObject;
 	} vars;
 	ros::Subscriber sub_call_pub;
@@ -51,9 +50,8 @@ int main(int argc, char** argv) {
  * Method prepare auto-generated
  */
 bool Talk_List_Node::prepare() {
-	handle.param<std::string>("stringName", params.stringName, "ciao");
-	handle.param<std::string>("nodeName", params.nodeName, NODE_NAME);
-	handle.param<double>("testReal", params.testReal, 0);
+	handle.param<std::string>("stringName", params.stringName, "Ciao 'Hello World' bello");
+	handle.param<double>("testReal", params.testReal, 0.1);
 	handle.getParam("testNoDefault", params.testNoDefault);
 	sub_call_pub = handle.subscribe("/in_topic", 1, &Talk_List_Node::call_pub_callback, this);
 	pub_call_pub = handle.advertise < std_msgs::String > ("/out_topic", 10);
