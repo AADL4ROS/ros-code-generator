@@ -1,0 +1,57 @@
+import os
+import shutil
+import threads.AADLThreadFunctionsSupport as tfs
+
+# Output
+dir             = os.path.dirname(__file__)
+output_folder   = os.path.join(dir, "src")
+
+src_folder_name     = 'src'
+launch_folder_name  = 'launch'
+
+def createFolderTreeForSystem(system_root, delete = True):
+    system_name = tfs.getNamespace(system_root)
+
+    # Sanitize del nome della cartella del system
+    #system_name = system_name.replace(".", "_")
+    system_name = system_name.replace("/", "_")
+
+    system_folder = os.path.join(output_folder, system_name)
+
+    if delete:
+        # Se la cartella già esiste, la rimuovo
+        if os.path.exists(system_folder):
+            shutil.rmtree(system_folder)
+
+    # Creo la cartella base del system
+    if not os.path.exists(system_folder):
+        os.makedirs(system_folder)
+
+    # Creo le altre cartelle
+    other_folders = [src_folder_name, launch_folder_name]
+    for f in other_folders:
+        path = os.path.join(system_folder, f)
+        if not os.path.exists(path):
+            os.makedirs( path )
+
+    return system_folder
+
+def cleanLaunchFolderForSystemFolder(system_folder):
+    output_folder = getLaunchFolderForSystemFolder(system_folder)
+    for the_file in os.listdir(output_folder):
+        file_path = os.path.join(output_folder, the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(e)
+
+def getSrcFolderForSystemFolder(system_folder):
+    return os.path.join(system_folder, src_folder_name)
+
+def getLaunchFolderForSystemFolder(system_folder):
+    return os.path.join(system_folder, launch_folder_name)
+
+# Usato dal CMake per avere src/nome_file.cpp
+def getOnlySrcPathForNode(node_filename):
+    return os.path.join(src_folder_name, node_filename)

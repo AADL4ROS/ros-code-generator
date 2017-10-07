@@ -6,7 +6,7 @@ class LaunchFile():
     def __init__(self, system):
         self.system = system
         self.system_name = self.system.find(XMLTags.tags['TAG_TYPE']).text
-        self.system_name = self.system_name.replace(".", "_")
+        #self.system_name = self.system_name.replace(".", "_")
 
         self.nodes = []
 

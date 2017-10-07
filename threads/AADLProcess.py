@@ -7,11 +7,18 @@ class AADLProcess():
     def __init__(self, process):
         self.process = process
 
+        # Riferimento al file CMakeList che verrà generato alla fine
+        # della gestione del system
+        self.cmake_list     = None
+        self.package_xml    = None
+
+
         ##############################
         ### PARAMETRI DELLA CLASSE ###
         ##############################
         self.class_name             = tfs.getName( self.process ).title()
         self.node_name              = tfs.getName( self.process ).title()
+        self.type                   = tfs.getType(self.process)
         self.class_libraries        = []
         self.class_params           = []
         self.class_vars             = []
@@ -22,6 +29,18 @@ class AADLProcess():
 
         # Contiene la lista dei threads che compongono ogni processo
         self.threads        = []
+
+    ######################
+    ### SET CMAKE LIST ###
+    ######################
+    def setCMakeList(self, cmake_list):
+        self.cmake_list = cmake_list
+
+    #######################
+    ### SET PACKAGE XML ###
+    #######################
+    def setPackageXML(self, package_xml):
+        self.package_xml = package_xml
 
     #######################
     ### GET MAIN THREAD ###
@@ -42,10 +61,15 @@ class AADLProcess():
                 return False
 
         self.class_libraries.append( _lib )
+        self.cmake_list.addPackage( _lib )
+        self.package_xml.addDependency( _lib )
+        return True
 
     def removeLibrary(self, _lib):
         try:
             self.class_libraries.remove( _lib )
+            self.cmake_list.removePackage(_lib)
+            self.package_xml.removeDependency( _lib )
             return True
         except ValueError:
             return False
@@ -222,4 +246,3 @@ class AADLProcess():
 
         #print( code )
         return code
-

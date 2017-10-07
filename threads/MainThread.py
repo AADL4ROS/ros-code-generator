@@ -16,7 +16,8 @@ from methods.NodeSigintHandler import NodeSigintHandler
 from methods.Main           import Main
 from constants.Constant     import Constant
 from variables.Std_String   import Std_String
-import asn1tools
+from asn1tools.parser import parse_file
+
 import os
 from datatypes.DatatypeFromASN1 import getROSDatatypeFromASN1
 from variables.Variable import Variable
@@ -83,9 +84,7 @@ class MainThread(AADLThread):
 
         # @TODO: il percorso del file AADL è lo stesso del file XML
         ocarina_ros_path = "../ocarina-ros/"
-        parsed_asn = asn1tools.parse_file(os.path.join(ocarina_ros_path, asn_file))
-
-        print(parsed_asn)
+        parsed_asn = parse_file(os.path.join(ocarina_ros_path, asn_file))
 
         # Estraggo tutti i tipi che NON sono Params o Vars
         custom_types = []

@@ -8,6 +8,7 @@ from launchfile.Node import Node
 from launchfile.Remap import Remap
 
 import threads.AADLThreadFunctionsSupport as tfs
+import FolderTreeFunctions as folderTree
 
 import datetime
 import XMLTags
@@ -20,18 +21,17 @@ from lxml import etree
 
 # Input
 ocarina_ros_path    = "../ocarina-ros/"
-xml_filename        = "container2.tlk_lis_ever_xml.xml"
+xml_filename        = "container.tlk_lis_ever_xml.xml"
 json_filename       = "tag_ever_xml.json"
-
-# Output
-dir             = os.path.dirname(__file__)
-output_folder   = os.path.join(dir, "src")
 
 #############
 ### SETUP ###
 #############
 
 def saveLaunchFile(launch_file):
+    system_folder = folderTree.createFolderTreeForSystem(launch_file.system, delete=False)
+    output_folder = folderTree.getLaunchFolderForSystemFolder(system_folder)
+
     filename = "{}.launch".format(launch_file.system_name)
     source_output_path = os.path.join(output_folder, filename)
 
