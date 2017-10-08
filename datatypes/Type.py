@@ -81,13 +81,6 @@ class String(Type):
         self.setNamespace( "std" )
         self.setTypeName( "string" )
 
-class StdMsgString(Type):
-    def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setNamespace( "std_msgs" )
-        self.setTypeName( "String" )
-        self.setLibrary( lib.StdMsgs_String() )
-
 class Char(Type):
     def __init__(self, _associated_class):
         super().__init__( _associated_class )

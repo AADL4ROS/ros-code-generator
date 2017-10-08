@@ -10,8 +10,8 @@ project(example_node)
 ################
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
-	ros_base
 	std_msgs
+	ros_base
 )
 
 #############
@@ -24,7 +24,6 @@ include_directories(
 add_executable(talker.impl src/Talker_Node.cpp)
 add_executable(listener.impl src/Listener_Node.cpp)
 add_executable(talk_list.impl src/Talk_List_Node.cpp)
-
 target_link_libraries(talker.impl
 	${catkin_LIBRARIES}
 	${ros_base_LIBRARIES}

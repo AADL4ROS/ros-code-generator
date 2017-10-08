@@ -10,7 +10,7 @@ from lxml import etree
 
 import threads.AADLThreadFunctionsSupport as tfs
 
-import datatypes.DatatypeFromASN1 as dt
+import datatypes.DatatypeConversion as dt
 
 from datatypes.Type import Int, Double, Void, ROS_Subscriber, ROS_Publisher
 
@@ -69,20 +69,31 @@ class SubscriberPublisher(AADLThread):
         #############
         ### ASN.1 ###
         #############
-        self.sub_asn1_source_file = tfs.getSourceText(self.sub_process_port)
+        #self.sub_asn1_source_file = tfs.getSourceText(self.sub_process_port)
 
-        if self.sub_asn1_source_file == None:
+        #if self.sub_asn1_source_file == None:
             # return (False, "Unable to find the ASN.1 file specification.")
-            log.warning("Unable to find the Subscriber ASN.1 file specification.")
+        #    log.warning("Unable to find the Subscriber ASN.1 file specification.")
 
-        log.info("ASN.1 subscriber file: {}".format(self.sub_asn1_source_file))
+        #log.info("ASN.1 subscriber file: {}".format(self.sub_asn1_source_file))
 
         ##################
         ### INPUT TYPE ###
         ##################
 
-        # @TODO: leggere il file ASN.1 ed utilizzarlo per la porta in modo da definire il tipo di input
-        self.input_type = dt.getROSDatatypeFromASN1(self.sub_asn1_source_file, self.associated_class)
+        (aadl_namespace, aadl_type) = tfs.getPortDatatypeByPort(self.sub_process_port)
+        if aadl_namespace == None or aadl_type == None:
+            return (False, "Unable to identify process port type")
+
+        raw_output_type = dt.getROSDatatypeFromAADL(aadl_namespace, aadl_type, self.associated_class)
+
+        if raw_output_type == None:
+            return (False, "Datatype {} NOT supported".format(raw_output_type))
+        else:
+            self.input_type = raw_output_type
+
+        #self.input_type = dt.getROSDatatypeFromASN1(self.sub_asn1_source_file, self.associated_class)
+
         self.input_type.setConst(_const=True)
         self.input_type.setAfterTypeName("::ConstPtr&")
 
@@ -164,19 +175,30 @@ class SubscriberPublisher(AADLThread):
         #############
         ### ASN.1 ###
         #############
-        self.pub_asn1_source_file = tfs.getSourceText(self.pub_process_port)
+        #self.pub_asn1_source_file = tfs.getSourceText(self.pub_process_port)
 
-        if self.pub_asn1_source_file == None:
+        #if self.pub_asn1_source_file == None:
             # return (False, "Unable to find the ASN.1 file specification.")
-            log.warning("Unable to find the ASN.1 file specification.")
+        #    log.warning("Unable to find the ASN.1 file specification.")
 
         # @TODO: leggere il file ASN.1 ed utilizzarlo per la porta
-        log.info("ASN.1 file: {}".format(self.pub_asn1_source_file))
+        #log.info("ASN.1 file: {}".format(self.pub_asn1_source_file))
 
         ###################
         ### OUTPUT TYPE ###
         ###################
-        self.output_type = dt.getROSDatatypeFromASN1(self.pub_asn1_source_file, self.associated_class)
+        #self.output_type = dt.getROSDatatypeFromASN1(self.pub_asn1_source_file, self.associated_class)
+
+        (aadl_namespace, aadl_type) = tfs.getPortDatatypeByPort(self.pub_process_port)
+        if aadl_namespace == None or aadl_type == None:
+            return (False, "Unable to identify process port type")
+
+        raw_output_type = dt.getROSDatatypeFromAADL(aadl_namespace, aadl_type, self.associated_class)
+
+        if raw_output_type == None:
+            return (False, "Datatype {} NOT supported".format(raw_output_type))
+        else:
+            self.output_type = raw_output_type
 
         #############
         ### TOPIC ###

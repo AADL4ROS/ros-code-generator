@@ -23,11 +23,6 @@ class Library(CObject):
     def generateCode(self):
         return "#include \"{}\"\n".format( self.path )
 
-class StdMsgs_String(Library):
-    def __init__(self, _associated_class = None):
-        super().__init__(_associated_class)
-        self.path = "std_msgs/String.h"
-
 class ROSBase_ROSNode(Library):
     def __init__(self, _associated_class = None):
         super().__init__(_associated_class)

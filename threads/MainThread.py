@@ -15,14 +15,14 @@ from methods.ErrorHandling  import ErrorHandling
 from methods.NodeSigintHandler import NodeSigintHandler
 from methods.Main           import Main
 from constants.Constant     import Constant
-from variables.Std_String   import Std_String
 from asn1tools.parser import parse_file
 
 import os
-from datatypes.DatatypeFromASN1 import getROSDatatypeFromASN1
+from datatypes.DatatypeConversion import getROSDatatypeFromASN1
 from variables.Variable import Variable
 
-from datatypes.Type import String, StdMsgString
+from datatypes.Type import String as StdString
+from datatypes.Std_Msgs import String as StdMsgsString
 import re
 
 ###################
@@ -114,8 +114,8 @@ class MainThread(AADLThread):
             tmp_param.setName(var_name)
 
             # Aggiungo le virgolette alle stringhe nel caso non le abbiano
-            if isinstance(tmp_param.type, String) or \
-                    isinstance(tmp_param.type, StdMsgString):
+            if isinstance(tmp_param.type, StdString) or \
+                    isinstance(tmp_param.type, StdMsgsString):
                 try:
                     res = string_apex_regex.match(default_val)
                     if res == None:

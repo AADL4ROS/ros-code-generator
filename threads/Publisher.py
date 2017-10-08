@@ -10,7 +10,7 @@ from lxml import etree
 
 import threads.AADLThreadFunctionsSupport as tfs
 
-import datatypes.DatatypeFromASN1 as dt
+import datatypes.DatatypeConversion as dt
 
 from datatypes.Type import Int, Double, Void, ROS_TimerEvent, ROS_Timer, ROS_Publisher
 
@@ -67,16 +67,27 @@ class Publisher(AADLThread):
         if self.process_port == None:
             return (False, "Unable to find the process input port name feature")
 
-        self.asn1_source_file = tfs.getSourceText(self.process_port)
+        (aadl_namespace, aadl_type) = tfs.getPortDatatypeByPort(self.process_port)
+        if aadl_namespace == None or aadl_type == None:
+            return (False, "Unable to identify process port type")
 
-        if self.asn1_source_file == None:
+        raw_output_type = dt.getROSDatatypeFromAADL(aadl_namespace, aadl_type, self.associated_class)
+
+        if raw_output_type == None:
+            return (False, "Datatype {} NOT supported".format(raw_output_type))
+        else:
+            self.output_type = raw_output_type
+
+        #self.asn1_source_file = tfs.getSourceText(self.process_port)
+
+        #if self.asn1_source_file == None:
             #return (False, "Unable to find the ASN.1 file specification.")
-            log.warning("Unable to find the ASN.1 file specification.")
+        #    log.warning("Unable to find the ASN.1 file specification.")
 
         # @TODO: leggere il file ASN.1 ed utilizzarlo per la porta
-        log.info("ASN.1 file: {}".format(self.asn1_source_file))
+        #log.info("ASN.1 file: {}".format(self.asn1_source_file))
 
-        self.output_type = dt.getROSDatatypeFromASN1( self.asn1_source_file, self.associated_class )
+        #self.output_type = dt.getROSDatatypeFromASN1( self.asn1_source_file, self.associated_class )
 
         ###################
         ### Source Text ###
