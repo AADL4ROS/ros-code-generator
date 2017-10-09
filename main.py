@@ -4,8 +4,7 @@ import log
 logger = log.setup_custom_logger("root")
 
 # Threads
-from threads.AADLThread import AADLThreadMapping
-from threads.AADLThread import AADLThreadType
+from threads.AADLThread import getPythonClassFromAADLThreadType, isMainThread
 
 from threads.AADLProcess import AADLProcess
 
@@ -27,7 +26,7 @@ from package.PackageXML import PackageXML
 
 # Input
 ocarina_ros_path    = "../ocarina-ros/"
-xml_filename        = "container.tlk_lis_ever_xml.xml"
+xml_filename        = "container2.tlk_lis_ever_xml.xml"
 json_filename       = "tag_ever_xml.json"
 
 #############
@@ -135,13 +134,7 @@ def generateCodeForSystem(system_root):
                                    "[" + XMLTags.tags['TAG_NAME'] + "='main_thread']" + "/" +
                                    "[" + XMLTags.tags['TAG_NAMESPACE'] + "='ros']")
         if main_thread != None:
-
-            # Se il namespace del project che sto generando NON è lo stesso di quello del mio system
-            # allora NON lo devo generare, quel nodo verrà eventualmente generato se gli si passa il file
-            # che descrive quel system con quel namespace
-            #process_namespace = tfs.getNamespace(process)
-            #if system_namespace != process_namespace:
-            #    continue
+            type = (tfs.getType(main_thread)).lower()
 
             p = AADLProcess(process)
             renameNodeClassIfAlreadyExisting(p, system_folder)
@@ -152,20 +145,20 @@ def generateCodeForSystem(system_root):
             gen_main_thread = creaNuovoThread(  system_root,
                                                 process,
                                                 main_thread,
-                                                AADLThreadMapping.NAME_TO_CLASS.get(AADLThreadType.MAIN_THREAD, "Generic"),
+                                                getPythonClassFromAADLThreadType(type),
                                                 p)
             p.threads.append(gen_main_thread)
 
             for thread in threads:
-                name        = (tfs.getName(thread)).lower()
+                #name        = (tfs.getName(thread)).lower()
                 type        = (tfs.getType(thread)).lower()
                 namespace   = (tfs.getNamespace(thread)).lower()
 
-                if namespace == "ros":
+                if namespace == "ros" and not isMainThread(type):
                     new_thread = creaNuovoThread(   system_root,
                                                     process,
                                                     thread,
-                                                    AADLThreadMapping.NAME_TO_CLASS.get(type, None),
+                                                    getPythonClassFromAADLThreadType(type),
                                                     p)
                     if new_thread != None:
                         p.threads.append( new_thread )

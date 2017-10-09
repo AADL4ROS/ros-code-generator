@@ -1,20 +1,17 @@
 /**
- * Node Listener_Node
+ * Node Listener_Node_Cus
  * File auto-generated on 09/10/2017 22:27:09
  */
 #include "ros_base/ROSNode.h"
-#include "std_msgs/String.h"
-#define NODE_NAME "Listener_Node"
+#define NODE_NAME "Listener_Node_Cus"
 
-class Listener_Node : public ros_base::ROSNode {
+class Listener_Node_Cus : public ros_base::ROSNode {
 private:
 	bool prepare();
 	void tearDown();
 	void errorHandling();
-	void subscriber_callback(const std_msgs::String::ConstPtr& msg);
-	ros::Subscriber sub_subscriber;
 public:
-	 Listener_Node();
+	 Listener_Node_Cus();
 };
 
 /**
@@ -32,7 +29,7 @@ int main(int argc, char** argv) {
 	while(!ros::master::check())
 		usleep(1000);
 	signal(SIGINT, nodeSigintHandler);
-	Listener_Node node;
+	Listener_Node_Cus node;
 	node.start();
 	return 0;
 }
@@ -40,15 +37,14 @@ int main(int argc, char** argv) {
 /**
  * Method prepare auto-generated
  */
-bool Listener_Node::prepare() {
-	sub_subscriber = handle.subscribe("/in_topic", 1, &Listener_Node::subscriber_callback, this);
+bool Listener_Node_Cus::prepare() {
 	return true;
 }
 
 /**
  * Method tearDown auto-generated
  */
-void Listener_Node::tearDown() {
+void Listener_Node_Cus::tearDown() {
 	ROS_INFO("Node is shutting down");
 	return;
 }
@@ -56,25 +52,14 @@ void Listener_Node::tearDown() {
 /**
  * Method errorHandling auto-generated
  */
-void Listener_Node::errorHandling() {
+void Listener_Node_Cus::errorHandling() {
 	ROSNode::errorHandling();
 }
 
 /**
- * Method subscriber_callback auto-generated
+ * Method Listener_Node_Cus auto-generated
  */
-void Listener_Node::subscriber_callback(const std_msgs::String::ConstPtr& msg) {
-	ROS_INFO("%s", msg->data.c_str());
-	/**
-	 * Source text: listener.cpp
-	 */
-	
-}
-
-/**
- * Method Listener_Node auto-generated
- */
- Listener_Node::Listener_Node() {
+ Listener_Node_Cus::Listener_Node_Cus() {
 	setName(NODE_NAME);
 }
 

@@ -5,8 +5,6 @@ from pint import UnitRegistry
 ureg = UnitRegistry()
 
 from threads.AADLThread import AADLThread
-from threads.AADLThread import AADLThreadType
-from lxml import etree
 
 import threads.AADLThreadFunctionsSupport as tfs
 
@@ -20,7 +18,7 @@ from comments.Comment import Comment
 
 class Subscriber(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
-        super().__init__(_system_root, _process, _thread, AADLThreadType.SUBSCRIBER, _associated_class)
+        super().__init__(_system_root, _process, _thread, _associated_class)
         log.info("Subscriber thread {}".format(self.name))
 
         self.input_port_name = "msg"

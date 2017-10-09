@@ -1,10 +1,11 @@
 /**
  * Node Talker_Node_B
- * File auto-generated on 08/10/2017 12:43:54
+ * File auto-generated on 09/10/2017 22:27:09
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
 #define NODE_NAME "Talker_Node_B"
+
 class Talker_Node_B : public ros_base::ROSNode {
 private:
 	bool prepare();

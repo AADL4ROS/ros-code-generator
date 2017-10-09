@@ -2,7 +2,6 @@ import logging
 log = logging.getLogger("root")
 
 from threads.AADLThread import AADLThread
-from threads.AADLThread import AADLThreadType
 
 import threads.AADLThreadFunctionsSupport as tfs
 
@@ -30,7 +29,7 @@ import re
 ###################
 class MainThread(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
-        super().__init__(_system_root, _process, _thread, AADLThreadType.MAIN_THREAD, _associated_class)
+        super().__init__(_system_root, _process, _thread, _associated_class)
         log.info("Main thread {}".format(self.name))
 
         # Parametri del main thread

@@ -2,36 +2,66 @@ import os
 import datetime
 import XMLTags
 import threads.AADLThreadFunctionsSupport as tfs
+import re
 
-# Tipologie di thread: definisce una corrispondenza fra il nome nel package
-# AADL e la tipologia di thread gestita dal code generator
-class AADLThreadType():
-    MAIN_THREAD = 'main_thread' # Identifica il thread base da cui sono composti tutti gli elementi, questo thread è
-                                # passato al costruttore delle altre tipologie di thread in quanto contiene riferimenti
-                                # alle funzioni base come prepare, tearDown e errorHandling
+# isMainThread()
+# Funzione usata da AADLProcess, viene scritta qua per rendere uniforme il codice
+def isMainThread(aadl_thread_type):
+    main_thread = re.compile("main_loop([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
+    return (main_thread.match(aadl_thread_type) != None)
 
-    PUBLISHER   = 'publisher.impl'   # Identifica i thread di tipo publisher
-
-    SUBSCRIBER    = 'callback.impl'  # Identifica i thread di tipo publisher
-
-    SUBSCRIBER_PUBLISHER = 'call_pub.impl'  # Identifica i thread di tipo subscriber-publisher, thread che ripetono un
-                                            # messaggio ricevuto in input su un topic su un topic di output dopo averlo
-                                            # eventualmente manipolato
-
-# In questa classe è presente il nome del modulo e della classe che gestisce la creazione di quel
+# In questa funzione è presente il nome del modulo e della classe che gestisce la creazione di quel
 # particolare tipo di thread. Un caso di esempio è il seguente.
 # Thread di tipo publisher.
 # Il nome del modulo che lo gestisce è threads.Publisher
 # Il nome della classe all'interno del modulo è Publisher
-class AADLThreadMapping():
-    NAME_TO_CLASS = {   AADLThreadType.MAIN_THREAD          : "MainThread",
-                        AADLThreadType.PUBLISHER            : "Publisher",
-                        AADLThreadType.SUBSCRIBER           : "Subscriber",
-                        AADLThreadType.SUBSCRIBER_PUBLISHER : "SubscriberPublisher"}
+def getPythonClassFromAADLThreadType(aadl_thread_type):
+    ###################
+    ### MAIN THREAD ###
+    ###################
+
+    # Identifica il thread base da cui sono composti tutti gli elementi, questo thread è
+    # passato al costruttore delle altre tipologie di thread in quanto contiene riferimenti
+    # alle funzioni base come prepare, tearDown e errorHandling
+
+    if isMainThread(aadl_thread_type):
+        return "MainThread"
+
+    #################
+    ### PUBLISHER ###
+    #################
+
+    # Identifica i thread di tipo publisher
+    publisher = re.compile("publisher([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
+    if publisher.match(aadl_thread_type) != None:
+        return "Publisher"
+
+    ##################
+    ### SUBSCRIBER ###
+    ##################
+
+    # Identifica i thread di tipo subscriber
+    subscriber = re.compile("callback([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
+    if subscriber.match(aadl_thread_type) != None:
+        return "Subscriber"
+
+    ############################
+    ### SUBSCRIBER PUBLISHER ###
+    ############################
+
+    # Identifica i thread di tipo subscriber-publisher, thread che ripetono un
+    # messaggio ricevuto in input su un topic su un topic di output dopo averlo
+    # eventualmente manipolato
+    subscriber = re.compile("call_pub([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
+    if subscriber.match(aadl_thread_type) != None:
+        return "SubscriberPublisher"
+
+    return None
+
 
 # Classe da cui ereditano tutti i thread
 class AADLThread():
-    def __init__(self, _system_root, _process, _thread, _type, _associated_class):
+    def __init__(self, _system_root, _process, _thread, _associated_class):
         # AADLProcess a cui un AADLThread fa riferimento
         self.associated_class = _associated_class
 
@@ -41,7 +71,7 @@ class AADLThread():
         self.thread         = _thread
 
         # Tipo thread
-        self.type       = _type
+        self.type       = tfs.getType(self.thread)
 
         # Nome del thread
         self.name       = tfs.getName( self.thread )

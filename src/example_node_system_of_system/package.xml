@@ -1,15 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <package>
-  <name>example_node</name>
+  <name>example_node_system_of_system</name>
   <version>0.0.0</version>
-  <description>The example_node package</description>
+  <description>The example_node_system_of_system package</description>
   <maintainer email="email@example.org">Name</maintainer>
   <license>TODO</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>ros_base</build_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <run_depend>ros_base</run_depend>
   <run_depend>roscpp</run_depend>
-  <run_depend>std_msgs</run_depend>
 </package>

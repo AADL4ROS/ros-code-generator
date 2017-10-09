@@ -1,7 +1,7 @@
 import threads.AADLThreadFunctionsSupport as tfs
 from comments.Comment import Comment
 import datetime
-from threads.AADLThread import AADLThreadType
+from threads.AADLThread import isMainThread
 
 class AADLProcess():
     def __init__(self, process):
@@ -11,7 +11,6 @@ class AADLProcess():
         # della gestione del system
         self.cmake_list     = None
         self.package_xml    = None
-
 
         ##############################
         ### PARAMETRI DELLA CLASSE ###
@@ -48,7 +47,7 @@ class AADLProcess():
 
     def getMainThread(self):
         for t in self.threads:
-            if t.type == AADLThreadType.MAIN_THREAD:
+            if isMainThread(t.type):
                 return t
         return None
 
@@ -191,7 +190,7 @@ class AADLProcess():
         ################
 
         for c in self.class_constants:
-            code += c.generateCode()
+            code += c.generateCode() + "\n"
 
         ###########################
         ### INTESTAZIONE CLASSE ###

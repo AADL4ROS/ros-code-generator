@@ -1,10 +1,11 @@
 /**
  * Node Talk_List_Node
- * File auto-generated on 08/10/2017 12:43:54
+ * File auto-generated on 09/10/2017 22:27:10
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
 #define NODE_NAME "Talk_List_Node"
+
 class Talk_List_Node : public ros_base::ROSNode {
 private:
 	bool prepare();

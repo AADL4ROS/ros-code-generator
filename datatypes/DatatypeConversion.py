@@ -1,5 +1,6 @@
 import datatypes.Type
 import importlib
+from messages import CustomMessage
 
 # getROSDatatypeFromAADL
 # La funzione traduce un datatype definito in AADL in un datatype
@@ -43,7 +44,7 @@ def getROSDatatypeFromAADL(aadl_namespace, aadl_type, associated_class):
     return None
 
 
-def getROSDatatypeFromASN1(_asn1_source, _associated_class, _custom_types = {}):
+def getROSDatatypeFromASN1(type, _associated_class = None, _custom_types = {}):
     #@TODO: Gestione dei Datatype
 
     default_asn_type = "__DEFAULT__"
@@ -59,12 +60,12 @@ def getROSDatatypeFromASN1(_asn1_source, _associated_class, _custom_types = {}):
 
     # Se è un tipo custom definito dall'utente (un oggetto), allora
     # io non posso farci nulla, altrimenti preparo tutto quanto
-    if _asn1_source in _custom_types:
-        return datatypes.Type.Object(_associated_class, _asn1_source)
+    if type in _custom_types:
+        return datatypes.Type.Object(_associated_class, type)
 
     else:
-        if _asn1_source.upper() in mapping_asn_ros:
-            classname = mapping_asn_ros[_asn1_source.upper()]
+        if type.upper() in mapping_asn_ros:
+            classname = mapping_asn_ros[type.upper()]
         else:
             classname = mapping_asn_ros[default_asn_type]
 
