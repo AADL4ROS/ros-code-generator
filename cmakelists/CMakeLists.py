@@ -1,9 +1,9 @@
 import threads.AADLThreadFunctionsSupport as tfs
 import os
 
-kCMAKE_LIST_FILENAME = "CMakeList.txt"
+kCMAKE_LIST_FILENAME = "CMakeLists.txt"
 
-class CMakeList():
+class CMakeLists():
     def __init__(self, system_root):
         self.project_name = tfs.getNamespace(system_root)
 

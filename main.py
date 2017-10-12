@@ -17,7 +17,7 @@ import XMLTags
 
 from lxml import etree
 
-from cmakelist.CMakeList import CMakeList
+from cmakelists.CMakeLists import CMakeLists
 from package.PackageXML import PackageXML
 
 #################
@@ -107,7 +107,7 @@ def generateCodeForSystem(system_root):
                                                          delete=(system_namespace not in already_resetted_systems))
     already_resetted_systems.add(system_namespace)
 
-    cmake_list  = CMakeList( system_root )
+    cmake_list  = CMakeLists( system_root )
     package_xml = PackageXML( system_root )
 
     # Ricerco tutti i processi all'interno del system
