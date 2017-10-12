@@ -1,9 +1,9 @@
 /**
  * Node Listener_Node
- * File auto-generated on 09/10/2017 22:27:09
+ * File auto-generated on 12/10/2017 14:04:27
  */
 #include "ros_base/ROSNode.h"
-#include "std_msgs/String.h"
+#include "geometry_msgs/Point.h"
 #define NODE_NAME "Listener_Node"
 
 class Listener_Node : public ros_base::ROSNode {
@@ -11,7 +11,7 @@ private:
 	bool prepare();
 	void tearDown();
 	void errorHandling();
-	void subscriber_callback(const std_msgs::String::ConstPtr& msg);
+	void subscriber_callback(const geometry_msgs::Point::ConstPtr& msg);
 	ros::Subscriber sub_subscriber;
 public:
 	 Listener_Node();
@@ -63,7 +63,7 @@ void Listener_Node::errorHandling() {
 /**
  * Method subscriber_callback auto-generated
  */
-void Listener_Node::subscriber_callback(const std_msgs::String::ConstPtr& msg) {
+void Listener_Node::subscriber_callback(const geometry_msgs::Point::ConstPtr& msg) {
 	ROS_INFO("%s", msg->data.c_str());
 	/**
 	 * Source text: listener.cpp

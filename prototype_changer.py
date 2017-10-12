@@ -1,13 +1,16 @@
 import re
-
+import os
 
 def replace_prototypes(aadl_file, location=''):
     find_proto = re.compile('(\w+): thread (?:(\w+)::)?(\w+)\.(\w+) \(((?:\w+ => data (?:\w+::)?\w+(?:, ?)?)+)\);')
     get_proto = re.compile('(\w+) => data (?:(\w+)::)?(\w+)')
-    aadl_file_mod = location+aadl_file+'.mod'
+
+    (filename, ext) = os.path.splitext(aadl_file)
+
+    aadl_file_mod = os.path.join(location, filename + '_mod' + ext)
 
     out_file = open(aadl_file_mod, 'w')
-    in_file = open(aadl_file, 'r')
+    in_file = open( os.path.join(location, aadl_file), 'r')
     pkgs = {}
     tree = {}
 
@@ -52,8 +55,12 @@ def replace_prototypes(aadl_file, location=''):
     match_proto = re.compile('(\w+): ((?:in event|out) data port) (\w+);')
 
     for l0 in tree:
-        in_pkg_file = open(location + l0 + '.aadl', 'r')
-        out_pkg_file = open(location + l0 + 'aadl.mod', 'w')
+
+        in_pkg_file_path = os.path.join(location, l0 + '.aadl')
+        out_pkg_file_path = os.path.join(location, l0 + '_mod.aadl')
+
+        in_pkg_file = open(in_pkg_file_path, 'r')
+        out_pkg_file = open(out_pkg_file_path, 'w')
 
         end_file = re.compile('end '+l0+';')
 
@@ -88,7 +95,7 @@ def replace_prototypes(aadl_file, location=''):
             ex_pkgs = match.group(1).split(',')
             for e in ex_pkgs:
                 if e not in pkgs[l0]:
-                    pkgs.append(e)
+                    pkgs[l0].append(e)
         with_line = 'with '+', '.join(pkgs[l0]) + ';\n\n'
         out_pkg_file.write(with_line)
 
@@ -117,3 +124,6 @@ def replace_prototypes(aadl_file, location=''):
 
         in_pkg_file.close()
         out_pkg_file.close()
+
+
+replace_prototypes("example_node.aadl", "../Osate/prototype/packages/")
