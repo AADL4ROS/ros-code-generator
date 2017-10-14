@@ -169,6 +169,30 @@ def getAllConnectionsPerPort(start, process_name, port_name, input = False, outp
     except:
         return None
 
+"""
+    SUBCOMPONENT
+"""
+
+def getSubcomponentByInfo(start, name = None, category = None, namespace = None):
+    try:
+        search_query = "./" + XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" + XMLTags.tags['TAG_SUBCOMPONENT'] + "/"
+
+        if name != None:
+            search_query += "[" + XMLTags.tags['TAG_NAME'] + "='" + name + "']" + "/"
+
+        if category != None:
+            search_query += "[" + XMLTags.tags['TAG_CATEGORY'] + "='" + category + "']" + "/"
+
+        if namespace != None:
+            search_query += "[" + XMLTags.tags['TAG_NAMESPACE'] + "='" + namespace + "']" + "/"
+
+        # Rimuovo l'ultimo caratteri dalla query che è sempre uno /
+        search_query = search_query[:-1]
+
+        return start.find(search_query)
+    except:
+        return None
+
 
 """
     NAMESPACE

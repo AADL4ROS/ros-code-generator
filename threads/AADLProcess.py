@@ -4,8 +4,10 @@ import datetime
 from threads.AADLThread import isMainThread
 
 class AADLProcess():
-    def __init__(self, process):
-        self.process = process
+    def __init__(self, process, system):
+        self.process    = process
+        self.system     = system
+        self.namespace  = tfs.getNamespace(self.system)
 
         # Riferimento al file CMakeList che verrà generato alla fine
         # della gestione del system
@@ -26,8 +28,11 @@ class AADLProcess():
         self.class_public_methods   = []
         self.class_private_methods  = []
 
+        # Contiene la lista di tutti i services presenti nel nodo
+        self.services = []
+
         # Contiene la lista dei threads che compongono ogni processo
-        self.threads        = []
+        self.threads = []
 
     ######################
     ### SET CMAKE LIST ###
@@ -50,6 +55,19 @@ class AADLProcess():
             if isMainThread(t.type):
                 return t
         return None
+
+    ####################
+    ### ADD SERVICES ###
+    ####################
+    def addService(self, _ser):
+        for l in self.services:
+            if l.isEqualTo(_ser):
+                return False
+
+        self.services.append(_ser)
+
+        self.cmake_list.addService(_ser)
+        return True
 
     ###############
     ### LIBRARY ###
@@ -241,6 +259,8 @@ class AADLProcess():
 
         for l in self.class_libraries:
             code += l.generateCode()
+
+        code += "\n"
 
         ################
         ### COSTANTI ###

@@ -109,7 +109,7 @@ class MainThread(AADLThread):
                 default_val = None
 
             tmp_param = Variable(self)
-            tmp_param.setType(getROSDatatypeFromASN1(var_type, self, _custom_types=custom_types))
+            tmp_param.setType(getROSDatatypeFromASN1(var_type, self.associated_class))
             tmp_param.setName(var_name)
 
             # Aggiungo le virgolette alle stringhe nel caso non le abbiano

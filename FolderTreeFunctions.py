@@ -7,6 +7,7 @@ dir             = os.path.dirname(__file__)
 output_folder   = os.path.join(dir, "src")
 
 src_folder_name     = 'src'
+service_folder_name = 'srv'
 launch_folder_name  = 'launch'
 
 def createFolderTreeForSystem(system_root, delete = True):
@@ -28,7 +29,7 @@ def createFolderTreeForSystem(system_root, delete = True):
         os.makedirs(system_folder)
 
     # Creo le altre cartelle
-    other_folders = [src_folder_name, launch_folder_name]
+    other_folders = [src_folder_name, launch_folder_name, service_folder_name]
     for f in other_folders:
         path = os.path.join(system_folder, f)
         if not os.path.exists(path):
@@ -51,6 +52,9 @@ def getSrcFolderForSystemFolder(system_folder):
 
 def getLaunchFolderForSystemFolder(system_folder):
     return os.path.join(system_folder, launch_folder_name)
+
+def getServiceFolderForSystemFolder(system_folder):
+    return os.path.join(system_folder, service_folder_name)
 
 # Usato dal CMake per avere src/nome_file.cpp
 def getOnlySrcPathForNode(node_filename):

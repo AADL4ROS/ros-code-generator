@@ -1,0 +1,7 @@
+int64 a
+std/string b
+bool proc
+---
+int64 appended
+double length
+geometry_msgs/Pose pose

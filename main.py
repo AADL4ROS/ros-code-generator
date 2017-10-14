@@ -26,7 +26,7 @@ from package.PackageXML import PackageXML
 
 # Input
 ocarina_ros_path    = "../ocarina-ros/"
-xml_filename        = "container.tlk_lis_ever_xml.xml"
+xml_filename        = "container.impl_ever_xml.xml"
 json_filename       = "tag_ever_xml.json"
 
 #############
@@ -92,6 +92,9 @@ def saveNode(p, system_folder):
 
     generated_and_saved_nodes.append(p)
 
+    for s in p.services:
+        s.saveServiceSRVInFolder( folderTree.getServiceFolderForSystemFolder(system_folder) )
+
     # Dopo il salvataggio aggiungo il nodo al file CMake
     p.cmake_list.addExecutable({
         'name': p.type,
@@ -143,7 +146,7 @@ def generateCodeForSystem(system_root):
         if main_thread != None:
             type = (tfs.getType(main_thread)).lower()
 
-            p = AADLProcess(process)
+            p = AADLProcess(process, system_root)
             renameNodeClassIfAlreadyExisting(p, system_folder)
             # Imposto la relazione fra process/node ed i file cmake e package del system
             p.setCMakeList( cmake_list )

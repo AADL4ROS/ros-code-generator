@@ -38,6 +38,9 @@ class Variable(CObject):
 
         return True
 
+    def generateCodeForMessageAndService(self):
+        return "{} {}".format(self.type.generateCodeForMessageAndService(), self.name)
+
     def generateCode(self):
         default = ""
         if self.default_value != None:

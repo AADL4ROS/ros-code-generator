@@ -21,7 +21,7 @@ from lxml import etree
 
 # Input
 ocarina_ros_path    = "../ocarina-ros/"
-xml_filename        = "container.tlk_lis_ever_xml.xml"
+xml_filename        = "container.impl_ever_xml.xml"
 json_filename       = "tag_ever_xml.json"
 
 #############

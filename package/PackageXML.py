@@ -87,11 +87,19 @@ class PackageXML():
             build_depend.text = d
             package.append(build_depend)
 
+        # build_depend for messages and services
+        build_depend = etree.Element("build_depend")
+        build_depend.text = "message_generation"
+
         # run_depend
         for d in self.dependencies:
             run_depend = etree.Element("run_depend")
             run_depend.text = d
             package.append(run_depend)
+
+        # run_depend for messages and services
+        build_depend = etree.Element("run_depend")
+        build_depend.text = "message_runtime"
 
         return etree.tostring(package,
                               pretty_print = True,

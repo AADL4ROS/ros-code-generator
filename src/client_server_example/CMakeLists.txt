@@ -3,17 +3,24 @@
 ### Auto-generated CMakeList ###
 ################################
 cmake_minimum_required(VERSION 2.8.3)
-project(example_node)
+project(client_server_example)
 
 ################
 ### Packages ###
 ################
 find_package(catkin REQUIRED COMPONENTS
-	ros_base
 	roscpp
-	std_msgs
-	geometry_msgs
+	message_generation
+	ros_base
 )
+
+################
+### Services ###
+################
+add_service_files(
+	FILES
+	Custom_Service.srv
+}
 
 #############
 ### Build ###
@@ -22,18 +29,13 @@ include_directories(
 	${catkin_INCLUDE_DIRS}
 	${ros_base_INCLUDE_DIRS}
 )
-add_executable(talker.impl src/Talker_Node.cpp)
-add_executable(listener.impl src/Listener_Node.cpp)
-add_executable(talk_list.impl src/Talk_List_Node.cpp)
-target_link_libraries(talker.impl
+add_executable(client.impl src/Client.cpp)
+add_executable(server_node.impl src/Server_Node.cpp)
+target_link_libraries(client.impl
 	${catkin_LIBRARIES}
 	${ros_base_LIBRARIES}
 )
-target_link_libraries(listener.impl
-	${catkin_LIBRARIES}
-	${ros_base_LIBRARIES}
-)
-target_link_libraries(talk_list.impl
+target_link_libraries(server_node.impl
 	${catkin_LIBRARIES}
 	${ros_base_LIBRARIES}
 )

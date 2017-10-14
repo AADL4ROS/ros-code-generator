@@ -56,6 +56,24 @@ def getPythonClassFromAADLThreadType(aadl_thread_type):
     if subscriber.match(aadl_thread_type) != None:
         return "SubscriberPublisher"
 
+    ######################
+    ### SERVICE CLIENT ###
+    ######################
+
+    # Identifica i thread di tipo service client
+    service_client = re.compile("client([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
+    if service_client.match(aadl_thread_type) != None:
+        return "ServiceClient"
+
+    ######################
+    ### SERVICE SERVER ###
+    ######################
+
+    # Identifica i thread di tipo service server
+    service_server = re.compile("service_provider([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
+    if service_server.match(aadl_thread_type) != None:
+        return "ServiceServer"
+
     return None
 
 

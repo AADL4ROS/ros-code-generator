@@ -11,6 +11,7 @@ class CMakeLists():
 
         self.packages       = []
         self.executables    = []
+        self.services       = []
 
         # Aggiungo i pacchetti standard
         self.addPackage("roscpp")
@@ -22,6 +23,11 @@ class CMakeLists():
             pkg = lib
         else:
             pkg = lib.getPackageName()
+
+        # Sto aggiungengo un package che fa riferimento al mio namespace, deriva dalle librerie
+        # dei servizi e dei messaggi autogenerate e quindi non lo devo aggiungere al CMakeLists
+        if self.project_name == pkg:
+            return
 
         self.packages.append(pkg)
 
@@ -52,6 +58,15 @@ class CMakeLists():
 
         self.executables.append(executable)
         return True
+
+    def addService(self, ser):
+        self.services.append(ser.getSRVFilename())
+
+        # Rimuovo eventuali duplicati
+        self.services = list(set( self.services ))
+
+        if len(self.services) > 0:
+            self.addPackage("message_generation")
 
     def generateHeaderCommentWithText(self, text):
         number_of_hashtag_before_text = 3
@@ -95,6 +110,14 @@ class CMakeLists():
             text += "\t{}\n".format(p)
 
         text += ")\n"
+
+        # Services
+        if len(self.services) > 0:
+            text += self.generateHeaderCommentWithText("Services")
+            text += "add_service_files(\n\tFILES\n"
+            for s in self.services:
+                text += "\t{}\n".format(s)
+            text += "}\n"
 
         # Build HARDCODED
         text += self.generateHeaderCommentWithText("Build")

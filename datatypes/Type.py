@@ -4,7 +4,7 @@ from CObject import CObject
 import libraries.Library as lib
 
 class Type(CObject):
-    def __init__(self, _associated_class, _namespace = None, _type_name = None ):
+    def __init__(self, _associated_class = None, _namespace = None, _type_name = None ):
         super().__init__( _associated_class )
         self.isConst    = False
         self.namespace  = _namespace
@@ -57,6 +57,12 @@ class Type(CObject):
 
         return True
 
+    def generateCodeForMessageAndService(self):
+        if self.namespace == None:
+            return self.type_name
+        else:
+            return "{}/{}".format(self.namespace, self.type_name)
+
     def generateCode(self):
         const_str = ""
         if self.isConst:
@@ -86,6 +92,11 @@ class Int(Type):
     def __init__(self, _associated_class):
         super().__init__( _associated_class )
         self.setTypeName( "int" )
+
+class Int64(Type):
+    def __init__(self, _associated_class):
+        super().__init__( _associated_class )
+        self.setTypeName( "int64" )
 
 class Bool(Type):
     def __init__(self, _associated_class):
@@ -137,3 +148,27 @@ class ROS_Subscriber(Type):
         super().__init__( _associated_class )
         self.setNamespace("ros")
         self.setTypeName( "Subscriber" )
+
+class ROS_ServiceClient(Type):
+    def __init__(self, _associated_class):
+        super().__init__( _associated_class )
+        self.setNamespace("ros")
+        self.setTypeName( "ServiceClient" )
+
+class ROS_ServiceServer(Type):
+    def __init__(self, _associated_class):
+        super().__init__( _associated_class )
+        self.setNamespace("ros")
+        self.setTypeName( "ServiceServer" )
+
+class ROS_ServiceServer_Request(Type):
+    def __init__(self, _associated_class, namespace):
+        super().__init__( _associated_class )
+        self.setNamespace(namespace)
+        self.setTypeName( "Request" )
+
+class ROS_ServiceServer_Response(Type):
+    def __init__(self, _associated_class, namespace):
+        super().__init__( _associated_class )
+        self.setNamespace(namespace)
+        self.setTypeName( "Response" )

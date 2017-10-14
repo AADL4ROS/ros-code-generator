@@ -44,32 +44,52 @@ def getROSDatatypeFromAADL(aadl_namespace, aadl_type, associated_class):
     return None
 
 
-def getROSDatatypeFromASN1(type, _associated_class = None, _custom_types = {}):
-    #@TODO: Gestione dei Datatype
-
-    default_asn_type = "__DEFAULT__"
+def getROSDatatypeFromASN1(asn_type, associated_class):
 
     mapping_asn_ros = {
-        "__DEFAULT__"       : "StdMsgString",
-        "REAL"              : "Double",
-        "INTEGER"           : "Int",
-        "BOOLEAN"           : "Bool",
+        ##############
+        ### STRING ###
+        ##############
+        "PRINTABLESTRING"   : "String",
         "STRING"            : "String",
-        "UTF8STRING"        : "String"
+        "NUMERICSTRING"     : "String",
+        "IA5STRING"         : "String",
+
+        ###############
+        ### INTEGER ###
+        ###############
+        "INTEGER"   : "Int64",
+
+        ###################
+        ### REAL/DOUBLE ###
+        ###################
+        "REAL": "Double",
+
+        ###############
+        ### BOOLEAN ###
+        ###############
+        "BOOLEAN": "Bool"
+
     }
 
-    # Se è un tipo custom definito dall'utente (un oggetto), allora
-    # io non posso farci nulla, altrimenti preparo tutto quanto
-    if type in _custom_types:
-        return datatypes.Type.Object(_associated_class, type)
+    if asn_type.upper() in mapping_asn_ros:
+        type_class_name = mapping_asn_ros[asn_type.upper()]
+        type_class = getattr(datatypes.Type, type_class_name)
 
+        return type_class(associated_class)
     else:
-        if type.upper() in mapping_asn_ros:
-            classname = mapping_asn_ros[type.upper()]
+        generic_type = datatypes.Type.Type(associated_class)
+
+        # Cerco il nome ed il namespace in caso di cose come std_msgs::String
+        type_component = asn_type.split("/")
+
+        if len(type_component) == 1:
+            generic_type.setTypeName(asn_type)
+        elif len(type_component) == 2:
+            generic_type.setNamespace(type_component[0])
+            generic_type.setTypeName(type_component[1])
         else:
-            classname = mapping_asn_ros[default_asn_type]
+            # Casistica che non dovrebbe mai accadere, ma la gestiamo per sicurezza
+            generic_type.setTypeName(asn_type)
 
-    # Ottengo la classe che gestisce quel particolare thread
-    type_class = getattr(datatypes.Type, classname)
-
-    return type_class( _associated_class )
+        return generic_type
