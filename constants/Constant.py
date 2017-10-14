@@ -12,5 +12,14 @@ class Constant(CObject):
     def setValue(self, _value):
         self.value = _value
 
+    def isEqualTo(self, another_constant):
+        if self.name != another_constant.name:
+            return False
+
+        if self.value != another_constant.value:
+            return False
+
+        return True
+
     def generateCode(self):
         return "#define {} \"{}\"".format( self.name, self.value )

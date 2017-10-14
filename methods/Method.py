@@ -1,8 +1,6 @@
 from CObject import CObject
 from comments.Comment import Comment
-
-# Import per classi già definite
-import libraries.Library as lib
+import hashlib
 
 # @TODO: gestione Source Text
 class Method(CObject):
@@ -75,6 +73,61 @@ class Method(CObject):
 
     def generateInterface(self):
         return "{};".format( self.getIntestazione(with_namespace = False) )
+
+    def isEqualTo(self, another_method, compare_namespace = False):
+        # NON faccio sempre il controllo anche del namespace, perchè
+        # se devo vedere il nome ed il contenuto in nodi diversi, questi
+        # avranno namespace diversi
+        if compare_namespace and self.namespace != another_method.namespace:
+            return False
+
+        if self.method_name != another_method.method_name:
+            return False
+
+        if not self.return_type.isEqualTo(another_method.return_type):
+            return False
+
+        if self.library != None:
+            if not self.library.isEqualTo(another_method.library):
+                return False
+        else:
+            if another_method.library != None:
+                return False
+
+        if self.source_text != another_method.source_text:
+            return False
+
+        # Per controllare il contenuto del metodo, genero tutto il codice e controllo
+        # che sia identico per i due metodi. Se necessario rimuovo i namespace che sono
+        # ovviamente diversi per nodi con nomi diversi, anche se i due nodi sono identici
+        # in tutto il resto.
+        code            = self.generateCode()
+        another_code    = another_method.generateCode()
+
+        # Tolgo i riferimenti alla classe
+        code            = code.replace(self.associated_class.class_name, "")
+        another_code    = another_code.replace(another_method.associated_class.class_name, "")
+
+        if not compare_namespace:
+            if self.namespace != None:
+                code = code.replace(self.namespace, "")
+            if another_method.namespace != None:
+                another_code = another_code.replace(another_method.namespace, "")
+
+        # Comparo il digest MD5 dei due codici: in questo modo dovrei ovviare a possibili
+        # rallentamenti con codici estremamenti lunghi. Apre però la possibilità a collisioni
+        # fra i due hash anche se le stringhe sono diverse. E' comunque una casistica abbastanza
+        # rara da poter essere trascurata nel nostro caso.
+        code_md5            = hashlib.md5()
+        another_code_md5    = hashlib.md5()
+
+        code_md5.update(bytes(code, encoding="utf-8"))
+        another_code_md5.update(bytes(another_code, encoding="utf-8"))
+
+        if code_md5.digest() != another_code_md5.digest():
+            return False
+
+        return True
 
     def generateCode(self):
         comment = Comment()

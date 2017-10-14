@@ -35,6 +35,28 @@ class Type(CObject):
     def shouldImportLibrary(self):
         return (self.library != None)
 
+    def isEqualTo(self, another_type):
+        if self.isConst != another_type.isConst:
+            return False
+
+        if self.namespace != another_type.namespace:
+            return False
+
+        if self.type_name != another_type.type_name:
+            return False
+
+        if self.library != None:
+            if not self.library.isEqualTo(another_type.library):
+                return False
+        else:
+            if another_type.library != None:
+                return False
+
+        if self.afterTypeName != another_type.afterTypeName:
+            return False
+
+        return True
+
     def generateCode(self):
         const_str = ""
         if self.isConst:

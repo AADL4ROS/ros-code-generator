@@ -17,7 +17,7 @@ class AADLProcess():
         ##############################
         self.class_name             = tfs.getName( self.process ).title()
         self.node_name              = tfs.getName( self.process ).title()
-        self.type                   = tfs.getType(self.process)
+        self.type                   = tfs.getType( self.process )
         self.class_libraries        = []
         self.class_params           = []
         self.class_vars             = []
@@ -56,7 +56,7 @@ class AADLProcess():
     ###############
     def addLibrary(self, _lib):
         for l in self.class_libraries:
-            if l.isEqual(_lib):
+            if l.isEqualTo(_lib):
                 return False
 
         self.class_libraries.append( _lib )
@@ -147,6 +147,63 @@ class AADLProcess():
             return True
         except ValueError:
             return False
+
+    ##################
+    ### COMPARISON ###
+    ##################
+
+    def elementIsInList(self, elem, list):
+        for l in list:
+            if elem.isEqualTo(l):
+                return True
+        return False
+
+    def compareList(self, listA, listB):
+        return [self.elementIsInList(l, listB) for l in listA].count(False)
+
+    def isEqualTo(self, another_process):
+
+        # Include le stesse librerie
+        res = self.compareList(self.class_libraries, another_process.class_libraries)
+        if res != 0:
+            return False
+
+        # Ha gli stessi parametri
+        res = self.compareList(self.class_params, another_process.class_params)
+        if res != 0:
+            return False
+
+        # Ha le stesse variabili
+        res = self.compareList(self.class_vars, another_process.class_vars)
+        if res != 0:
+            return False
+
+        # Ha le stesse variabili interne
+        res = self.compareList(self.class_internal_vars, another_process.class_internal_vars)
+        if res != 0:
+            return False
+
+        # Ha le stesse costanti
+        # La costante NODE_NAME è da saltare, poichè contiene il nome del nodo che sarebbe diverso
+        # in ogni caso per due nodi identici con le stesse caratteristiche
+        res = self.compareList(self.class_constants, another_process.class_constants)
+        if res > 1:
+            return False
+
+        # Per i metodi devo saltare il nome del metodo costruttore, altrimenti due nodi con nomi
+        # diversi, ma tutto il resto uguale vengono visti come diversi
+
+        # Ha gli stessi metodi pubblici
+        res = self.compareList(self.class_public_methods, another_process.class_public_methods)
+        if res > 1:
+            return False
+
+        # Ha gli stessi metodi privati
+        res = self.compareList(self.class_private_methods, another_process.class_private_methods)
+        if res != 0:
+            return False
+
+        return True
 
     ##############
     ### HELPER ###

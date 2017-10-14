@@ -171,3 +171,4 @@ class MainThread(AADLThread):
         self.prepare.addBottomCode("return true;")
 
         return (True, "")
+

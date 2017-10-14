@@ -17,7 +17,7 @@ class Library(CObject):
             return os.path.dirname(self.path)
         return ""
 
-    def isEqual(self, _other_library):
+    def isEqualTo(self, _other_library):
         return (self.path == _other_library.path)
 
     def generateCode(self):

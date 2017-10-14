@@ -9,10 +9,10 @@ project(example_node)
 ### Packages ###
 ################
 find_package(catkin REQUIRED COMPONENTS
-	std_msgs
-	roscpp
 	geometry_msgs
 	ros_base
+	roscpp
+	std_msgs
 )
 
 #############

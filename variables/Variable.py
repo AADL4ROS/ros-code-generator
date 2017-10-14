@@ -23,6 +23,21 @@ class Variable(CObject):
     def hasDefaultValue(self):
         return (self.default_value != None)
 
+    def isEqualTo(self, another_variable):
+        # Stesso nome
+        if self.name != another_variable.name:
+            return False
+
+        # Stesso valore di default
+        if self.default_value != another_variable.default_value:
+            return False
+
+        # Stesso tipo
+        if not self.type.isEqualTo(another_variable.type):
+            return False
+
+        return True
+
     def generateCode(self):
         default = ""
         if self.default_value != None:

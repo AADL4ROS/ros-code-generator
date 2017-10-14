@@ -38,7 +38,7 @@ today           = datetime.datetime.now()
 generated_on    = today.strftime("%d/%m/%Y %H:%M:%S")
 print( "Avvio generazione: {}".format(generated_on) )
 
-created_threads = []
+generated_and_saved_nodes = []
 
 def creaNuovoThread( system_root, process, thread, classname, associated_class ):
     if classname == None:
@@ -77,6 +77,11 @@ def renameNodeClassIfAlreadyExisting(p, system_folder):
         name_index += 1
 
 def saveNode(p, system_folder):
+    for generated_node in generated_and_saved_nodes:
+        if p.isEqualTo(generated_node):
+            print("Node {} already generated as {}.".format(p.class_name, generated_node.class_name))
+            return
+
     src_folder = folderTree.getSrcFolderForSystemFolder(system_folder)
 
     filename = "{}.cpp".format(p.class_name)
@@ -84,6 +89,8 @@ def saveNode(p, system_folder):
 
     with open(source_output_path, 'w+') as file:
         file.write(p.generateCode())
+
+    generated_and_saved_nodes.append(p)
 
     # Dopo il salvataggio aggiungo il nodo al file CMake
     p.cmake_list.addExecutable({
