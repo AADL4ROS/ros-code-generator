@@ -1,6 +1,6 @@
 /**
  * Node Server_Node
- * File auto-generated on 14/10/2017 18:50:29
+ * File auto-generated on 15/10/2017 15:29:18
  */
 #include "ros_base/ROSNode.h"
 #include "client_server_example/Custom_Service.h"
@@ -13,7 +13,9 @@ private:
 	void tearDown();
 	void errorHandling();
 	bool receiver_service_callback(client_server_example::Custom_Service::Request &req, client_server_example::Custom_Service::Request &res);
+	void subscriber_callback(const client_server_example::Complex::ConstPtr& msg);
 	ros::ServiceServer service_server_receiver;
+	ros::Subscriber sub_subscriber;
 public:
 	 Server_Node();
 };
@@ -43,6 +45,7 @@ int main(int argc, char** argv) {
  */
 bool Server_Node::prepare() {
 	service_server_receiver = handle.advertiseService("service", receiver_service_callback);
+	sub_subscriber = handle.subscribe("/out_topic", 1, &Server_Node::subscriber_callback, this);
 	return true;
 }
 
@@ -67,6 +70,17 @@ void Server_Node::errorHandling() {
 bool Server_Node::receiver_service_callback(client_server_example::Custom_Service::Request &req, client_server_example::Custom_Service::Request &res) {
 	/**
 	 * Source text: service_source.cpp
+	 */
+	
+}
+
+/**
+ * Method subscriber_callback auto-generated
+ */
+void Server_Node::subscriber_callback(const client_server_example::Complex::ConstPtr& msg) {
+	ROS_INFO("%s", msg->data.c_str());
+	/**
+	 * Source text: subscriber.cpp
 	 */
 	
 }

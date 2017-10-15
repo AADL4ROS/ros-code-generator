@@ -9,9 +9,11 @@ class CMakeLists():
 
         self.cmake_minimum_req_version = "2.8.3"
 
-        self.packages       = []
-        self.executables    = []
-        self.services       = []
+        self.packages               = []
+        self.executables            = []
+        self.services               = []
+        self.messages               = []
+        self.msgs_srvs_dependecies  = []
 
         # Aggiungo i pacchetti standard
         self.addPackage("roscpp")
@@ -65,8 +67,34 @@ class CMakeLists():
         # Rimuovo eventuali duplicati
         self.services = list(set( self.services ))
 
-        if len(self.services) > 0:
+        if self.hasMessagesOrServices():
             self.addPackage("message_generation")
+
+        # Aggiungo anche tutte le dipendenze relative al servizio
+        for d in ser.dependencies:
+            self.addMessageOrServiceDependency(d)
+
+    def addMessage(self, msg):
+        self.messages.append(msg.getMSGFilename())
+
+        # Rimuovo eventuali duplicati
+        self.messages = list(set( self.messages ))
+
+        if self.hasMessagesOrServices():
+            self.addPackage("message_generation")
+
+        # Aggiungo anche tutte le dipendenze relative al messaggio
+        for d in msg.dependencies:
+            self.addMessageOrServiceDependency(d)
+
+    def addMessageOrServiceDependency(self, dep):
+        self.msgs_srvs_dependecies.append(dep)
+
+        # Rimuovo eventuali duplicati
+        self.msgs_srvs_dependecies = list(set(self.msgs_srvs_dependecies))
+
+    def hasMessagesOrServices(self):
+        return (len(self.messages) > 0 or len(self.services) > 0)
 
     def generateHeaderCommentWithText(self, text):
         number_of_hashtag_before_text = 3
@@ -106,7 +134,8 @@ class CMakeLists():
         text += self.generateHeaderCommentWithText("Packages")
         text += "find_package(catkin REQUIRED COMPONENTS\n"
 
-        for p in self.packages:
+        # Aggiungo anche i package relativi alle dipendenze dei messaggi e dei servizi
+        for p in set(self.packages + self.msgs_srvs_dependecies):
             text += "\t{}\n".format(p)
 
         text += ")\n"
@@ -118,6 +147,22 @@ class CMakeLists():
             for s in self.services:
                 text += "\t{}\n".format(s)
             text += "}\n"
+
+        # Messages
+        if len(self.messages) > 0:
+            text += self.generateHeaderCommentWithText("Messages")
+            text += "add_message_files(\n\tFILES\n"
+            for m in self.messages:
+                text += "\t{}\n".format(m)
+            text += "}\n"
+
+        # Generate Message
+        if len(self.msgs_srvs_dependecies) > 0:
+            text += self.generateHeaderCommentWithText("MSGS and SRVS Dependencies")
+            text += "generate_messages(\n\tDEPENDENCIES\n"
+            for d in self.msgs_srvs_dependecies:
+                text += "\t{}\n".format(d)
+            text += ")\n"
 
         # Build HARDCODED
         text += self.generateHeaderCommentWithText("Build")

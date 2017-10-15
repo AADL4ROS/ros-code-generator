@@ -5,12 +5,23 @@ class Service():
         self.name = name
         self.requests = []
         self.responses = []
+        self.dependencies = []
 
     def addRequest(self, req):
         self.requests.append(req)
 
+        if req.type.namespace != None:
+            self.addDependency(req.type.namespace)
+
     def addResponse(self, res):
         self.responses.append(res)
+
+        if res.type.namespace != None:
+            self.addDependency(res.type.namespace)
+
+    def addDependency(self, dep):
+        self.dependencies.append(dep)
+        self.dependencies = list(set(self.dependencies))
 
     ##################
     ### COMPARISON ###
@@ -58,7 +69,7 @@ class Service():
         for r in self.responses:
             content += r.generateCodeForMessageAndService() + "\n"
 
-        # Rimuvo l'ultimo a capo introdotto a fine file
+        # Rimuovo l'ultimo a capo introdotto a fine file
         content = content.rstrip()
 
         return content

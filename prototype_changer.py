@@ -126,4 +126,4 @@ def replace_prototypes(aadl_file, location=''):
         out_pkg_file.close()
 
 
-replace_prototypes("example_node.aadl", "../Osate/prototype/packages/")
+replace_prototypes("client_server_example.aadl", "../Osate/aadl-ros-new/packages/")

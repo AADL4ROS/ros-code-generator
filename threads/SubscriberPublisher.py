@@ -7,14 +7,16 @@ ureg = UnitRegistry()
 from threads.AADLThread import AADLThread
 
 import threads.AADLThreadFunctionsSupport as tfs
+import messages.MessageFunctionSupport as mfs
 
 import datatypes.DatatypeConversion as dt
 
-from datatypes.Type import Int, Double, Void, ROS_Subscriber, ROS_Publisher
+from datatypes.Type import Void, ROS_Subscriber, ROS_Publisher
 
 from variables.Variable import Variable
 from methods.Method import Method
 from comments.Comment import Comment
+from datatypes.Type import Type
 
 class SubscriberPublisher(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
@@ -36,12 +38,14 @@ class SubscriberPublisher(AADLThread):
         self.sub_queue_size         = None
         self.sub_callback           = None
         self.input_type             = None
+        self.sub_custom_msg         = None
 
         # Parametri della parte Publisher
         self.pub_process_port       = None
         self.pub_topic              = None
         self.pub_asn1_source_file   = None
         self.output_type            = None
+        self.pub_custom_msg         = None
 
     def populateSubscriberData(self):
         ##################
@@ -64,16 +68,6 @@ class SubscriberPublisher(AADLThread):
         if self.sub_process_port == None:
             return (False, "Unable to find the process input port name feature")
 
-        #############
-        ### ASN.1 ###
-        #############
-        #self.sub_asn1_source_file = tfs.getSourceText(self.sub_process_port)
-
-        #if self.sub_asn1_source_file == None:
-            # return (False, "Unable to find the ASN.1 file specification.")
-        #    log.warning("Unable to find the Subscriber ASN.1 file specification.")
-
-        #log.info("ASN.1 subscriber file: {}".format(self.sub_asn1_source_file))
 
         ##################
         ### INPUT TYPE ###
@@ -83,14 +77,28 @@ class SubscriberPublisher(AADLThread):
         if aadl_namespace == None or aadl_type == None:
             return (False, "Unable to identify process port type")
 
-        raw_output_type = dt.getROSDatatypeFromAADL(aadl_namespace, aadl_type, self.associated_class)
+        # Controllo se c'è un file ASN.1 associato alla porta. Se c'è allora il tipo di messaggio
+        # è custom e lo dovrò generare, mentre se non c'è allora è un messaggio standard ROS
+        port_data_info = tfs.getPortDataInfo(self.sub_process_port)
+        if port_data_info == None:
+            return (False, "Unable to get the port data info for process port")
 
-        if raw_output_type == None:
-            return (False, "Datatype {} NOT supported".format(raw_output_type))
+        port_data_source_asn = tfs.getSourceText(port_data_info)
+        if port_data_source_asn == None:
+            # Se è None allora non c'è alcun file ASN.1 associato e quindi è un messaggio standard ROS
+            raw_output_type = dt.getROSDatatypeFromAADL(aadl_namespace, aadl_type, self.associated_class)
+            if raw_output_type == None:
+                return (False, "Datatype {} NOT supported".format(raw_output_type))
+            else:
+                self.input_type = raw_output_type
         else:
-            self.input_type = raw_output_type
+            self.custom_message = mfs.getMessageFromASN1(port_data_source_asn, self.associated_class)
 
-        #self.input_type = dt.getROSDatatypeFromASN1(self.sub_asn1_source_file, self.associated_class)
+            self.associated_class.addMessage(self.custom_message)
+
+            self.input_type = Type(self.associated_class)
+            self.input_type.setTypeName(self.custom_message.name)
+            self.input_type.setNamespace(self.associated_class.namespace)
 
         self.input_type.setConst(_const=True)
         self.input_type.setAfterTypeName("::ConstPtr&")
@@ -170,33 +178,36 @@ class SubscriberPublisher(AADLThread):
         if self.pub_process_port == None:
             return (False, "Unable to find the process input port name feature")
 
-        #############
-        ### ASN.1 ###
-        #############
-        #self.pub_asn1_source_file = tfs.getSourceText(self.pub_process_port)
-
-        #if self.pub_asn1_source_file == None:
-            # return (False, "Unable to find the ASN.1 file specification.")
-        #    log.warning("Unable to find the ASN.1 file specification.")
-
-        # @TODO: leggere il file ASN.1 ed utilizzarlo per la porta
-        #log.info("ASN.1 file: {}".format(self.pub_asn1_source_file))
-
         ###################
         ### OUTPUT TYPE ###
         ###################
-        #self.output_type = dt.getROSDatatypeFromASN1(self.pub_asn1_source_file, self.associated_class)
 
         (aadl_namespace, aadl_type) = tfs.getPortDatatypeByPort(self.pub_process_port)
         if aadl_namespace == None or aadl_type == None:
             return (False, "Unable to identify process port type")
 
-        raw_output_type = dt.getROSDatatypeFromAADL(aadl_namespace, aadl_type, self.associated_class)
+        # Controllo se c'è un file ASN.1 associato alla porta. Se c'è allora il tipo di messaggio
+        # è custom e lo dovrò generare, mentre se non c'è allora è un messaggio standard ROS
+        port_data_info = tfs.getPortDataInfo(self.pub_process_port)
+        if port_data_info == None:
+            return (False, "Unable to get the port data info for process port")
 
-        if raw_output_type == None:
-            return (False, "Datatype {} NOT supported".format(raw_output_type))
+        port_data_source_asn = tfs.getSourceText(port_data_info)
+        if port_data_source_asn == None:
+            # Se è None allora non c'è alcun file ASN.1 associato e quindi è un messaggio standard ROS
+            raw_output_type = dt.getROSDatatypeFromAADL(aadl_namespace, aadl_type, self.associated_class)
+            if raw_output_type == None:
+                return (False, "Datatype {} NOT supported".format(raw_output_type))
+            else:
+                self.output_type = raw_output_type
         else:
-            self.output_type = raw_output_type
+            self.custom_message = mfs.getMessageFromASN1(port_data_source_asn, self.associated_class)
+
+            self.associated_class.addMessage(self.custom_message)
+
+            self.output_type = Type(self.associated_class)
+            self.output_type.setTypeName(self.custom_message.name)
+            self.output_type.setNamespace(self.associated_class.namespace)
 
         #############
         ### TOPIC ###
@@ -221,7 +232,7 @@ class SubscriberPublisher(AADLThread):
         # @TODO: nome variabile del publisher
         self.sub_callback.addBottomCode( "{}.publish(msg);".format(var_publisher_pub.name) )
 
-        self.main_thread.prepare.addMiddleCode("{} = handle.advertise < {} > (\"{}\", 10);"
+        self.main_thread.prepare.addMiddleCode("{} = handle.advertise<{}>(\"{}\", 10);"
                                           .format(var_publisher_pub.name, self.output_type.generateCode(), self.topic))
 
         return (True, "")

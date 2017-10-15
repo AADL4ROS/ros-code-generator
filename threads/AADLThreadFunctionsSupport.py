@@ -81,6 +81,17 @@ def getPortDatatypeByPort(port):
     except AttributeError:
         return (None, None)
 
+######################
+### Port Data Info ###
+######################
+
+def getPortDataInfo(feature):
+    try:
+        port_data_info = feature.find("./" + XMLTags.tags['TAG_DATA_INFO'])
+        return port_data_info
+    except AttributeError:
+        return None
+
 """
     CONNECTIONS
 """

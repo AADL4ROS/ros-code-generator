@@ -7,14 +7,16 @@ ureg = UnitRegistry()
 from threads.AADLThread import AADLThread
 
 import threads.AADLThreadFunctionsSupport as tfs
+import messages.MessageFunctionSupport as mfs
 
 import datatypes.DatatypeConversion as dt
 
-from datatypes.Type import Int, Double, Void, ROS_Subscriber
+from datatypes.Type import Void, ROS_Subscriber
 
 from variables.Variable import Variable
 from methods.Method import Method
 from comments.Comment import Comment
+from datatypes.Type import Type
 
 class Subscriber(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
@@ -71,23 +73,30 @@ class Subscriber(AADLThread):
         if aadl_namespace == None or aadl_type == None:
             return (False, "Unable to identify process port type")
 
-        raw_output_type = dt.getROSDatatypeFromAADL(aadl_namespace, aadl_type, self.associated_class)
+        # Controllo se c'è un file ASN.1 associato alla porta. Se c'è allora il tipo di messaggio
+        # è custom e lo dovrò generare, mentre se non c'è allora è un messaggio standard ROS
+        port_data_info = tfs.getPortDataInfo(self.process_port)
+        if port_data_info == None:
+            return (False, "Unable to get the port data info for process port")
 
-        if raw_output_type == None:
-            return (False, "Datatype {} NOT supported".format(raw_output_type))
+        port_data_source_asn = tfs.getSourceText(port_data_info)
+        if port_data_source_asn == None:
+            # Se è None allora non c'è alcun file ASN.1 associato e quindi è un messaggio standard ROS
+            raw_output_type = dt.getROSDatatypeFromAADL(aadl_namespace, aadl_type, self.associated_class)
+            if raw_output_type == None:
+                return (False, "Datatype {} NOT supported".format(raw_output_type))
+            else:
+                self.input_type = raw_output_type
         else:
-            self.input_type = raw_output_type
+            self.custom_message = mfs.getMessageFromASN1(port_data_source_asn, self.associated_class)
 
-        #self.asn1_source_file = tfs.getSourceText( self.process_port )
+            self.associated_class.addMessage( self.custom_message )
 
-        #if self.asn1_source_file == None:
-            #return (False, "Unable to find the ASN.1 file specification.")
-        #    log.warning("Unable to find the ASN.1 file specification.")
+            self.input_type = Type(self.associated_class)
+            self.input_type.setTypeName(self.custom_message.name)
+            self.input_type.setNamespace(self.associated_class.namespace)
 
-        # @TODO: leggere il file ASN.1 ed utilizzarlo per la porta
-        #log.info("ASN.1 file: {}".format(self.asn1_source_file) )
 
-        #self.input_type = dt.getROSDatatypeFromASN1(self.asn1_source_file, self.associated_class)
         self.input_type.setConst(_const=True)
         self.input_type.setAfterTypeName("::ConstPtr&")
 

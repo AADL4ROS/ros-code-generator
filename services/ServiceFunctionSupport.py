@@ -3,7 +3,7 @@ log = logging.getLogger("root")
 
 import os
 from asn1tools.parser import parse_file
-from service.Service import Service
+from services.Service import Service
 from variables.Variable import Variable
 from datatypes.DatatypeConversion import getROSDatatypeFromASN1
 
@@ -29,7 +29,7 @@ def getServiceFromASN1(asn_source, associated_class):
     for r in requests_asn:
         var = Variable()
         var.setName( r['name'] )
-        var.setType( getROSDatatypeFromASN1(r['type'], associated_class) )
+        var.setType( getROSDatatypeFromASN1(r['type'], associated_class, is_msg_or_service = True) )
         var.setIsParameter()
 
         service.addRequest(var)
@@ -37,7 +37,7 @@ def getServiceFromASN1(asn_source, associated_class):
     for r in responses_asn:
         var = Variable()
         var.setName( r['name'] )
-        var.setType( getROSDatatypeFromASN1(r['type'], associated_class) )
+        var.setType( getROSDatatypeFromASN1(r['type'], associated_class, is_msg_or_service = True) )
         var.setIsParameter()
 
         service.addResponse(var)

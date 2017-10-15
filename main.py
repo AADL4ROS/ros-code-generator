@@ -92,8 +92,13 @@ def saveNode(p, system_folder):
 
     generated_and_saved_nodes.append(p)
 
+    # Salvo i services
     for s in p.services:
         s.saveServiceSRVInFolder( folderTree.getServiceFolderForSystemFolder(system_folder) )
+
+    # Salvo i messagges
+    for m in p.messages:
+        m.saveMessageMSGInFolder( folderTree.getMessageFolderForSystemFolder(system_folder) )
 
     # Dopo il salvataggio aggiungo il nodo al file CMake
     p.cmake_list.addExecutable({

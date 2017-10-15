@@ -28,6 +28,9 @@ class AADLProcess():
         self.class_public_methods   = []
         self.class_private_methods  = []
 
+        # Contiene la lista di tutti i messaggi custom presenti nel nodo
+        self.messages = []
+
         # Contiene la lista di tutti i services presenti nel nodo
         self.services = []
 
@@ -55,6 +58,19 @@ class AADLProcess():
             if isMainThread(t.type):
                 return t
         return None
+
+    ###################
+    ### ADD MESSAGE ###
+    ###################
+    def addMessage(self, _msg):
+        for l in self.messages:
+            if l.isEqualTo(_msg):
+                return False
+
+        self.messages.append(_msg)
+
+        self.cmake_list.addMessage(_msg)
+        return True
 
     ####################
     ### ADD SERVICES ###

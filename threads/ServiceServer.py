@@ -9,7 +9,7 @@ from datatypes.Type import Bool, ROS_ServiceServer, ROS_ServiceServer_Request, R
 
 from comments.Comment import Comment
 from variables.Variable import Variable
-import service.ServiceFunctionSupport as sfs
+import services.ServiceFunctionSupport as sfs
 from libraries.Library import Library
 from methods.Method import Method
 
@@ -67,7 +67,7 @@ class ServiceServer(AADLThread):
             return (False, "Unable to find the process provides subprogram access port feature")
 
         # Dopo aver trovato la porta del process, controllo il nome di default del
-        # service associato
+        # services associato
         (topic_namespace, self.default_service_name) = tfs.getDefaultTopicName(self.process_port)
 
         if self.default_service_name == None:
@@ -84,12 +84,12 @@ class ServiceServer(AADLThread):
                                            category     = "subprogram")
 
         if caller == None:
-            return (False, "Unable to find the right subprogram associated with the service")
+            return (False, "Unable to find the right subprogram associated with the services")
 
         self.asn_description = tfs.getSourceText(caller)
 
         if self.asn_description == None:
-            return (False, "Unable to find property Source_Text for the service caller with ASN.1 description")
+            return (False, "Unable to find property Source_Text for the services caller with ASN.1 description")
 
         # Creo il servizio custom e lo associo al nodo che lo ha generato
         self.service = sfs.getServiceFromASN1(self.asn_description, self.associated_class)
@@ -98,7 +98,7 @@ class ServiceServer(AADLThread):
 
         self.associated_class.addService( self.service )
 
-        # Genero ed aggiungo la libreria del service al nodo
+        # Genero ed aggiungo la libreria del services al nodo
         service_library = Library(self.associated_class)
         service_library.setPath( "{}/{}.h".format(self.associated_class.namespace, self.service.name) )
         self.associated_class.addLibrary(service_library)

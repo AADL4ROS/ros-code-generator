@@ -1,5 +1,5 @@
 int64 a
-std/string b
+std_msgs/String b
 bool proc
 ---
 int64 appended

@@ -21,7 +21,6 @@ from datatypes.DatatypeConversion import getROSDatatypeFromASN1
 from variables.Variable import Variable
 
 from datatypes.Type import String as StdString
-from datatypes.Std_Msgs import String as StdMsgsString
 import re
 
 ###################
@@ -112,17 +111,8 @@ class MainThread(AADLThread):
             tmp_param.setType(getROSDatatypeFromASN1(var_type, self.associated_class))
             tmp_param.setName(var_name)
 
-            # Aggiungo le virgolette alle stringhe nel caso non le abbiano
-            if isinstance(tmp_param.type, StdString) or \
-                    isinstance(tmp_param.type, StdMsgsString):
-                try:
-                    res = string_apex_regex.match(default_val)
-                    if res == None:
-                        default_val = "\"{}\"".format(default_val)
-                except:
-                    pass
-
-            tmp_param.setDefaultValue(default_val)
+            # @TODO: Non si può fare nelle struct, verrà aggiunto in CFG
+            #tmp_param.setDefaultValue(default_val)
 
             if index < len(params_asn):
                 parameters.append(tmp_param)
