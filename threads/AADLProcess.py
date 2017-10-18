@@ -4,15 +4,11 @@ import datetime
 from threads.AADLThread import isMainThread
 
 class AADLProcess():
-    def __init__(self, process, system):
-        self.process    = process
-        self.system     = system
-        self.namespace  = tfs.getNamespace(self.system)
-
-        # Riferimento al file CMakeList che verrà generato alla fine
-        # della gestione del system
-        self.cmake_list     = None
-        self.package_xml    = None
+    def __init__(self, process, system_root, system):
+        self.process        = process
+        self.system_root    = system_root
+        self.system         = system
+        self.namespace      = self.system.namespace
 
         ##############################
         ### PARAMETRI DELLA CLASSE ###
@@ -28,26 +24,13 @@ class AADLProcess():
         self.class_public_methods   = []
         self.class_private_methods  = []
 
-        # Contiene la lista di tutti i messaggi custom presenti nel nodo
-        self.messages = []
-
-        # Contiene la lista di tutti i services presenti nel nodo
-        self.services = []
+        #########################################
+        ### PARAMETRI PER GESTIONE DEL SYSTEM ###
+        #########################################
+        self.generated = False
 
         # Contiene la lista dei threads che compongono ogni processo
         self.threads = []
-
-    ######################
-    ### SET CMAKE LIST ###
-    ######################
-    def setCMakeList(self, cmake_list):
-        self.cmake_list = cmake_list
-
-    #######################
-    ### SET PACKAGE XML ###
-    #######################
-    def setPackageXML(self, package_xml):
-        self.package_xml = package_xml
 
     #######################
     ### GET MAIN THREAD ###
@@ -59,32 +42,6 @@ class AADLProcess():
                 return t
         return None
 
-    ###################
-    ### ADD MESSAGE ###
-    ###################
-    def addMessage(self, _msg):
-        for l in self.messages:
-            if l.isEqualTo(_msg):
-                return False
-
-        self.messages.append(_msg)
-
-        self.cmake_list.addMessage(_msg)
-        return True
-
-    ####################
-    ### ADD SERVICES ###
-    ####################
-    def addService(self, _ser):
-        for l in self.services:
-            if l.isEqualTo(_ser):
-                return False
-
-        self.services.append(_ser)
-
-        self.cmake_list.addService(_ser)
-        return True
-
     ###############
     ### LIBRARY ###
     ###############
@@ -94,15 +51,15 @@ class AADLProcess():
                 return False
 
         self.class_libraries.append( _lib )
-        self.cmake_list.addPackage( _lib )
-        self.package_xml.addDependency( _lib )
+        self.system.cmake_list.addPackage( _lib )
+        self.system.package_xml.addDependency( _lib )
         return True
 
     def removeLibrary(self, _lib):
         try:
             self.class_libraries.remove( _lib )
-            self.cmake_list.removePackage(_lib)
-            self.package_xml.removeDependency( _lib )
+            self.system.cmake_list.removePackage(_lib)
+            self.system.package_xml.removeDependency( _lib )
             return True
         except ValueError:
             return False

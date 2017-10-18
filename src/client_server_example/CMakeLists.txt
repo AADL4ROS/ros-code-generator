@@ -4,41 +4,17 @@
 ################################
 cmake_minimum_required(VERSION 2.8.3)
 project(client_server_example)
+set( CMAKE_CXX_STANDARD 11 )
 
 ################
 ### Packages ###
 ################
 find_package(catkin REQUIRED COMPONENTS
+	custom_msgs
+	custom_srvs
+	roscpp
 	std_msgs
 	ros_base
-	roscpp
-	message_generation
-	geometry_msgs
-)
-
-################
-### Services ###
-################
-add_service_files(
-	FILES
-	Custom_Service.srv
-}
-
-################
-### Messages ###
-################
-add_message_files(
-	FILES
-	Complex.msg
-}
-
-##################################
-### MSGS and SRVS Dependencies ###
-##################################
-generate_messages(
-	DEPENDENCIES
-	std_msgs
-	geometry_msgs
 )
 
 #############
@@ -47,11 +23,12 @@ generate_messages(
 include_directories(
 	${catkin_INCLUDE_DIRS}
 	${ros_base_INCLUDE_DIRS}
+	include
 )
-add_executable(client.impl src/Client.cpp)
+add_executable(publisher.impl src/Publisher.cpp)
 add_executable(server_node.impl src/Server_Node.cpp)
 add_executable(talk_list.impl src/Talk_List_Node.cpp)
-target_link_libraries(client.impl
+target_link_libraries(publisher.impl
 	${catkin_LIBRARIES}
 	${ros_base_LIBRARIES}
 )

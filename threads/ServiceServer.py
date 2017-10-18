@@ -78,29 +78,34 @@ class ServiceServer(AADLThread):
         ### ASN.1 Request and Response ###
         ##################################
 
-        caller = tfs.getSubcomponentByInfo(self.thread,
-                                           name         = self.called_name,
-                                           namespace    = "ros",
-                                           category     = "subprogram")
+        (aadl_namespace, aadl_type) = tfs.getPortDatatypeByPort(self.process_port)
+        if aadl_namespace == None or aadl_type == None:
+            return (False, "Unable to identify process port type")
 
-        if caller == None:
-            return (False, "Unable to find the right subprogram associated with the services")
+        # Controllo se c'è un file ASN.1 associato alla porta. Se c'è allora il tipo di servizio
+        # è custom e lo dovrò generare, mentre se non c'è allora è un servizio standard ROS
+        port_data_info = tfs.getPortDataInfo(self.process_port)
+        if port_data_info == None:
+            return (False, "Unable to get the port data info for process port")
 
-        self.asn_description = tfs.getSourceText(caller)
+        self.asn_description = tfs.getSourceText(port_data_info)
 
         if self.asn_description == None:
-            return (False, "Unable to find property Source_Text for the services caller with ASN.1 description")
-
-        # Creo il servizio custom e lo associo al nodo che lo ha generato
-        self.service = sfs.getServiceFromASN1(self.asn_description, self.associated_class)
-        if self.service == None:
-            return (False, "Error in ASN.1 parsing")
-
-        self.associated_class.addService( self.service )
+            # @TODO: Standard Service
+            log.warning("STANDARD SERVICE")
+            #return (False, "Unable to find property Source_Text for the services caller with ASN.1 description")
+        else:
+            # Creo il servizio custom e lo associo al nodo che lo ha generato
+            self.service = sfs.getServiceFromASN1(aadl_namespace,
+                                                  aadl_type,
+                                                  self.asn_description,
+                                                  self.associated_class)
+            if self.service == None:
+                return (False, "Error in ASN.1 parsing")
 
         # Genero ed aggiungo la libreria del services al nodo
         service_library = Library(self.associated_class)
-        service_library.setPath( "{}/{}.h".format(self.associated_class.namespace, self.service.name) )
+        service_library.setPath( "{}/{}.h".format(self.service.namespace, self.service.name) )
         self.associated_class.addLibrary(service_library)
 
         ##########################
@@ -134,7 +139,7 @@ class ServiceServer(AADLThread):
         input_param_res = Variable(self.associated_class)
         input_param_res.setName("&res")
         input_param_res.setType(
-                ROS_ServiceServer_Request(self.associated_class,
+                ROS_ServiceServer_Response(self.associated_class,
                                           "{}::{}".format(self.associated_class.namespace, self.service.name))
         )
         input_param_res.setIsParameter()

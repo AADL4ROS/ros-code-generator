@@ -1,29 +1,25 @@
 /**
- * Node Client
- * File auto-generated on 15/10/2017 15:29:18
+ * Node Publisher
+ * File auto-generated on 18/10/2017 16:16:41
  */
 #include "ros_base/ROSNode.h"
-#include "client_server_example/Custom_Service.h"
+#include "std_msgs/String.h"
 
-#define NODE_NAME "Client"
+#define NODE_NAME "Publisher"
 
-class Client : public ros_base::ROSNode {
+class Publisher : public ros_base::ROSNode {
 private:
 	bool prepare();
 	void tearDown();
 	void errorHandling();
 	void publisher_callback(const ros::TimerEvent& );
-	struct params {
-		int frequency_publisher;
-	} params;
 	struct vars {
 		double starting_time_publisher;
 	} vars;
-	ros::ServiceClient service_client_caller;
 	ros::Publisher pub_publisher;
 	ros::Timer timer_publisher;
 public:
-	 Client();
+	 Publisher();
 };
 
 /**
@@ -37,11 +33,9 @@ void nodeSigintHandler(int sig) {
  * Method main auto-generated
  */
 int main(int argc, char** argv) {
-	ros::init(argc, argv, NODE_NAME, ros::init_options::NoSigintHandler);
-	while(!ros::master::check())
-		usleep(1000);
+	ros::init(argc, argv, Publisher, ros::init_options::NoSigintHandler);
 	signal(SIGINT, nodeSigintHandler);
-	Client node;
+	Publisher node;
 	node.start();
 	return 0;
 }
@@ -49,12 +43,9 @@ int main(int argc, char** argv) {
 /**
  * Method prepare auto-generated
  */
-bool Client::prepare() {
-	params.frequency_publisher = 100.0;
-	service_client_caller = handle.serviceClient<client_server_example::Custom_Service>("service");
-	handle.getParam("frequency_publisher", params.frequency_publisher);
+bool Publisher::prepare() {
 	pub_publisher = handle.advertise < std_msgs::String > ("/out_topic", 10);
-	timer_publisher = handle.createTimer(ros::Duration(1/params.frequency_publisher), &Client::publisher_callback, this);
+	timer_publisher = handle.createTimer(ros::Duration(0.01), &Publisher::publisher_callback, this);
 	vars.starting_time_publisher = ros::Time::now().toSec();
 	return true;
 }
@@ -62,7 +53,7 @@ bool Client::prepare() {
 /**
  * Method tearDown auto-generated
  */
-void Client::tearDown() {
+void Publisher::tearDown() {
 	ROS_INFO("Node is shutting down");
 	return;
 }
@@ -70,14 +61,14 @@ void Client::tearDown() {
 /**
  * Method errorHandling auto-generated
  */
-void Client::errorHandling() {
+void Publisher::errorHandling() {
 	ROSNode::errorHandling();
 }
 
 /**
  * Method publisher_callback auto-generated
  */
-void Client::publisher_callback(const ros::TimerEvent& ) {
+void Publisher::publisher_callback(const ros::TimerEvent& ) {
 	std_msgs::String msg;
 	std::stringstream ss;
 	ss << "current time: " << (ros::Time::now().toSec() - vars.starting_time_publisher);
@@ -90,9 +81,9 @@ void Client::publisher_callback(const ros::TimerEvent& ) {
 }
 
 /**
- * Method Client auto-generated
+ * Method Publisher auto-generated
  */
- Client::Client() {
-	setName(NODE_NAME);
+ Publisher::Publisher() {
+	setName(ros::this_node::getName());
 }
 

@@ -247,6 +247,21 @@ def getSourceText(start):
     except AttributeError:
         return None
 
+###################
+### Source Name ###
+###################
+def getSourceName(start):
+    try:
+        source_name_property = start.find("./" +
+                                          XMLTags.tags['TAG_PROPERTIES'] + "/" +
+                                          XMLTags.tags['TAG_PROPERTY'] + "/" +
+                                          "[" + XMLTags.tags['TAG_PROPERTY_NAME'] + "='Source_Name']")
+
+        source_name = source_name_property.find(XMLTags.tags['TAG_PROPERTY_VALUE']).text
+        return source_name
+    except AttributeError:
+        return None
+
 ##############
 ### Period ###
 ##############

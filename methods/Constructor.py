@@ -8,4 +8,4 @@ class Constructor(Method):
         self.method_name    = self.associated_class.class_name
         self.return_type    = Nothing( self.associated_class )
 
-        self.addTopCode( "setName(NODE_NAME);" )
+        self.addTopCode( "setName(ros::this_node::getName());" )

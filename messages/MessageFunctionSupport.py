@@ -9,7 +9,7 @@ from datatypes.DatatypeConversion import getROSDatatypeFromASN1
 
 asn_default_path = "../ocarina-ros/"
 
-def getMessageFromASN1(asn_source, associated_class):
+def getMessageFromASN1(aadl_namespace, aadl_type, asn_source, associated_class):
     file_path = os.path.join(asn_default_path, asn_source)
 
     try:
@@ -19,11 +19,11 @@ def getMessageFromASN1(asn_source, associated_class):
         return None
 
     # Il nome del messaggio è la prima ed unica chiave del dizionario del file parsato
-    new_message_name = list(parsed.keys())[0]
+    new_message_intestazione = list(parsed.keys())[0]
 
-    message = Message(new_message_name)
+    message = Message(aadl_namespace, aadl_type)
 
-    parameters_asn = parsed[new_message_name]['values']
+    parameters_asn = parsed[new_message_intestazione]['values']
 
     for val, spec in parameters_asn.items():
         var = Variable()
@@ -32,5 +32,8 @@ def getMessageFromASN1(asn_source, associated_class):
         var.setIsParameter()
 
         message.addParameter(var)
+
+    # Aggiungo il messaggio al suo relativo system
+    message.system.addMessage(message)
 
     return message

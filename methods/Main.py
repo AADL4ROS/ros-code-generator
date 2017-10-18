@@ -26,9 +26,8 @@ class Main(Method):
         self.addInputParameter( input_argc )
         self.addInputParameter( input_argv )
 
-        self.addTopCode( "ros::init(argc, argv, NODE_NAME, ros::init_options::NoSigintHandler);");
-        self.addTopCode( "while(!ros::master::check())\n"
-                            "\tusleep(1000);");
-        self.addTopCode("signal(SIGINT, nodeSigintHandler);");
+        self.addTopCode( "ros::init(argc, argv, {}, ros::init_options::NoSigintHandler);"
+                         .format(self.associated_class.node_name))
+        self.addTopCode("signal(SIGINT, nodeSigintHandler);")
 
         self.addBottomCode("return 0;")

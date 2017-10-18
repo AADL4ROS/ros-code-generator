@@ -1,4 +1,3 @@
-import threads.AADLThreadFunctionsSupport as tfs
 import os
 from lxml import etree
 
@@ -9,8 +8,9 @@ kMAINTAINER_EMAIL   = "email@example.org"
 kPACKAGE_FILENAME = "package.xml"
 
 class PackageXML():
-    def __init__(self, system_root):
-        self.project_name = tfs.getNamespace(system_root)
+    def __init__(self, system):
+        self.system         = system
+        self.project_name   = system.namespace
 
         self.dependencies   = []
 
@@ -24,6 +24,12 @@ class PackageXML():
             dep = lib
         else:
             dep = lib.getPackageName()
+
+        # Non accade mai, ma nel caso non aggiungo me stesso
+        # al file package XML come dipendenza. Ripeto, non accade
+        # mai, è solo un controllo di sicurezza
+        if lib == self.project_name:
+            return
 
         self.dependencies.append(dep)
 
@@ -41,8 +47,8 @@ class PackageXML():
         except ValueError:
             return False
 
-    def savePackageXMLInFolder(self, system_folder):
-        output_folder = os.path.join(system_folder, kPACKAGE_FILENAME)
+    def savePackageXML(self):
+        output_folder = os.path.join(self.system.system_folder, kPACKAGE_FILENAME)
         with open(output_folder, 'wb+') as file:
             file.write(self.generateCode())
 
@@ -90,6 +96,7 @@ class PackageXML():
         # build_depend for messages and services
         build_depend = etree.Element("build_depend")
         build_depend.text = "message_generation"
+        package.append(build_depend)
 
         # run_depend
         for d in self.dependencies:
@@ -98,8 +105,9 @@ class PackageXML():
             package.append(run_depend)
 
         # run_depend for messages and services
-        build_depend = etree.Element("run_depend")
-        build_depend.text = "message_runtime"
+        run_depend = etree.Element("run_depend")
+        run_depend.text = "message_runtime"
+        package.append(run_depend)
 
         return etree.tostring(package,
                               pretty_print = True,

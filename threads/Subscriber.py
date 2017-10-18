@@ -17,6 +17,7 @@ from variables.Variable import Variable
 from methods.Method import Method
 from comments.Comment import Comment
 from datatypes.Type import Type
+from libraries.Library import Library
 
 class Subscriber(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
@@ -88,17 +89,23 @@ class Subscriber(AADLThread):
             else:
                 self.input_type = raw_output_type
         else:
-            self.custom_message = mfs.getMessageFromASN1(port_data_source_asn, self.associated_class)
-
-            self.associated_class.addMessage( self.custom_message )
+            self.custom_message = mfs.getMessageFromASN1(aadl_namespace,
+                                                         aadl_type,
+                                                         port_data_source_asn,
+                                                         self.associated_class)
 
             self.input_type = Type(self.associated_class)
             self.input_type.setTypeName(self.custom_message.name)
-            self.input_type.setNamespace(self.associated_class.namespace)
-
+            self.input_type.setNamespace(self.custom_message.namespace)
 
         self.input_type.setConst(_const=True)
         self.input_type.setAfterTypeName("::ConstPtr&")
+
+        # Associo la librerie del messaggio al tipo di output, sia custom che standard
+        input_type_library = Library()
+        input_type_library.setPath("{}/{}.h".format(self.input_type.namespace, self.input_type.type_name))
+
+        self.input_type.setLibrary(input_type_library)
 
         ###################
         ### Source Text ###

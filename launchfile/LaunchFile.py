@@ -3,8 +3,8 @@ import logging
 log = logging.getLogger("root")
 
 class LaunchFile():
-    def __init__(self, system):
-        self.system = system
+    def __init__(self, system_root):
+        self.system = system_root
         self.system_name = self.system.find(XMLTags.tags['TAG_TYPE']).text
         #self.system_name = self.system_name.replace(".", "_")
 

@@ -17,6 +17,7 @@ from variables.Variable import Variable
 from methods.Method import Method
 from comments.Comment import Comment
 from datatypes.Type import Type
+from libraries.Library import Library
 
 class Publisher(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
@@ -29,6 +30,7 @@ class Publisher(AADLThread):
         self.process_port       = None
         self.source_text        = None
         self.frequency_in_hz    = None
+        self.period_in_seconds  = None
         self.topic              = None
         self.publisherCallback  = None
         self.output_type        = None
@@ -87,13 +89,21 @@ class Publisher(AADLThread):
             else:
                 self.output_type = raw_output_type
         else:
-            self.custom_message = mfs.getMessageFromASN1(port_data_source_asn, self.associated_class)
-
-            self.associated_class.addMessage(self.custom_message)
+            self.custom_message = mfs.getMessageFromASN1(aadl_namespace,
+                                                         aadl_type,
+                                                         port_data_source_asn,
+                                                         self.associated_class)
 
             self.output_type = Type(self.associated_class)
             self.output_type.setTypeName(self.custom_message.name)
-            self.output_type.setNamespace(self.associated_class.namespace)
+            self.output_type.setNamespace(self.custom_message.namespace)
+
+        # Associo la librerie del messaggio al tipo di output, sia custom che standard
+        output_type_library = Library()
+        output_type_library.setPath("{}/{}.h".format(self.output_type.namespace, self.output_type.type_name))
+
+        self.output_type.setLibrary(output_type_library)
+
 
         ###################
         ### Source Text ###
@@ -118,13 +128,14 @@ class Publisher(AADLThread):
             period_quantity = ureg("{} {}".format(period, period_unit))
             period_quantity.ito( ureg.second )
             self.frequency_in_hz = 1.0 / period_quantity.magnitude
+            self.period_in_seconds = period_quantity.magnitude
         except ValueError:
             return (False, "Unable to convert Period in seconds")
 
-        param_freq = Variable( self.associated_class )
-        param_freq.setName( "frequency_{}".format(self.name) )
-        param_freq.setType( Int( self.associated_class ))
-        self.associated_class.addParameter( param_freq )
+        # param_freq = Variable( self.associated_class )
+        # param_freq.setName( "frequency_{}".format(self.name) )
+        # param_freq.setType( Int( self.associated_class ))
+        # self.associated_class.addParameter( param_freq )
 
         #############
         ### TOPIC ###
@@ -189,14 +200,12 @@ class Publisher(AADLThread):
 
         self.associated_class.addPrivateMethod( self.publisherCallback )
 
-        main_thread.prepare.addTopCode( "params.{} = {};".format(param_freq.name, self.frequency_in_hz) )
-        main_thread.prepare.addMiddleCode("handle.getParam(\"{}\", params.{});".format(param_freq.name, param_freq.name))
-
         main_thread.prepare.addMiddleCode("{} = handle.advertise < {} > (\"{}\", 10);"
                                           .format(var_publisher_pub.name, self.output_type.generateCode(), self.topic))
 
-        main_thread.prepare.addMiddleCode("{} = handle.createTimer(ros::Duration(1/params.{}), {}, this);"
-                                            .format(var_timer_pub.name, param_freq.name, self.publisherCallback.getThreadPointer() ))
+        main_thread.prepare.addMiddleCode("{} = handle.createTimer(ros::Duration({}), {}, this);"
+                                            .format(var_timer_pub.name, self.period_in_seconds,
+                                                    self.publisherCallback.getThreadPointer() ))
 
         main_thread.prepare.addMiddleCode("vars.{} = ros::Time::now().toSec();".format(var_starting_time.name))
 

@@ -9,7 +9,7 @@ from datatypes.DatatypeConversion import getROSDatatypeFromASN1
 
 asn_default_path = "../ocarina-ros/"
 
-def getServiceFromASN1(asn_source, associated_class):
+def getServiceFromASN1(aadl_namespace, aadl_type, asn_source, associated_class):
     file_path = os.path.join(asn_default_path, asn_source)
 
     try:
@@ -19,12 +19,12 @@ def getServiceFromASN1(asn_source, associated_class):
         return None
 
     # Il nome del servizio è la prima ed unica chiave del dizionario del file parsato
-    new_service_name = list(parsed.keys())[0]
+    new_service_intestazione = list(parsed.keys())[0]
 
-    service = Service(new_service_name)
+    service = Service(aadl_namespace, aadl_type)
 
-    requests_asn    = parsed[new_service_name]['types']['Request']['members']
-    responses_asn   = parsed[new_service_name]['types']['Response']['members']
+    requests_asn    = parsed[new_service_intestazione]['types']['Request']['members']
+    responses_asn   = parsed[new_service_intestazione]['types']['Response']['members']
 
     for r in requests_asn:
         var = Variable()
@@ -41,5 +41,8 @@ def getServiceFromASN1(asn_source, associated_class):
         var.setIsParameter()
 
         service.addResponse(var)
+
+    # Aggiungo il messaggio al suo relativo system
+    service.system.addService(service)
 
     return service

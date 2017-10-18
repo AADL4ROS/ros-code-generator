@@ -11,12 +11,11 @@ service_folder_name = 'srv'
 message_folder_name = 'msg'
 launch_folder_name  = 'launch'
 
-def createFolderTreeForSystem(system_root, delete = True):
-    system_name = tfs.getNamespace(system_root)
+def createFolderTreeForSystem(namespace, delete = True):
 
     # Sanitize del nome della cartella del system
     #system_name = system_name.replace(".", "_")
-    system_name = system_name.replace("/", "_")
+    system_name = namespace.replace("/", "_")
 
     system_folder = os.path.join(output_folder, system_name)
 

@@ -29,7 +29,8 @@ json_filename       = "tag_ever_xml.json"
 #############
 
 def saveLaunchFile(launch_file):
-    system_folder = folderTree.createFolderTreeForSystem(launch_file.system, delete=False)
+    namespace = tfs.getNamespace(launch_file.system)
+    system_folder = folderTree.createFolderTreeForSystem(namespace, delete=False)
     output_folder = folderTree.getLaunchFolderForSystemFolder(system_folder)
 
     filename = "{}.launch".format(launch_file.system_name)
@@ -194,6 +195,6 @@ while len(systems) > 0:
             'parent' : launch_files[-1]
         } )
 
-# Una volta temrminata l'esplorazione di tutti i system, vado a generare i launch file
+# Una volta terminata l'esplorazione di tutti i system, vado a generare i launch file
 for f in launch_files:
     saveLaunchFile(f)

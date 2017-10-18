@@ -63,9 +63,9 @@ class MainThread(AADLThread):
     ### GET ASN STATE ###
     #####################
 
-    STATE_ASN_DEFINITION    = "State"
-    STATE_ASN_PARAMS        = "Params"
-    STATE_ASN_VARS          = "Vars"
+    STATE_ASN_DEFINITION    = "InternalState"
+    STATE_ASN_PARAMS        = "Parameters"
+    STATE_ASN_VARS          = "Variables"
 
     # Ogni process/node ha un file che descrive params e vars, questo metodo si occupa
     # di processarlo ed aggiungere la variabili e parametri corretti

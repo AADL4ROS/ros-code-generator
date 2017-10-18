@@ -1,9 +1,10 @@
 /**
  * Node Server_Node
- * File auto-generated on 15/10/2017 15:29:18
+ * File auto-generated on 18/10/2017 16:16:41
  */
 #include "ros_base/ROSNode.h"
-#include "client_server_example/Custom_Service.h"
+#include "custom_srvs/ServiceA.h"
+#include "custom_msgs/Complex.h"
 
 #define NODE_NAME "Server_Node"
 
@@ -12,8 +13,8 @@ private:
 	bool prepare();
 	void tearDown();
 	void errorHandling();
-	bool receiver_service_callback(client_server_example::Custom_Service::Request &req, client_server_example::Custom_Service::Request &res);
-	void subscriber_callback(const client_server_example::Complex::ConstPtr& msg);
+	bool receiver_service_callback(client_server_example::ServiceA::Request &req, client_server_example::ServiceA::Response &res);
+	void subscriber_callback(const custom_msgs::Complex::ConstPtr& msg);
 	ros::ServiceServer service_server_receiver;
 	ros::Subscriber sub_subscriber;
 public:
@@ -31,9 +32,7 @@ void nodeSigintHandler(int sig) {
  * Method main auto-generated
  */
 int main(int argc, char** argv) {
-	ros::init(argc, argv, NODE_NAME, ros::init_options::NoSigintHandler);
-	while(!ros::master::check())
-		usleep(1000);
+	ros::init(argc, argv, Server_Node, ros::init_options::NoSigintHandler);
 	signal(SIGINT, nodeSigintHandler);
 	Server_Node node;
 	node.start();
@@ -67,7 +66,7 @@ void Server_Node::errorHandling() {
 /**
  * Method receiver_service_callback auto-generated
  */
-bool Server_Node::receiver_service_callback(client_server_example::Custom_Service::Request &req, client_server_example::Custom_Service::Request &res) {
+bool Server_Node::receiver_service_callback(client_server_example::ServiceA::Request &req, client_server_example::ServiceA::Response &res) {
 	/**
 	 * Source text: service_source.cpp
 	 */
@@ -77,7 +76,7 @@ bool Server_Node::receiver_service_callback(client_server_example::Custom_Servic
 /**
  * Method subscriber_callback auto-generated
  */
-void Server_Node::subscriber_callback(const client_server_example::Complex::ConstPtr& msg) {
+void Server_Node::subscriber_callback(const custom_msgs::Complex::ConstPtr& msg) {
 	ROS_INFO("%s", msg->data.c_str());
 	/**
 	 * Source text: subscriber.cpp
@@ -89,6 +88,6 @@ void Server_Node::subscriber_callback(const client_server_example::Complex::Cons
  * Method Server_Node auto-generated
  */
  Server_Node::Server_Node() {
-	setName(NODE_NAME);
+	setName(ros::this_node::getName());
 }
 

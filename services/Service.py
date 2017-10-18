@@ -1,8 +1,21 @@
 import os
+import systems.SystemsManager as sm
+from systems.System import System
+import FolderTreeFunctions as folderTree
 
 class Service():
-    def __init__(self, name):
+    def __init__(self, namespace, name):
         self.name = name
+        self.namespace = namespace
+
+        # Mi prendo il system associato e se questo non esiste ne creo uno nuovo
+        self.system = sm.getSystemForNamespace(namespace)
+
+        if self.system == None:
+            self.system = System(system_root=None,
+                                 namespace = namespace)
+            sm.addSystem(self.system)
+
         self.requests = []
         self.responses = []
         self.dependencies = []
@@ -49,8 +62,14 @@ class Service():
 
         return True
 
-    def saveServiceSRVInFolder(self, system_srv_folder):
-        output_folder = os.path.join(system_srv_folder, self.getSRVFilename())
+    ##############
+    ### SAVING ###
+    ##############
+
+    def saveServiceSRV(self):
+        system_folder = folderTree.getServiceFolderForSystemFolder(self.system.system_folder)
+        output_folder = os.path.join(system_folder, self.getSRVFilename())
+
         with open(output_folder, 'w+') as file:
             file.write(self.generateCode())
 

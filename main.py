@@ -1,6 +1,8 @@
-import os
 import importlib
+import os
+
 import log
+
 logger = log.setup_custom_logger("root")
 
 # Threads
@@ -17,8 +19,8 @@ import XMLTags
 
 from lxml import etree
 
-from cmakelists.CMakeLists import CMakeLists
-from package.PackageXML import PackageXML
+import systems.SystemsManager as sm
+from systems.System import System
 
 #################
 ### PARAMETRI ###
@@ -76,61 +78,23 @@ def renameNodeClassIfAlreadyExisting(p, system_folder):
         source_output_path = os.path.join(src_folder, filename)
         name_index += 1
 
-def saveNode(p, system_folder):
-    for generated_node in generated_and_saved_nodes:
-        if p.isEqualTo(generated_node):
-            print("Node {} already generated as {}.".format(p.class_name, generated_node.class_name))
-            return
-
-    src_folder = folderTree.getSrcFolderForSystemFolder(system_folder)
-
-    filename = "{}.cpp".format(p.class_name)
-    source_output_path = os.path.join(src_folder, filename)
-
-    with open(source_output_path, 'w+') as file:
-        file.write(p.generateCode())
-
-    generated_and_saved_nodes.append(p)
-
-    # Salvo i services
-    for s in p.services:
-        s.saveServiceSRVInFolder( folderTree.getServiceFolderForSystemFolder(system_folder) )
-
-    # Salvo i messagges
-    for m in p.messages:
-        m.saveMessageMSGInFolder( folderTree.getMessageFolderForSystemFolder(system_folder) )
-
-    # Dopo il salvataggio aggiungo il nodo al file CMake
-    p.cmake_list.addExecutable({
-        'name': p.type,
-        'path': folderTree.getOnlySrcPathForNode(filename)
-    })
-
-# Caso di system con altri system all'interno. Succede che magari alcuni di loro
-# abbiano lo stesso namespace e quindi resettino di volta in volta i file generati.
-# Se invece ne viene tenuta traccia in questa struttura, ogni namespace verrà resettato
-# solamente una volta, senza perdere i file mano a mano generati
-already_resetted_systems = set()
-
 def generateCodeForSystem(system_root):
-    logger.info("System {}".format( tfs.getType( system_root)) )
-    system_namespace = tfs.getNamespace(system_root)
 
-    # Resetto la struttura di cartelle (eliminando anche tutti i file) solamente alla prima generazione
-    # del namespace, in tutte le altre i file non vengono eliminati
-    system_folder = folderTree.createFolderTreeForSystem(system_root,
-                                                         delete=(system_namespace not in already_resetted_systems))
-    already_resetted_systems.add(system_namespace)
+    # Generando il system si generano anche i file CMakeLists e PackageXML
+    # Viene generata tutto l'albero delle cartelle e viene resettato se necessario
+    namespace = tfs.getNamespace(system_root)
 
-    cmake_list  = CMakeLists( system_root )
-    package_xml = PackageXML( system_root )
+    system = sm.getSystemForNamespace(namespace)
+    if system == None:
+        system = System(system_root)
+        sm.addSystem(system)
 
     # Ricerco tutti i processi all'interno del system
     processes = system_root.findall("./" +
                                         XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
                                             XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
                                                 "[" + XMLTags.tags['TAG_CATEGORY'] + "='process']"+
-                                                "[" + XMLTags.tags['TAG_NAMESPACE'] + "='" + system_namespace + "']")
+                                                "[" + XMLTags.tags['TAG_NAMESPACE'] + "='" + system.namespace + "']")
 
     # Scorro ogni processo. Per ogni processo controllo i subcomponent: in base alle varie tipologie
     # di subcomponent avvio la generazione di diversi nodi ROS
@@ -151,11 +115,8 @@ def generateCodeForSystem(system_root):
         if main_thread != None:
             type = (tfs.getType(main_thread)).lower()
 
-            p = AADLProcess(process, system_root)
-            renameNodeClassIfAlreadyExisting(p, system_folder)
-            # Imposto la relazione fra process/node ed i file cmake e package del system
-            p.setCMakeList( cmake_list )
-            p.setPackageXML( package_xml )
+            p = AADLProcess(process, system_root, system)
+            renameNodeClassIfAlreadyExisting(p, system.system_folder)
 
             gen_main_thread = creaNuovoThread(  system_root,
                                                 process,
@@ -177,11 +138,8 @@ def generateCodeForSystem(system_root):
                                                     p)
                     if new_thread != None:
                         p.threads.append( new_thread )
-            saveNode(p, system_folder)
 
-    # Dopo aver generato tutti i nodi per il system, genero e salvo i file CMakeList e package.xml
-    cmake_list.saveCMakeListInFolder(system_folder)
-    package_xml.savePackageXMLInFolder(system_folder)
+            system.addNode( p )
 
 ###################
 ### LETTURA XML ###
@@ -215,3 +173,5 @@ while len(systems) > 0:
                           XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
                             XMLTags.tags['TAG_SYSTEM'] + "/" +
                           "[" + XMLTags.tags['TAG_CATEGORY'] + "='system']") )
+
+sm.generateAllSystems()

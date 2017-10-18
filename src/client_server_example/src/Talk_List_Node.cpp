@@ -1,8 +1,10 @@
 /**
  * Node Talk_List_Node
- * File auto-generated on 15/10/2017 15:29:18
+ * File auto-generated on 18/10/2017 16:16:41
  */
 #include "ros_base/ROSNode.h"
+#include "std_msgs/String.h"
+#include "custom_msgs/Complex.h"
 
 #define NODE_NAME "Talk_List_Node"
 
@@ -39,9 +41,7 @@ void nodeSigintHandler(int sig) {
  * Method main auto-generated
  */
 int main(int argc, char** argv) {
-	ros::init(argc, argv, NODE_NAME, ros::init_options::NoSigintHandler);
-	while(!ros::master::check())
-		usleep(1000);
+	ros::init(argc, argv, Talk_List_Node, ros::init_options::NoSigintHandler);
 	signal(SIGINT, nodeSigintHandler);
 	Talk_List_Node node;
 	node.start();
@@ -57,7 +57,7 @@ bool Talk_List_Node::prepare() {
 	handle.getParam("testReal", params.testReal);
 	handle.getParam("testNoDefault", params.testNoDefault);
 	sub_call_pub = handle.subscribe("/in_topic", 1, &Talk_List_Node::call_pub_callback, this);
-	pub_call_pub = handle.advertise<client_server_example::Complex>("/out_topic", 10);
+	pub_call_pub = handle.advertise<custom_msgs::Complex>("/out_topic", 10);
 	return true;
 }
 
@@ -92,6 +92,6 @@ void Talk_List_Node::call_pub_callback(const std_msgs::String::ConstPtr& msg) {
  * Method Talk_List_Node auto-generated
  */
  Talk_List_Node::Talk_List_Node() {
-	setName(NODE_NAME);
+	setName(ros::this_node::getName());
 }
 

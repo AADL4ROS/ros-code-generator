@@ -1,13 +1,15 @@
-import threads.AADLThreadFunctionsSupport as tfs
 import os
+import FolderTreeFunctions as folderTree
 
 kCMAKE_LIST_FILENAME = "CMakeLists.txt"
 
 class CMakeLists():
-    def __init__(self, system_root):
-        self.project_name = tfs.getNamespace(system_root)
+    def __init__(self, system):
+        self.system         = system
+        self.project_name   = system.namespace
 
         self.cmake_minimum_req_version = "2.8.3"
+        self.use_C11 = True
 
         self.packages               = []
         self.executables            = []
@@ -117,8 +119,8 @@ class CMakeLists():
         comment += "\n"
         return comment
 
-    def saveCMakeListInFolder(self, system_folder):
-        output_folder = os.path.join(system_folder, kCMAKE_LIST_FILENAME)
+    def saveCMakeList(self):
+        output_folder = os.path.join(self.system.system_folder, kCMAKE_LIST_FILENAME)
         with open(output_folder, 'w+') as file:
             file.write(self.generateCode())
 
@@ -129,6 +131,9 @@ class CMakeLists():
         # Inizio
         text += "cmake_minimum_required(VERSION {})\n".format(self.cmake_minimum_req_version)
         text += "project({})\n".format(self.project_name)
+
+        if self.use_C11:
+            text += "set( CMAKE_CXX_STANDARD 11 )\n"
 
         # Packages
         text += self.generateHeaderCommentWithText("Packages")
@@ -169,6 +174,7 @@ class CMakeLists():
         text += "include_directories(\n"
         text += "\t${catkin_INCLUDE_DIRS}\n"
         text += "\t${ros_base_INCLUDE_DIRS}\n"
+        text += "\tinclude\n"
         text += ")\n"
 
         for e in self.executables:
