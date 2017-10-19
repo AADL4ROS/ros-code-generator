@@ -1,6 +1,6 @@
 /**
  * Node Talk_List_Node
- * File auto-generated on 19/10/2017 17:49:38
+ * File auto-generated on 19/10/2017 18:08:22
  */
 #include "ros_base/ROSNode.h"
 #include "client_server_example/Talk_List_Node_configuration.h"
