@@ -150,7 +150,7 @@ class CMakeLists():
             text += "add_service_files(\n\tFILES\n"
             for s in self.services:
                 text += "\t{}\n".format(s)
-            text += "}\n"
+            text += ")\n"
 
         # Messages
         if len(self.messages) > 0:
@@ -158,7 +158,7 @@ class CMakeLists():
             text += "add_message_files(\n\tFILES\n"
             for m in self.messages:
                 text += "\t{}\n".format(m)
-            text += "}\n"
+            text += ")\n"
 
         # Generate Message
         if len(self.msgs_srvs_dependecies) > 0:
@@ -170,6 +170,10 @@ class CMakeLists():
 
         # Build HARDCODED
         text += self.generateHeaderCommentWithText("Build")
+
+        # Aggiungo la chiamata a catkin_package
+        text += "catkin_package()"
+
         text += "include_directories(\n"
         text += "\t${catkin_INCLUDE_DIRS}\n"
         text += "\t${ros_base_INCLUDE_DIRS}\n"
