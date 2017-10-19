@@ -1,22 +1,22 @@
 import re
 import os
 
+
 def replace_prototypes(aadl_file, location=''):
-    find_proto = re.compile('(\w+): thread (?:(\w+)::)?(\w+)\.(\w+) \(((?:\w+ => data (?:\w+::)?\w+(?:, ?)?)+)\);')
-    get_proto = re.compile('(\w+) => data (?:(\w+)::)?(\w+)')
+    find_proto = re.compile('(\w+):\s+thread\s+(?:(\w+)::)?(\w+)\.(\w+)\s+\(((?:\w+\s+=>\s+(?:data|subprogram)\s+(?:\w+::)?\w+(?:\s*?,\s*?)?)+)\);')
+    get_proto = re.compile('(\w+)\s+=>\s+(data|subprogram)\s+(?:(\w+)::)?(\w+)')
 
     (filename, ext) = os.path.splitext(aadl_file)
 
     aadl_file_mod = os.path.join(location, filename + '_mod' + ext)
 
     out_file = open(aadl_file_mod, 'w')
-    in_file = open( os.path.join(location, aadl_file), 'r')
     pkgs = {}
     tree = {}
 
-    for line in in_file:
-        match = re.search(find_proto, line)
-        if match:
+    with open(os.path.join(location, aadl_file), 'r') as in_file:
+        text = in_file.read()
+        for match in find_proto.finditer(text):
             if match.group(2) not in pkgs:
                 pkgs[match.group(2)] = []
 
@@ -27,10 +27,10 @@ def replace_prototypes(aadl_file, location=''):
             for p in protos:
                 m = re.search(get_proto, p)
                 proto_list.append(m.group(1))
-                type_list.append(m.group(2) + '::' + m.group(3))
-                name_list.append(m.group(2) + '_' + m.group(3))
-                if m.group(2) not in pkgs[match.group(2)]:
-                    pkgs[match.group(2)].append(m.group(2))
+                type_list.append(m.group(3) + '::' + m.group(4))
+                name_list.append(m.group(3) + '_' + m.group(4))
+                if m.group(3) not in pkgs[match.group(2)]:
+                    pkgs[match.group(2)].append(m.group(3))
 
             if match.group(2) not in tree:
                 tree[match.group(2)] = {match.group(3): [match.group(4), [proto_list, type_list, name_list, []]]}
@@ -42,68 +42,48 @@ def replace_prototypes(aadl_file, location=''):
                         tree[match.group(2)][match.group(3)].append([proto_list, type_list, name_list, []])
 
             str_replace = match.group(3)+'_'+'_'.join(name_list)+'.'+match.group(4)
-            line = line.replace(match.group(3)+'.'+match.group(4), str_replace)
-            line = line.replace('('+match.group(5)+')', '')
+            text = text.replace(match.group(3)+'.'+match.group(4), str_replace)
+            text = text.replace('('+match.group(5)+')', '')
 
-        out_file.write(line)
+        out_file.write(text)
 
     in_file.close()
     out_file.close()
 
-    find_with = re.compile('with ((?:\w+(?:, ?)?)+);')
-    find_thread = re.compile('thread (\w+)$')
-    match_proto = re.compile('(\w+): ((?:in event|out) data port) (\w+);')
+    find_with = re.compile('with\s+((?:\w+(?:\s*,\s*?)?)+);')
+    find_thread = re.compile('thread\s+(?P<type>\w+)\s+prototypes[\s\S]+end\s+(?P=type);')
+    match_proto = re.compile('(\w+):\s+((?:in\s+event|out)\s+data\s+port|provides\s+subprogram\s+access)\s+(\w+)\s*;')
 
     for l0 in tree:
 
         in_pkg_file_path = os.path.join(location, l0 + '.aadl')
         out_pkg_file_path = os.path.join(location, l0 + '_mod.aadl')
 
-        in_pkg_file = open(in_pkg_file_path, 'r')
         out_pkg_file = open(out_pkg_file_path, 'w')
 
-        end_file = re.compile('end '+l0+';')
+        with open(in_pkg_file_path, 'r') as in_pkg_file:
+            text = in_pkg_file.read()
+            match = re.search(find_with, text)
+            if match:
+                ex_pkgs = match.group(1).split(',')
+                for e in ex_pkgs:
+                    if e not in pkgs[l0]:
+                        pkgs[l0].append(e)
+            with_line = 'with '+', '.join(pkgs[l0]) + ';\n\n'
+            text = re.sub(re.compile('public(?:\s+with\s+((?:\w+(?:\s*,\s*?)?)+);)?'), 'public\n\t'+with_line, text)
 
-        while True:
-            while True:
-                line = in_pkg_file.readline()
-                match = re.search(find_thread, line)
-                if match or re.search(end_file, line):
-                    break
-            if re.search(end_file, line):
-                break
-            if match.group(1) in tree[l0]:
-                end_thread = re.compile('end ' + match.group(1) + ';')
-                while True:
-                    line = in_pkg_file.readline()
-                    m1 = re.search(match_proto, line)
-                    if m1:
-                        for l in tree[l0][match.group(1)][1:]:
-                            l[0] = [m1.group(1) if x == m1.group(3) else x for x in l[0]]
-                            l[3].append(m1.group(2))
-                    m2 = re.search(end_thread, line)
-                    if m2:
-                        break
+            for thread_match in find_thread.finditer(text):
+                for proto_match in match_proto.finditer(thread_match.group(0)):
+                    for l in tree[l0][thread_match.group('type')][1:]:
+                        l[0] = [proto_match.group(1) if x == proto_match.group(3) else x for x in l[0]]
+                        l[3].append(proto_match.group(2))
+                thread_block = re.sub(re.compile('provides\s+subprogram\s+access\s+\w+\s*;'),
+                                      'provides subprogram access;', thread_match.group(0))
+                text = re.sub(thread_match.group(0), thread_block, text)
 
-        in_pkg_file.seek(0)
+            text = re.sub(re.compile('end '+l0+';'), '', text)
 
-        out_pkg_file.write(in_pkg_file.readline())
-        out_pkg_file.write(in_pkg_file.readline())
-        line = in_pkg_file.readline()
-        match = re.search(find_with, line)
-        if match:
-            ex_pkgs = match.group(1).split(',')
-            for e in ex_pkgs:
-                if e not in pkgs[l0]:
-                    pkgs[l0].append(e)
-        with_line = 'with '+', '.join(pkgs[l0]) + ';\n\n'
-        out_pkg_file.write(with_line)
-
-        for line in in_pkg_file:
-            if re.search(end_file, line):
-                break
-            else:
-                out_pkg_file.write(line)
+            out_pkg_file.write(text)
 
         out_pkg_file.write('\n\n')
         for t in tree[l0]:
@@ -120,10 +100,9 @@ def replace_prototypes(aadl_file, location=''):
                 impl = '.'+tree[l0][t][0]
                 out_pkg_file.write('\tthread implementation '+new_name+impl+' extends '+t+impl+'\n')
                 out_pkg_file.write('\tend '+new_name+impl+';\n\n')
-        out_pkg_file.write(line)
+        out_pkg_file.write('end '+l0+';')
 
         in_pkg_file.close()
         out_pkg_file.close()
 
-
-replace_prototypes("client_server_example.aadl", "../Osate/aadl-ros-new/packages/")
+replace_prototypes("client_server_example.aadl", "/home/gianluca/development/robot-models/aadl-ros/packages/")
