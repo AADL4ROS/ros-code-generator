@@ -1,6 +1,6 @@
 /**
  * Node Publisher
- * File auto-generated on 19/10/2017 16:38:15
+ * File auto-generated on 19/10/2017 17:49:38
  */
 #include "ros_base/ROSNode.h"
 #include "client_server_example/prepare_pub.h"
@@ -15,6 +15,7 @@ private:
 	void tearDown();
 	void errorHandling();
 	void publisher_callback(const ros::TimerEvent& );
+	InternalState is;
 	ros::Publisher pub_publisher;
 	ros::Timer timer_publisher;
 public:
@@ -44,9 +45,9 @@ int main(int argc, char** argv) {
  */
 bool Publisher::prepare() {
 	Parameters p;
-	handle.param<std::string>("stringName", params.stringName, "ciao");
-	handle.param<double>("testReal", params.testReal, 0);
-	handle.getParam("testNoDefault", params.testNoDefault);
+	handle.param<std::string>("stringName", p.stringName, "ciao");
+	handle.param<double>("testReal", p.testReal, 0);
+	handle.getParam("testNoDefault", p.testNoDefault);
 	is.initialize(&p);
 	pub_publisher = handle.advertise < std_msgs::String > ("/out_topic", 10);
 	timer_publisher = handle.createTimer(ros::Duration(0.01), &Publisher::publisher_callback, this);
@@ -73,7 +74,7 @@ void Publisher::errorHandling() {
  * Method publisher_callback auto-generated
  */
 void Publisher::publisher_callback(const ros::TimerEvent& ) {
-	pub_publisher.publish(funzione_publisher( is.vars(), is.params()))
+	pub_publisher.publish(funzione_publisher( is.vars(), is.params()));
 }
 
 /**

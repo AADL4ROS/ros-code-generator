@@ -6,10 +6,8 @@
 #include "ros_base/Configuration.h"
 struct Variables: ros_base::VariablesBase{ 
 	double publisherFrequency;
-	MyObject myObject;
 	Variables () {
 		publisherFrequency = 0;
-		
 	};
 };
 struct Parameters: ros_base::ParametersBase{ 

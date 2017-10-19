@@ -40,6 +40,7 @@ class SubscriberPublisher(AADLThread):
         self.sub_callback           = None
         self.input_type             = None
         self.sub_custom_msg         = None
+        self.sub_input_var          = None
 
         # Parametri della parte Publisher
         self.pub_process_port       = None
@@ -47,6 +48,7 @@ class SubscriberPublisher(AADLThread):
         self.pub_asn1_source_file   = None
         self.output_type            = None
         self.pub_custom_msg         = None
+        self.var_publisher_pub      = None
 
     def populateSubscriberData(self):
         ##################
@@ -149,14 +151,12 @@ class SubscriberPublisher(AADLThread):
         self.sub_callback.return_type = Void(self.associated_class)
         self.sub_callback.namespace = self.associated_class.class_name
 
-        input_var = Variable(self.associated_class)
-        input_var.setType(self.input_type)
-        input_var.setName("msg")
-        input_var.setIsParameter()
+        self.sub_input_var = Variable(self.associated_class)
+        self.sub_input_var.setType(self.input_type)
+        self.sub_input_var.setName("msg")
+        self.sub_input_var.setIsParameter()
 
-        self.sub_callback.addInputParameter(input_var)
-
-        self.sub_callback.addMiddleCode("ROS_INFO(\"%s\", {}->data.c_str());".format(input_var.name))
+        self.sub_callback.addInputParameter(self.sub_input_var)
 
         self.associated_class.addPrivateMethod(self.sub_callback)
 
@@ -236,19 +236,13 @@ class SubscriberPublisher(AADLThread):
         ### PUBLISHER VAR ###
         #####################
 
-        var_publisher_pub = Variable(self.associated_class)
-        var_publisher_pub.setName("pub_{}".format(self.name))
-        var_publisher_pub.setType(ROS_Publisher(self.associated_class))
-        self.associated_class.addInternalVariable(var_publisher_pub)
-
-        ######################
-        ### PUBLISHER CODE ###
-        ######################
-        # @TODO: nome variabile del publisher
-        self.sub_callback.addBottomCode( "{}.publish(msg);".format(var_publisher_pub.name) )
+        self.var_publisher_pub = Variable(self.associated_class)
+        self.var_publisher_pub.setName("pub_{}".format(self.name))
+        self.var_publisher_pub.setType(ROS_Publisher(self.associated_class))
+        self.associated_class.addInternalVariable(self.var_publisher_pub)
 
         self.main_thread.prepare.addMiddleCode("{} = handle.advertise<{}>(\"{}\", 10);"
-                                          .format(var_publisher_pub.name, self.output_type.generateCode(), self.topic))
+                                          .format(self.var_publisher_pub.name, self.output_type.generateCode(), self.topic))
 
         return (True, "")
 
@@ -285,7 +279,10 @@ class SubscriberPublisher(AADLThread):
                                                                                 tfs.getSourceName(thread_function))
         # Aggiungo la chiamata alla funzione custome
         if self.source_text_file != None:
-            code = "{};".format(self.source_text_file.generateInlineCode())
+            self.source_text_file.setFunctionType(self.output_type)
+            self.source_text_file.addFunctionParameter(self.sub_input_var)
+
+            code = "{}.publish({});".format(self.var_publisher_pub.name, self.source_text_file.generateInlineCode())
             self.sub_callback.addMiddleCode(code)
         else:
             return (False, "Unable to find Source_Text or Source_Name")

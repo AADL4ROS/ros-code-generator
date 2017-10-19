@@ -55,11 +55,11 @@ class SourceTextFile(Include):
             if self.uses_tf:
                 code += " tf,"
 
+            for p in self.function_parameters:
+                code += " {},".format(p.name)
+
             # Rimuovo l'ultima virgola
             code = code[:-1]
-
-            params = ", ".join(p.generateCode() for p in self.function_parameters)
-            code += params
 
         code += ")"
 
@@ -90,6 +90,9 @@ class SourceTextFile(Include):
 
             if self.associated_class.node_configuration.has_parameters:
                 code += " Parameters_ptr p,"
+
+            for p in self.function_parameters:
+                code += " {},".format(p.generateCode())
 
             # Rimuovo l'ultima virgola
             code = code[:-1]

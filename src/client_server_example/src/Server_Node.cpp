@@ -1,6 +1,6 @@
 /**
  * Node Server_Node
- * File auto-generated on 19/10/2017 16:38:15
+ * File auto-generated on 19/10/2017 17:49:38
  */
 #include "ros_base/ROSNode.h"
 #include "client_server_example/Server_Node_configuration.h"
@@ -14,8 +14,9 @@ private:
 	bool prepare();
 	void tearDown();
 	void errorHandling();
-	bool receiver_service_callback(client_server_example::ServiceA::Request &req, client_server_example::ServiceA::Response &res);
+	bool receiver_service_callback(custom_srvs::ServiceA::Request &req, custom_srvs::ServiceA::Response &res);
 	void subscriber_callback(const custom_msgs::Complex::ConstPtr& msg);
+	InternalState is;
 	ros::ServiceServer service_server_receiver;
 	ros::Subscriber sub_subscriber;
 public:
@@ -45,11 +46,11 @@ int main(int argc, char** argv) {
  */
 bool Server_Node::prepare() {
 	Parameters p;
-	handle.param<std::string>("stringName", params.stringName, "ciao");
-	handle.param<double>("testReal", params.testReal, 0);
-	handle.getParam("testNoDefault", params.testNoDefault);
+	handle.param<std::string>("stringName", p.stringName, "ciao");
+	handle.param<double>("testReal", p.testReal, 0);
+	handle.getParam("testNoDefault", p.testNoDefault);
 	is.initialize(&p);
-	service_server_receiver = handle.advertiseService("service", receiver_service_callback);
+	service_server_receiver = handle.advertiseService("service", &Server_Node::receiver_service_callback, this);
 	sub_subscriber = handle.subscribe("/out_topic", 1, &Server_Node::subscriber_callback, this);
 	return true;
 }
@@ -72,7 +73,7 @@ void Server_Node::errorHandling() {
 /**
  * Method receiver_service_callback auto-generated
  */
-bool Server_Node::receiver_service_callback(client_server_example::ServiceA::Request &req, client_server_example::ServiceA::Response &res) {
+bool Server_Node::receiver_service_callback(custom_srvs::ServiceA::Request &req, custom_srvs::ServiceA::Response &res) {
 	/**
 	 * Source text: service_source.h
 	 */
@@ -83,7 +84,7 @@ bool Server_Node::receiver_service_callback(client_server_example::ServiceA::Req
  * Method subscriber_callback auto-generated
  */
 void Server_Node::subscriber_callback(const custom_msgs::Complex::ConstPtr& msg) {
-	funzione_subscriber( is.vars(), is.params()const custom_msgs::Complex::ConstPtr& msg);
+	funzione_subscriber( is.vars(), is.params(), msg);
 }
 
 /**

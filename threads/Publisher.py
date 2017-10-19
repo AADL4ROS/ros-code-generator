@@ -182,7 +182,7 @@ class Publisher(AADLThread):
 
         # Aggiungo la chiamata alla funzione custome
         if self.source_text_file != None:
-            code = "{}.publish({})".format(var_publisher_pub.name,
+            code = "{}.publish({});".format(var_publisher_pub.name,
                                            self.source_text_file.generateInlineCode())
             self.publisherCallback.addMiddleCode(code)
 

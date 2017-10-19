@@ -21,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
 	FILES
 	Complex.msg
-}
+)
 
 ##################################
 ### MSGS and SRVS Dependencies ###
@@ -34,7 +34,7 @@ generate_messages(
 #############
 ### Build ###
 #############
-include_directories(
+catkin_package()include_directories(
 	${catkin_INCLUDE_DIRS}
 	${ros_base_INCLUDE_DIRS}
 	include

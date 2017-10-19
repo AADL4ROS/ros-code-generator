@@ -17,6 +17,7 @@ from asn1tools.parser import parse_file
 
 import os
 from datatypes.DatatypeConversion import getROSDatatypeFromASN1
+from datatypes.Type import Type
 from variables.Variable import Variable
 
 from structs.ParametersStruct import ParametersStruct
@@ -158,6 +159,14 @@ class MainThread(AADLThread):
         # Se ho almeno parametri o variabili, allora genero
         # anche la node configuration, altrimenti no
         if len(parameters) > 0 or len(variables) > 0:
+            type_internal_state = Type()
+            type_internal_state.setTypeName("InternalState")
+
+            internal_state_is = Variable(self.associated_class)
+            internal_state_is.setName("is")
+            internal_state_is.setType( type_internal_state )
+            self.associated_class.addInternalVariable(internal_state_is)
+
             node_conf = NodeConfiguration(self.associated_class)
             self.associated_class.setNodeConfiguration(node_conf)
 
@@ -178,13 +187,13 @@ class MainThread(AADLThread):
                 for p in parameters:
                     params_struct.addVariable(p)
                     if p.hasDefaultValue():
-                        self.prepare.addMiddleCode("handle.param<{}>(\"{}\", params.{}, {});"
+                        self.prepare.addMiddleCode("handle.param<{}>(\"{}\", p.{}, {});"
                                                    .format(p.type.generateCode(),
                                                            p.name,
                                                            p.name,
                                                            p.default_value))
                     else:
-                        self.prepare.addMiddleCode("handle.getParam(\"{}\", params.{});"
+                        self.prepare.addMiddleCode("handle.getParam(\"{}\", p.{});"
                                                    .format(p.name, p.name))
 
                     log.info("Parameters: {}".format(p.generateCode()))

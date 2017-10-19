@@ -131,7 +131,7 @@ class ServiceServer(AADLThread):
         input_param_req.setName("&req")
         input_param_req.setType(
                 ROS_ServiceServer_Request(self.associated_class,
-                                          "{}::{}".format(self.associated_class.namespace, self.service.name))
+                                          "{}::{}".format(self.service.namespace, self.service.name))
         )
         input_param_req.setIsParameter()
 
@@ -140,7 +140,7 @@ class ServiceServer(AADLThread):
         input_param_res.setName("&res")
         input_param_res.setType(
                 ROS_ServiceServer_Response(self.associated_class,
-                                          "{}::{}".format(self.associated_class.namespace, self.service.name))
+                                          "{}::{}".format(self.service.namespace, self.service.name))
         )
         input_param_res.setIsParameter()
 
@@ -165,9 +165,9 @@ class ServiceServer(AADLThread):
 
         self.associated_class.addPrivateMethod(self.server_callback)
 
-        main_thread.prepare.addMiddleCode("{} = handle.advertiseService(\"{}\", {});"
+        main_thread.prepare.addMiddleCode("{} = handle.advertiseService(\"{}\", {}, this);"
                                           .format(var_service_server.name,
                                                   self.default_service_name,
-                                                  self.server_callback.method_name))
+                                                  self.server_callback.getThreadPointer()))
 
         return (True, "")

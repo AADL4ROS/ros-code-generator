@@ -10,8 +10,8 @@ set( CMAKE_CXX_STANDARD 11 )
 ### Packages ###
 ################
 find_package(catkin REQUIRED COMPONENTS
-	message_generation
 	geometry_msgs
+	message_generation
 	roscpp
 )
 
@@ -21,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
 	FILES
 	ServiceA.srv
-}
+)
 
 ##################################
 ### MSGS and SRVS Dependencies ###
@@ -34,7 +34,7 @@ generate_messages(
 #############
 ### Build ###
 #############
-include_directories(
+catkin_package()include_directories(
 	${catkin_INCLUDE_DIRS}
 	${ros_base_INCLUDE_DIRS}
 	include
