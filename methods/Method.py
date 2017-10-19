@@ -2,7 +2,6 @@ from CObject import CObject
 from comments.Comment import Comment
 import hashlib
 
-# @TODO: gestione Source Text
 class Method(CObject):
     def __init__(self, _associated_class):
         super().__init__( _associated_class )
@@ -14,7 +13,7 @@ class Method(CObject):
         self.codice_at_top      = []
         self.codice_at_middle   = []
         self.codice_at_bottom   = []
-        self.source_text        = None
+        self.source_text_file   = None
 
     def setLibrary(self, _library):
         self.library = _library
@@ -94,8 +93,12 @@ class Method(CObject):
             if another_method.library != None:
                 return False
 
-        if self.source_text != another_method.source_text:
-            return False
+        if self.source_text_file != None:
+            if not self.source_text_file.isEqualTo(another_method.source_text_file):
+                return False
+        else:
+            if another_method.source_text_file != None:
+                return False
 
         # Per controllare il contenuto del metodo, genero tutto il codice e controllo
         # che sia identico per i due metodi. Se necessario rimuovo i namespace che sono
@@ -142,6 +145,8 @@ class Method(CObject):
                     code += "\t" + s + "\n"
             elif isinstance(s, CObject):
                 code += "".join(["\t" + gen_s + "\n" for gen_s in s.generateCode().split("\n")])
+
+        # Chiamata a funzione custom DOPO tutto il resto del codice
 
         code += "}\n"
         code += "\n"

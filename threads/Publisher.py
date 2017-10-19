@@ -28,7 +28,7 @@ class Publisher(AADLThread):
 
         # Parametri del Publisher
         self.process_port       = None
-        self.source_text        = None
+        self.source_text_file   = None
         self.frequency_in_hz    = None
         self.period_in_seconds  = None
         self.topic              = None
@@ -109,10 +109,12 @@ class Publisher(AADLThread):
         ### Source Text ###
         ###################
 
-        self.source_text = tfs.getSourceText( thread_function )
+        self.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText( thread_function ),
+                                                                        tfs.getSourceName( thread_function ))
 
-        if self.source_text == None:
-            return (False, "Unable to find property Source_Text")
+        if self.source_text_file == None:
+            return (False, "Unable to find property Source_Text or Source_Name")
+        self.source_text_file.setFunctionType(self.output_type)
 
         #################
         ### FREQUENCY ###
@@ -144,15 +146,6 @@ class Publisher(AADLThread):
         (status, desc) = self.getDefaultTopicName(self.output_port_name, output=True)
         if status == False:
             return (status, desc)
-
-        #####################
-        ### STARTING TIME ###
-        #####################
-
-        var_starting_time = Variable(self.associated_class)
-        var_starting_time.setName( "starting_time_{}".format(self.name) )
-        var_starting_time.setType( Double(self.associated_class) )
-        self.associated_class.addVariable( var_starting_time )
 
         #####################
         ### PUBLISHER VAR ###
@@ -187,16 +180,11 @@ class Publisher(AADLThread):
         input_par.setName("")
         self.publisherCallback.addInputParameter( input_par )
 
-        self.publisherCallback.addMiddleCode("std_msgs::String msg;\n"
-                                             "std::stringstream ss;\n"
-                                             "ss << \"current time: \" << (ros::Time::now().toSec() - vars.{});\n"
-                                             "msg.data = ss.str().c_str();\n"
-                                             "{}.publish(msg);".format(var_starting_time.name, var_publisher_pub.name ))
-
-
-        comment_source_code = Comment( self.associated_class )
-        comment_source_code.setComment( "Source text: {}".format( self.source_text ) )
-        self.publisherCallback.addMiddleCode( comment_source_code )
+        # Aggiungo la chiamata alla funzione custome
+        if self.source_text_file != None:
+            code = "{}.publish({})".format(var_publisher_pub.name,
+                                           self.source_text_file.generateInlineCode())
+            self.publisherCallback.addMiddleCode(code)
 
         self.associated_class.addPrivateMethod( self.publisherCallback )
 
@@ -206,7 +194,5 @@ class Publisher(AADLThread):
         main_thread.prepare.addMiddleCode("{} = handle.createTimer(ros::Duration({}), {}, this);"
                                             .format(var_timer_pub.name, self.period_in_seconds,
                                                     self.publisherCallback.getThreadPointer() ))
-
-        main_thread.prepare.addMiddleCode("vars.{} = ros::Time::now().toSec();".format(var_starting_time.name))
 
         return (True, "")

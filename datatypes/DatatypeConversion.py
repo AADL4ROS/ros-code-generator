@@ -37,8 +37,13 @@ def getROSDatatypeFromASN1(asn_type, associated_class, is_msg_or_service = False
         ###############
         ### BOOLEAN ###
         ###############
-        "BOOLEAN": "Bool"
+        "BOOLEAN": "Bool",
 
+
+        ############
+        ### TIME ###
+        ############
+        "UTCTIME" : "Ros_Time"
     }
 
     if asn_type.upper() in mapping_asn_ros:
@@ -46,9 +51,16 @@ def getROSDatatypeFromASN1(asn_type, associated_class, is_msg_or_service = False
 
         # Nel caso in cui si stesse mandando una stringa in un messaggio oppure
         # in un servizio, questa viene gestita come std_msgs::String e non come
-        # una classica std::string
-        if is_msg_or_service and type_class_name == "String":
-            type_class_name = "StdMsgsString"
+        # una classica std::string. Stessa cosa per altre casistiche
+        if is_msg_or_service:
+            if type_class_name == "String":
+                type_class_name = "MsgSrv_String"
+
+            if type_class_name == "Ros_Time":
+                type_class_name = "MsgSrv_Time"
+
+            if type_class_name == "Double":
+                type_class_name = "Float64"
 
         type_class = getattr(datatypes.Type, type_class_name)
 

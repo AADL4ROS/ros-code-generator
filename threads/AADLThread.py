@@ -1,8 +1,7 @@
-import os
-import datetime
-import XMLTags
+from includes.SourceTextFile import SourceTextFile
 import threads.AADLThreadFunctionsSupport as tfs
 import re
+from datatypes.Type import Void
 
 # isMainThread()
 # Funzione usata da AADLProcess, viene scritta qua per rendere uniforme il codice
@@ -93,6 +92,17 @@ class AADLThread():
 
         # Nome del thread
         self.name       = tfs.getName( self.thread )
+
+    def createSourceTextFileFromSourceText(self, source_text, source_name, function_type = Void()):
+        if source_text == None or source_name == None:
+            return None
+
+        source_text_file = SourceTextFile(self.associated_class, source_text, source_name)
+        source_text_file.setFunctionType( function_type )
+
+        self.associated_class.addSourceFile(source_text_file)
+
+        return source_text_file
 
     # getDefaultTopicName
     # A partire dal thread attuale, cerca il nome di default del topic associato alla connessione

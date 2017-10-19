@@ -41,9 +41,16 @@ class Variable(CObject):
     def generateCodeForMessageAndService(self):
         return "{} {}".format(self.type.generateCodeForMessageAndService(), self.name)
 
-    def generateCode(self):
+    # Usata dei costrutturi delle struct
+    def generateCodeOnlyAssignment(self):
+        if self.default_value == None:
+            return ""
+
+        return "{} = {};".format(self.name, self.default_value)
+
+    def generateCode(self, generate_default_value = True):
         default = ""
-        if self.default_value != None:
+        if self.default_value != None and generate_default_value:
             default = " = {}".format( self.default_value )
 
         punto_e_virgola = ";"

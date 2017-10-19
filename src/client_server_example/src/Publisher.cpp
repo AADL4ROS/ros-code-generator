@@ -1,9 +1,12 @@
 /**
  * Node Publisher
- * File auto-generated on 19/10/2017 10:54:16
+ * File auto-generated on 19/10/2017 16:38:15
  */
 #include "ros_base/ROSNode.h"
+#include "client_server_example/prepare_pub.h"
+#include "client_server_example/Publisher_configuration.h"
 #include "std_msgs/String.h"
+#include "client_server_example/publisher.h"
 
 
 class Publisher : public ros_base::ROSNode {
@@ -12,9 +15,6 @@ private:
 	void tearDown();
 	void errorHandling();
 	void publisher_callback(const ros::TimerEvent& );
-	struct vars {
-		double starting_time_publisher;
-	} vars;
 	ros::Publisher pub_publisher;
 	ros::Timer timer_publisher;
 public:
@@ -43,9 +43,14 @@ int main(int argc, char** argv) {
  * Method prepare auto-generated
  */
 bool Publisher::prepare() {
+	Parameters p;
+	handle.param<std::string>("stringName", params.stringName, "ciao");
+	handle.param<double>("testReal", params.testReal, 0);
+	handle.getParam("testNoDefault", params.testNoDefault);
+	is.initialize(&p);
 	pub_publisher = handle.advertise < std_msgs::String > ("/out_topic", 10);
 	timer_publisher = handle.createTimer(ros::Duration(0.01), &Publisher::publisher_callback, this);
-	vars.starting_time_publisher = ros::Time::now().toSec();
+	custom_prepare( is.vars(), is.params());
 	return true;
 }
 
@@ -68,15 +73,7 @@ void Publisher::errorHandling() {
  * Method publisher_callback auto-generated
  */
 void Publisher::publisher_callback(const ros::TimerEvent& ) {
-	std_msgs::String msg;
-	std::stringstream ss;
-	ss << "current time: " << (ros::Time::now().toSec() - vars.starting_time_publisher);
-	msg.data = ss.str().c_str();
-	pub_publisher.publish(msg);
-	/**
-	 * Source text: publisher.cpp
-	 */
-	
+	pub_publisher.publish(funzione_publisher( is.vars(), is.params()))
 }
 
 /**

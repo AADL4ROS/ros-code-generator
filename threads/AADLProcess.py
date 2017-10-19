@@ -2,6 +2,7 @@ import threads.AADLThreadFunctionsSupport as tfs
 from comments.Comment import Comment
 import datetime
 from threads.AADLThread import isMainThread
+from libraries.Library import Library
 
 class AADLProcess():
     def __init__(self, process, system_root, system):
@@ -25,6 +26,16 @@ class AADLProcess():
         self.class_public_methods   = []
         self.class_private_methods  = []
 
+        ######################
+        ### INTERNAL STATE ###
+        ######################
+        self.node_configuration = None
+
+        ####################
+        ### SOURCE FILES ###
+        ####################
+        self.source_text_files = []
+
         #########################################
         ### PARAMETRI PER GESTIONE DEL SYSTEM ###
         #########################################
@@ -46,14 +57,18 @@ class AADLProcess():
     ###############
     ### LIBRARY ###
     ###############
-    def addLibrary(self, _lib):
+    def addLibrary(self, _lib, add_to_cmake = True, add_to_package_xml = True):
         for l in self.class_libraries:
             if l.isEqualTo(_lib):
                 return False
 
         self.class_libraries.append( _lib )
-        self.system.cmake_list.addPackage( _lib )
-        self.system.package_xml.addDependency( _lib )
+
+        if add_to_cmake:
+            self.system.cmake_list.addPackage( _lib )
+
+        if add_to_package_xml:
+            self.system.package_xml.addDependency( _lib )
         return True
 
     def removeLibrary(self, _lib):
@@ -64,6 +79,23 @@ class AADLProcess():
             return True
         except ValueError:
             return False
+
+    #######################################
+    ### INTERNAL STATE AND SOURCE FILES ###
+    #######################################
+
+    def setNodeConfiguration(self, node_config):
+        self.node_configuration = node_config
+        self.addSourceFile( self.node_configuration )
+
+    def addSourceFile(self, source_file):
+        self.source_text_files.append(source_file)
+
+        source_import = Library()
+        source_import.setPath( source_file.getSourceLibraryPath() )
+
+        self.addLibrary(source_import, add_to_cmake = False, add_to_package_xml = False)
+
 
     #################
     ### PARAMTERS ###
@@ -156,8 +188,11 @@ class AADLProcess():
     def isEqualTo(self, another_process):
 
         # Include le stesse librerie
+        # Res > 1 nel caso in cui ci sia la node configuration, altrimenti no
         res = self.compareList(self.class_libraries, another_process.class_libraries)
-        if res != 0:
+        if res > 1 and self.node_configuration != None:
+            return False
+        elif res != 0 and self.node_configuration == None:
             return False
 
         # Ha gli stessi parametri
@@ -179,7 +214,7 @@ class AADLProcess():
         # La costante NODE_NAME è da saltare, poichè contiene il nome del nodo che sarebbe diverso
         # in ogni caso per due nodi identici con le stesse caratteristiche
         res = self.compareList(self.class_constants, another_process.class_constants)
-        if res > 1:
+        if res != 0:
             return False
 
         # Per i metodi devo saltare il nome del metodo costruttore, altrimenti due nodi con nomi
@@ -285,7 +320,7 @@ class AADLProcess():
 
         # Chiudo l'intestazione della classe
         code += "};"
-        code += "\n\n";
+        code += "\n\n"
 
         ##############################
         ### METODI IMPLEMENTAZIONE ###

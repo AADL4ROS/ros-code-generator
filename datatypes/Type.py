@@ -84,7 +84,7 @@ class Nothing(Type):
         self.setTypeName( "" )
 
 class Void(Type):
-    def __init__(self, _associated_class):
+    def __init__(self, _associated_class = None):
         super().__init__( _associated_class )
         self.setTypeName( "void" )
 
@@ -108,6 +108,11 @@ class Double(Type):
         super().__init__( _associated_class )
         self.setTypeName( "double" )
 
+class Float64(Type):
+    def __init__(self, _associated_class):
+        super().__init__( _associated_class )
+        self.setTypeName( "float64" )
+
 class String(Type):
     def __init__(self, _associated_class):
         super().__init__( _associated_class )
@@ -120,6 +125,11 @@ class StdMsgsString(Type):
         self.setNamespace( "std_msgs" )
         self.setTypeName( "String" )
 
+class MsgSrv_String(Type):
+    def __init__(self, _associated_class):
+        super().__init__( _associated_class )
+        self.setTypeName( "string" )
+
 class Char(Type):
     def __init__(self, _associated_class):
         super().__init__( _associated_class )
@@ -129,6 +139,17 @@ class PointerToCharPointer(Type): #char **
     def __init__(self, _associated_class):
         super().__init__( _associated_class )
         self.setTypeName( "char**" )
+
+class ROS_Time(Type):
+    def __init__(self, _associated_class):
+        super().__init__( _associated_class )
+        self.setNamespace("ros")
+        self.setTypeName( "Time" )
+
+class MsgSrv_Time(Type):
+    def __init__(self, _associated_class):
+        super().__init__( _associated_class )
+        self.setTypeName( "time" )
 
 class ROS_TimerEvent(Type):
     def __init__(self, _associated_class):

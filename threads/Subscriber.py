@@ -28,7 +28,7 @@ class Subscriber(AADLThread):
 
         # Parametri del Subscriber
         self.process_port       = None
-        self.source_text        = None
+        self.source_text_file   = None
         self.topic              = None
         self.subscriberCallback = None
         self.input_type         = None
@@ -111,10 +111,11 @@ class Subscriber(AADLThread):
         ### Source Text ###
         ###################
 
-        self.source_text = tfs.getSourceText( thread_function )
+        self.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
+                                                                        tfs.getSourceName(thread_function))
 
-        if self.source_text == None:
-            return (False, "Unable to find property Source_Text")
+        if self.source_text_file == None:
+            return (False, "Unable to find property Source_Text or Source_Name")
 
         #############
         ### TOPIC ###
@@ -159,12 +160,12 @@ class Subscriber(AADLThread):
         input_var.setIsParameter()
 
         self.subscriberCallback.addInputParameter( input_var )
+        self.source_text_file.addFunctionParameter( input_var )
 
-        self.subscriberCallback.addMiddleCode("ROS_INFO(\"%s\", {}->data.c_str());".format( input_var.name ))
-
-        comment_source_code = Comment( self.associated_class )
-        comment_source_code.setComment( "Source text: {}".format( self.source_text ) )
-        self.subscriberCallback.addMiddleCode( comment_source_code )
+        # Aggiungo la chiamata alla funzione custome
+        if self.source_text_file != None:
+            code = "{};".format(self.source_text_file.generateInlineCode())
+            self.subscriberCallback.addMiddleCode(code)
 
         self.associated_class.addPrivateMethod( self.subscriberCallback )
 

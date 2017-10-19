@@ -1,4 +1,4 @@
-double x
-double y
+float64 z
 std_msgs/String name
-double z
+float64 x
+float64 y

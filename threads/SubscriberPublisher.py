@@ -30,7 +30,7 @@ class SubscriberPublisher(AADLThread):
         self.output_port_name   = "msg_out"
 
         # Parametri comuni
-        self.source_text = None
+        self.source_text_file = None
 
         # Parametri della parte Subcriber
         self.sub_process_port       = None
@@ -281,13 +281,13 @@ class SubscriberPublisher(AADLThread):
         ### SOURCE TEXT ###
         ###################
 
-        self.source_text = tfs.getSourceText(thread_function)
-
-        if self.source_text == None:
-            return (False, "Unable to find property Source_Text")
-
-        comment_source_code = Comment(self.associated_class)
-        comment_source_code.setComment("Source text: {}".format(self.source_text))
-        self.sub_callback.addMiddleCode(comment_source_code)
+        self.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
+                                                                                tfs.getSourceName(thread_function))
+        # Aggiungo la chiamata alla funzione custome
+        if self.source_text_file != None:
+            code = "{};".format(self.source_text_file.generateInlineCode())
+            self.sub_callback.addMiddleCode(code)
+        else:
+            return (False, "Unable to find Source_Text or Source_Name")
 
         return (True, "")

@@ -13,14 +13,16 @@ from methods.TearDown       import TearDown
 from methods.ErrorHandling  import ErrorHandling
 from methods.NodeSigintHandler import NodeSigintHandler
 from methods.Main           import Main
-from constants.Constant     import Constant
 from asn1tools.parser import parse_file
 
 import os
 from datatypes.DatatypeConversion import getROSDatatypeFromASN1
 from variables.Variable import Variable
 
-from datatypes.Type import String as StdString
+from structs.ParametersStruct import ParametersStruct
+from structs.VariablesStruct import VariablesStruct
+from includes.NodeConfiguration import NodeConfiguration
+
 import re
 
 ###################
@@ -111,8 +113,7 @@ class MainThread(AADLThread):
             tmp_param.setType(getROSDatatypeFromASN1(var_type, self.associated_class))
             tmp_param.setName(var_name)
 
-            # @TODO: Non si può fare nelle struct, verrà aggiunto in CFG
-            #tmp_param.setDefaultValue(default_val)
+            tmp_param.setDefaultValue(default_val)
 
             if index < len(params_asn):
                 parameters.append(tmp_param)
@@ -125,14 +126,27 @@ class MainThread(AADLThread):
         # Ottengo tutti i dati relativi al main thread
         (prepare, tearDown, errorHandler) = tfs.getMainThreadFunctions( self.thread )
 
-        self.prepare                = Prepare( self.associated_class )
-        self.prepare.source_text    = tfs.getSourceText( prepare )
+        self.prepare = Prepare( self.associated_class )
+        self.prepare.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText( prepare ),
+                                                                                "custom_prepare" )
 
-        self.tearDown               = TearDown( self.associated_class )
-        self.tearDown.source_text   = tfs.getSourceText( tearDown )
+        self.tearDown = TearDown( self.associated_class )
+        self.tearDown.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText( tearDown ),
+                                                                                 "custom_teardown" )
 
-        self.errorHandling              = ErrorHandling( self.associated_class )
-        self.errorHandling.source_text  = tfs.getSourceText( errorHandler )
+        # Aggiungo la chiamata alla funzione custome
+        if self.tearDown.source_text_file != None:
+            code = "{};".format(self.tearDown.source_text_file.generateInlineCode())
+            self.tearDown.addMiddleCode(code)
+
+        self.errorHandling = ErrorHandling( self.associated_class )
+        self.errorHandling.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText( errorHandler ),
+                                                                                      "custom_errorHandling" )
+
+        # Aggiungo la chiamata alla funzione custome
+        if self.errorHandling.source_text_file != None:
+            code = "{};".format(self.errorHandling.source_text_file.generateInlineCode())
+            self.errorHandling.addBottomCode(code)
 
         self.associated_class.addPrivateMethod( self.prepare )
         self.associated_class.addPrivateMethod( self.tearDown )
@@ -141,23 +155,52 @@ class MainThread(AADLThread):
         # Ottengo lo stato (parameters, variables) in ASN.1 del nodo
         (parameters, variables) = self.getStateASN()
 
-        for p in parameters:
-            self.associated_class.addParameter(p)
+        # Se ho almeno parametri o variabili, allora genero
+        # anche la node configuration, altrimenti no
+        if len(parameters) > 0 or len(variables) > 0:
+            node_conf = NodeConfiguration(self.associated_class)
+            self.associated_class.setNodeConfiguration(node_conf)
 
-            if p.hasDefaultValue():
-                self.prepare.addMiddleCode("handle.param<{}>(\"{}\", params.{}, {});"
-                                           .format(p.type.generateCode(),
-                                                   p.name,
-                                                   p.name,
-                                                   p.default_value))
+            if len(variables) > 0:
+                vars_struct = VariablesStruct(self.associated_class)
+
+                for v in variables:
+                    vars_struct.addVariable(v)
+
+                self.associated_class.node_configuration.addStruct(vars_struct)
+                self.associated_class.node_configuration.has_variables = True
+
+            # Se ho dei parametri, allora genero la struct
+            if len(parameters) > 0:
+                params_struct = ParametersStruct(self.associated_class)
+                self.prepare.addTopCode("Parameters p;")
+
+                for p in parameters:
+                    params_struct.addVariable(p)
+                    if p.hasDefaultValue():
+                        self.prepare.addMiddleCode("handle.param<{}>(\"{}\", params.{}, {});"
+                                                   .format(p.type.generateCode(),
+                                                           p.name,
+                                                           p.name,
+                                                           p.default_value))
+                    else:
+                        self.prepare.addMiddleCode("handle.getParam(\"{}\", params.{});"
+                                                   .format(p.name, p.name))
+
+                    log.info("Parameters: {}".format(p.generateCode()))
+
+                self.prepare.addMiddleCode("is.initialize(&p);")
+                self.associated_class.node_configuration.addStruct(params_struct)
+                self.associated_class.node_configuration.has_parameters = True
             else:
-                self.prepare.addMiddleCode("handle.getParam(\"{}\", params.{});"
-                                           .format(p.name, p.name))
-            log.info("Parameters: {}".format(p.generateCode()) )
+                self.prepare.addMiddleCode("is.initialize();")
 
-        for v in variables:
-            self.associated_class.addVariable(v)
+        # Aggiungo la chiamata alla funzione custome
+        if self.prepare.source_text_file != None:
+            code = "{};".format(self.prepare.source_text_file.generateInlineCode())
+            self.prepare.addBottomCode( code )
 
+        # Return alla fine del metodo main
         self.prepare.addBottomCode("return true;")
 
         return (True, "")

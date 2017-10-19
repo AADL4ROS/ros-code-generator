@@ -11,8 +11,8 @@ set( CMAKE_CXX_STANDARD 11 )
 ################
 find_package(catkin REQUIRED COMPONENTS
 	std_msgs
-	roscpp
 	message_generation
+	roscpp
 )
 
 ################

@@ -10,6 +10,7 @@ src_folder_name     = 'src'
 service_folder_name = 'srv'
 message_folder_name = 'msg'
 launch_folder_name  = 'launch'
+include_folder_name = 'include'
 
 def createFolderTreeForSystem(namespace, delete = True):
 
@@ -29,11 +30,17 @@ def createFolderTreeForSystem(namespace, delete = True):
         os.makedirs(system_folder)
 
     # Creo le altre cartelle
-    other_folders = [src_folder_name, launch_folder_name, service_folder_name, message_folder_name]
+    other_folders = [src_folder_name, launch_folder_name, service_folder_name,
+                     message_folder_name, include_folder_name]
     for f in other_folders:
         path = os.path.join(system_folder, f)
         if not os.path.exists(path):
             os.makedirs( path )
+
+    # Per la cartella include creo anche la sottocartella con il nome del package
+    path = os.path.join(system_folder, include_folder_name, system_name)
+    if not os.path.exists(path):
+        os.makedirs(path)
 
     return system_folder
 
@@ -58,6 +65,9 @@ def getServiceFolderForSystemFolder(system_folder):
 
 def getMessageFolderForSystemFolder(system_folder):
     return os.path.join(system_folder, message_folder_name)
+
+def getIncludeFolderForSystemFolder(system_folder):
+    return os.path.join(system_folder, include_folder_name)
 
 # Usato dal CMake per avere src/nome_file.cpp
 def getOnlySrcPathForNode(node_filename):

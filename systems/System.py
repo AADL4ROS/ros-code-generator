@@ -205,6 +205,13 @@ class System():
         n = self.launch_file.retrieveNode(node.aadl_node_name)
         n.type = node.type
 
+        # Genero i file da includere
+        if node.node_configuration != None:
+            node.node_configuration.saveFile()
+
+        for f in node.source_text_files:
+            f.saveFile()
+
     #############################
     ### MESSAGES AND SERVICES ###
     #############################
