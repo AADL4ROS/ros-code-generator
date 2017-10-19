@@ -12,8 +12,8 @@ set( CMAKE_CXX_STANDARD 11 )
 find_package(catkin REQUIRED COMPONENTS
 	std_msgs
 	roscpp
-	geometry_msgs
 	message_generation
+	geometry_msgs
 )
 
 ################
@@ -29,8 +29,8 @@ add_service_files(
 ##################################
 generate_messages(
 	DEPENDENCIES
-	geometry_msgs
 	std_msgs
+	geometry_msgs
 )
 
 #############

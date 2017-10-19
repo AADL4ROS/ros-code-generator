@@ -1,5 +1,4 @@
 import os
-import FolderTreeFunctions as folderTree
 
 kCMAKE_LIST_FILENAME = "CMakeLists.txt"
 

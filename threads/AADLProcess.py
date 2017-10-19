@@ -13,8 +13,9 @@ class AADLProcess():
         ##############################
         ### PARAMETRI DELLA CLASSE ###
         ##############################
-        self.class_name             = tfs.getName( self.process ).title()
-        self.node_name              = tfs.getName( self.process ).title()
+        self.aadl_node_name         = tfs.getName( self.process )
+        self.class_name             = self.aadl_node_name.title()
+        self.node_name              = self.aadl_node_name.title()
         self.type                   = tfs.getType( self.process )
         self.class_libraries        = []
         self.class_params           = []

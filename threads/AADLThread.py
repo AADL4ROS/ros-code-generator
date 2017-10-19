@@ -61,9 +61,9 @@ def getPythonClassFromAADLThreadType(aadl_thread_type):
     ######################
 
     # Identifica i thread di tipo service client
-    service_client = re.compile("client([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
-    if service_client.match(aadl_thread_type) != None:
-        return "ServiceClient"
+    #service_client = re.compile("client([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
+    #if service_client.match(aadl_thread_type) != None:
+    #    return "ServiceClient"
 
     ######################
     ### SERVICE SERVER ###

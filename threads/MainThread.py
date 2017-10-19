@@ -50,10 +50,10 @@ class MainThread(AADLThread):
         self.associated_class.addPrivateMethod( main )
 
         # Creo la costante con il nome del nodo
-        const_node_name = Constant()
-        const_node_name.setName("NODE_NAME")
-        const_node_name.setValue(self.associated_class.node_name)
-        self.associated_class.addConstant( const_node_name )
+        # const_node_name = Constant()
+        # const_node_name.setName("NODE_NAME")
+        # const_node_name.setValue(self.associated_class.node_name)
+        # self.associated_class.addConstant( const_node_name )
 
         # Creo il metodo costruttore per la classe
         self.constructor = Constructor( self.associated_class )

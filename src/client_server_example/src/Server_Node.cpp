@@ -1,12 +1,11 @@
 /**
  * Node Server_Node
- * File auto-generated on 18/10/2017 16:16:41
+ * File auto-generated on 19/10/2017 10:54:16
  */
 #include "ros_base/ROSNode.h"
 #include "custom_srvs/ServiceA.h"
 #include "custom_msgs/Complex.h"
 
-#define NODE_NAME "Server_Node"
 
 class Server_Node : public ros_base::ROSNode {
 private:
@@ -32,7 +31,7 @@ void nodeSigintHandler(int sig) {
  * Method main auto-generated
  */
 int main(int argc, char** argv) {
-	ros::init(argc, argv, Server_Node, ros::init_options::NoSigintHandler);
+	ros::init(argc, argv, "Server_Node", ros::init_options::NoSigintHandler);
 	signal(SIGINT, nodeSigintHandler);
 	Server_Node node;
 	node.start();

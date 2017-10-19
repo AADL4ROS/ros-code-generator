@@ -1,12 +1,15 @@
 import XMLTags
 import logging
 log = logging.getLogger("root")
+import FolderTreeFunctions as folderTree
+import os
 
 class LaunchFile():
-    def __init__(self, system_root):
-        self.system = system_root
-        self.system_name = self.system.find(XMLTags.tags['TAG_TYPE']).text
-        #self.system_name = self.system_name.replace(".", "_")
+    def __init__(self, system):
+        self.system = system
+
+        self.system_root = self.system.system_root
+        self.system_name = self.system_root.find(XMLTags.tags['TAG_TYPE']).text
 
         self.nodes = []
 
@@ -14,7 +17,7 @@ class LaunchFile():
 
         self.system_namespace = None
         try:
-            self.system_namespace = self.system.find(XMLTags.tags['TAG_NAMESPACE']).text
+            self.system_namespace = self.system.namespace
         except Exception:
             log.error("Unable to retrieve system namespace")
 
@@ -35,6 +38,15 @@ class LaunchFile():
 
     def addSubSystem(self, sub_sys):
         self.subsystems.append(sub_sys)
+
+    def saveLaunchFile(self):
+        output_folder = folderTree.getLaunchFolderForSystemFolder(self.system.system_folder)
+
+        filename = "{}.launch".format(self.system_name)
+        source_output_path = os.path.join(output_folder, filename)
+
+        with open(source_output_path, 'w+') as file:
+            file.write(self.generateCode())
 
     def generateCode(self):
         text = ""

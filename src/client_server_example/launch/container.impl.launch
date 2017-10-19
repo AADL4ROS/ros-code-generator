@@ -1,0 +1,19 @@
+<launch>
+	<node name="publisher_2" type="publisher.impl" pkg="client_server_example">
+		<remap from="/out_topic" to="/pubsub" />
+	</node>
+	
+	<node name="talk_list_node" type="talk_list.impl" pkg="client_server_example">
+		<remap from="/in_topic" to="/pubsub" />
+		<remap from="/out_topic" to="/re-sub-pub" />
+	</node>
+	
+	<node name="publisher" type="publisher.impl" pkg="client_server_example">
+		<remap from="/out_topic" to="/pubsub" />
+	</node>
+	
+	<node name="server_node" type="server_node.impl" pkg="client_server_example">
+		<remap from="/out_topic" to="/re-sub-pub" />
+	</node>
+	
+</launch>

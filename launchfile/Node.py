@@ -9,9 +9,9 @@ import threads.AADLThreadFunctionsSupport as tfs
 class Node():
     def __init__(self, process):
         self.process    = process
-        self.name       = process.find(XMLTags.tags['TAG_NAME']).text
-        self.type       = process.find(XMLTags.tags['TAG_TYPE']).text
-        self.namespace  = process.find(XMLTags.tags['TAG_NAMESPACE']).text
+        self.name       = tfs.getName(process)
+        self.type       = tfs.getType(process)
+        self.namespace  = tfs.getNamespace(process)
 
         self.remap = []
         self.topic_ports = {}

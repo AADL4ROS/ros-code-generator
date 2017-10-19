@@ -1,12 +1,11 @@
 /**
  * Node Talk_List_Node
- * File auto-generated on 18/10/2017 16:16:41
+ * File auto-generated on 19/10/2017 10:54:16
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
 #include "custom_msgs/Complex.h"
 
-#define NODE_NAME "Talk_List_Node"
 
 class Talk_List_Node : public ros_base::ROSNode {
 private:
@@ -41,7 +40,7 @@ void nodeSigintHandler(int sig) {
  * Method main auto-generated
  */
 int main(int argc, char** argv) {
-	ros::init(argc, argv, Talk_List_Node, ros::init_options::NoSigintHandler);
+	ros::init(argc, argv, "Talk_List_Node", ros::init_options::NoSigintHandler);
 	signal(SIGINT, nodeSigintHandler);
 	Talk_List_Node node;
 	node.start();

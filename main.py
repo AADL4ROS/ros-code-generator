@@ -78,7 +78,7 @@ def renameNodeClassIfAlreadyExisting(p, system_folder):
         source_output_path = os.path.join(src_folder, filename)
         name_index += 1
 
-def generateCodeForSystem(system_root):
+def generateCodeForSystem(system_root, system_parent):
 
     # Generando il system si generano anche i file CMakeLists e PackageXML
     # Viene generata tutto l'albero delle cartelle e viene resettato se necessario
@@ -88,6 +88,17 @@ def generateCodeForSystem(system_root):
     if system == None:
         system = System(system_root)
         sm.addSystem(system)
+
+    # Se il system non ha un launch file associato e serve crearlo, allora lo creo
+    # Il launch file a questo punto è vuoto
+    if system.launch_file == None:
+        system.createLaunchFile()
+
+        # Se ho un genitore, ovvero un system che mi ha incluso,
+        # lo avviso che dovrà includermi
+        if system_parent != None:
+            if system_parent.launch_file != None:
+                system_parent.launch_file.addSubSystem( system.launch_file )
 
     # Ricerco tutti i processi all'interno del system
     processes = system_root.findall("./" +
@@ -154,24 +165,35 @@ system_root = tree.getroot()
 # Siccome itererò su tutti i vari system disponbili, inzio ad aggiungere
 # la mia system root, dopo mano a mano aggiungerò anche tutti gli altri system su
 # cui fare code-generation
-systems         = [system_root]
+systems = [{
+    'system' : system_root,
+    'parent' : None
+}]
 
 while len(systems) > 0:
     s = systems.pop(0)
 
-    generateCodeForSystem(s)
-
-    # @TODO: una volta generato un system controllo le connessioni
+    generateCodeForSystem(s['system'], s['parent'])
 
     # Mi cerco eventuali system dentro ad altri system. Questo serve nel caso in cui un
     # system sia usato come subcomponents di un altro system. La cosa è ricorsiva, poiché
     # di volta in volta la system_root diventa il system considerato.
     # La prima visita si fa comunque alla system root, dopo si passa a visitare ricorsivamente
     # tutti i vari system
-    systems.extend( s.findall("./" +
-                          XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
-                          XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
-                            XMLTags.tags['TAG_SYSTEM'] + "/" +
-                          "[" + XMLTags.tags['TAG_CATEGORY'] + "='system']") )
+    sub_systems = s['system'].findall("./" +
+                                XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
+                                XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
+                                XMLTags.tags['TAG_SYSTEM'] + "/" +
+                                "[" + XMLTags.tags['TAG_CATEGORY'] + "='system']")
+
+    # Io so chi è il genitore dei nodi, mi basta chiedere il system con quel certo
+    # namespace al systems manager
+    system_parent = sm.getSystemForNamespace(tfs.getNamespace(s['system']))
+
+    for sub_sys in sub_systems:
+        systems.append({
+            'system': sub_sys,
+            'parent': system_parent
+        })
 
 sm.generateAllSystems()

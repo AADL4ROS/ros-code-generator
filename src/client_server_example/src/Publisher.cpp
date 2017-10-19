@@ -1,11 +1,10 @@
 /**
  * Node Publisher
- * File auto-generated on 18/10/2017 16:16:41
+ * File auto-generated on 19/10/2017 10:54:16
  */
 #include "ros_base/ROSNode.h"
 #include "std_msgs/String.h"
 
-#define NODE_NAME "Publisher"
 
 class Publisher : public ros_base::ROSNode {
 private:
@@ -33,7 +32,7 @@ void nodeSigintHandler(int sig) {
  * Method main auto-generated
  */
 int main(int argc, char** argv) {
-	ros::init(argc, argv, Publisher, ros::init_options::NoSigintHandler);
+	ros::init(argc, argv, "Publisher", ros::init_options::NoSigintHandler);
 	signal(SIGINT, nodeSigintHandler);
 	Publisher node;
 	node.start();

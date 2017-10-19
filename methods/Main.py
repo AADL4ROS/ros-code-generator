@@ -26,7 +26,7 @@ class Main(Method):
         self.addInputParameter( input_argc )
         self.addInputParameter( input_argv )
 
-        self.addTopCode( "ros::init(argc, argv, {}, ros::init_options::NoSigintHandler);"
+        self.addTopCode( "ros::init(argc, argv, \"{}\", ros::init_options::NoSigintHandler);"
                          .format(self.associated_class.node_name))
         self.addTopCode("signal(SIGINT, nodeSigintHandler);")
 
