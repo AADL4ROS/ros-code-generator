@@ -10,17 +10,18 @@ set( CMAKE_CXX_STANDARD 11 )
 ### Packages ###
 ################
 find_package(catkin REQUIRED COMPONENTS
-	roscpp
-	custom_srvs
-	custom_msgs
 	ros_base
+	custom_msgs
+	roscpp
 	std_msgs
+	custom_srvs
 )
 
 #############
 ### Build ###
 #############
-catkin_package()include_directories(
+catkin_package()
+include_directories(
 	${catkin_INCLUDE_DIRS}
 	${ros_base_INCLUDE_DIRS}
 	include

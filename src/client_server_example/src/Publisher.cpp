@@ -1,6 +1,6 @@
 /**
  * Node Publisher
- * File auto-generated on 19/10/2017 18:08:22
+ * File auto-generated on 19/10/2017 18:13:28
  */
 #include "ros_base/ROSNode.h"
 #include "client_server_example/prepare_pub.h"

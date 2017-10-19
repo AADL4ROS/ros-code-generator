@@ -172,7 +172,7 @@ class CMakeLists():
         text += self.generateHeaderCommentWithText("Build")
 
         # Aggiungo la chiamata a catkin_package
-        text += "catkin_package()"
+        text += "catkin_package()\n"
 
         text += "include_directories(\n"
         text += "\t${catkin_INCLUDE_DIRS}\n"

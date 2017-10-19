@@ -10,8 +10,8 @@ set( CMAKE_CXX_STANDARD 11 )
 ### Packages ###
 ################
 find_package(catkin REQUIRED COMPONENTS
-	roscpp
 	message_generation
+	roscpp
 	geometry_msgs
 )
 
@@ -34,7 +34,8 @@ generate_messages(
 #############
 ### Build ###
 #############
-catkin_package()include_directories(
+catkin_package()
+include_directories(
 	${catkin_INCLUDE_DIRS}
 	${ros_base_INCLUDE_DIRS}
 	include
