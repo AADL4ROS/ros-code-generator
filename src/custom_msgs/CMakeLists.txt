@@ -12,7 +12,6 @@ set( CMAKE_CXX_STANDARD 11 )
 find_package(catkin REQUIRED COMPONENTS
 	message_generation
 	roscpp
-	std_msgs
 )
 
 ################
@@ -21,14 +20,6 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
 	FILES
 	Complex.msg
-)
-
-##################################
-### MSGS and SRVS Dependencies ###
-##################################
-generate_messages(
-	DEPENDENCIES
-	std_msgs
 )
 
 #############

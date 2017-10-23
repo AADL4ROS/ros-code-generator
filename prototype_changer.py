@@ -105,4 +105,4 @@ def replace_prototypes(aadl_file, location=''):
         in_pkg_file.close()
         out_pkg_file.close()
 
-replace_prototypes("client_server_example.aadl", "/home/gianluca/development/robot-models/aadl-ros/packages/")
+replace_prototypes("client_server_example.aadl", "../Osate/aadl-ros-new/packages/")

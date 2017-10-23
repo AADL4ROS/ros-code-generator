@@ -1,12 +1,13 @@
 /**
  * Node Talk_List_Node
- * File auto-generated on 19/10/2017 18:13:28
+ * File auto-generated on 23/10/2017 14:52:38
  */
 #include "ros_base/ROSNode.h"
 #include "client_server_example/Talk_List_Node_configuration.h"
 #include "std_msgs/String.h"
 #include "custom_msgs/Complex.h"
 #include "client_server_example/talk_list.h"
+#include "ros_base/tf_interface.h"
 
 
 class Talk_List_Node : public ros_base::ROSNode {
@@ -18,6 +19,7 @@ private:
 	InternalState is;
 	ros::Subscriber sub_call_pub;
 	ros::Publisher pub_call_pub;
+	ros_base::TransformationFrames * tf;
 public:
 	 Talk_List_Node();
 };
@@ -47,7 +49,6 @@ bool Talk_List_Node::prepare() {
 	Parameters p;
 	handle.param<std::string>("stringName", p.stringName, "ciao");
 	handle.param<double>("testReal", p.testReal, 0);
-	handle.getParam("testNoDefault", p.testNoDefault);
 	is.initialize(&p);
 	sub_call_pub = handle.subscribe("/in_topic", 1, &Talk_List_Node::call_pub_callback, this);
 	pub_call_pub = handle.advertise<custom_msgs::Complex>("/out_topic", 10);
@@ -73,7 +74,7 @@ void Talk_List_Node::errorHandling() {
  * Method call_pub_callback auto-generated
  */
 void Talk_List_Node::call_pub_callback(const std_msgs::String::ConstPtr& msg) {
-	pub_call_pub.publish(funzione_talk_list( is.vars(), is.params(), msg));
+	pub_call_pub.publish(funzione_talk_list( is.vars(), is.params(), msg, tf));
 }
 
 /**
@@ -81,5 +82,6 @@ void Talk_List_Node::call_pub_callback(const std_msgs::String::ConstPtr& msg) {
  */
  Talk_List_Node::Talk_List_Node() {
 	setName(ros::this_node::getName());
+	tf = new ros_base::TransformationFrames();
 }
 

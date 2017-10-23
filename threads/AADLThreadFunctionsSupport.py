@@ -50,6 +50,55 @@ def getSubprogram(thread):
     return thread_function
 
 """
+    TRANSFORMATION FRAME
+"""
+
+def hasTransformationFrameEnabledInSystem(system):
+    try:
+        tf = system.find("./" +
+                                    XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
+                                        XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
+                                            "[" + XMLTags.tags['TAG_CATEGORY']  + "='data']" + "/" +
+                                            "[" + XMLTags.tags['TAG_TYPE']      + "='tf']" + "/" +
+                                            "[" + XMLTags.tags['TAG_NAMESPACE'] + "='ros']")
+
+        return (tf != None)
+    except:
+        return False
+
+def getSystemTransformationFrameSubcomponentName(system):
+    try:
+        tf_name = system.find("./" +
+                                    XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
+                                        XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
+                                            "[" + XMLTags.tags['TAG_CATEGORY']  + "='data']" + "/" +
+                                            "[" + XMLTags.tags['TAG_TYPE']      + "='tf']" + "/" +
+                                            "[" + XMLTags.tags['TAG_NAMESPACE'] + "='ros']")
+
+        return getName(tf_name)
+    except:
+        return None
+
+def isConnectedToSystemTransformationFrame(system, process_name, port_name):
+    tf_system_name = getSystemTransformationFrameSubcomponentName(system)
+    if tf_system_name == None:
+        return False
+
+    try:
+        has_connection = system.find("./" +
+                                    XMLTags.tags['TAG_CONNECTIONS'] + "/" +
+                                    XMLTags.tags['TAG_CONNECTION'] + "/" +
+                                    XMLTags.tags['TAG_CONNECTION_PORT_INFO'] + "/" +
+                                    "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_PARENT_DEST'] + "='" + process_name + "']" +
+                                    "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_DEST'] + "='" + port_name + "']" +
+                                    "[" + XMLTags.tags['TAG_CONNECTION_PORT_INFO_SOURCE'] + "='" + tf_system_name + "']"
+                                    )
+
+        return (has_connection != None)
+    except:
+        return False
+
+"""
     FEATURES
 """
 
@@ -179,7 +228,6 @@ def getAllConnectionsPerPort(start, process_name, port_name, input = False, outp
         return conn
     except:
         return None
-
 """
     SUBCOMPONENT
 """

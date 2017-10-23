@@ -14,6 +14,7 @@ class Include(CObject):
         #    pass
 
         self.libraries = []
+
         self.uses_tf = False
 
     def addLibrary(self, lib):

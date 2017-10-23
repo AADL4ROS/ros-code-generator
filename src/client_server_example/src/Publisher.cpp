@@ -1,6 +1,6 @@
 /**
  * Node Publisher
- * File auto-generated on 19/10/2017 18:13:28
+ * File auto-generated on 23/10/2017 14:52:38
  */
 #include "ros_base/ROSNode.h"
 #include "client_server_example/prepare_pub.h"
@@ -47,7 +47,6 @@ bool Publisher::prepare() {
 	Parameters p;
 	handle.param<std::string>("stringName", p.stringName, "ciao");
 	handle.param<double>("testReal", p.testReal, 0);
-	handle.getParam("testNoDefault", p.testNoDefault);
 	is.initialize(&p);
 	pub_publisher = handle.advertise < std_msgs::String > ("/out_topic", 10);
 	timer_publisher = handle.createTimer(ros::Duration(0.01), &Publisher::publisher_callback, this);

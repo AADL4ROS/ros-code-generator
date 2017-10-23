@@ -1,6 +1,6 @@
 from includes.Include import Include
 from comments.Comment import Comment
-from libraries.Library import Library
+from libraries.Library import Library, ROSBase_TF_Interface
 
 class NodeConfiguration(Include):
     def __init__(self, _associated_class):
@@ -24,6 +24,9 @@ class NodeConfiguration(Include):
                 self.addLibrary(lib)
 
     def generateCode(self):
+        if self.associated_class.node_uses_tf:
+            self.addLibrary( ROSBase_TF_Interface() )
+
         code = ""
 
         # Include
@@ -36,11 +39,8 @@ class NodeConfiguration(Include):
 
         code += "#include \"ros_base/Configuration.h\"\n"
 
-        if self.uses_tf:
-            code += "#include \"ros_base/tf_interface.h\"\n"
-
         for l in self.libraries:
-            code += l.generateCode() + "\n"
+            code += l.generateCode()
 
         # Aggiungo le struct
         for s in self.structs:

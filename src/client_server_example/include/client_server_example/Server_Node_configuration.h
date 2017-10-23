@@ -13,7 +13,6 @@ struct Variables: ros_base::VariablesBase{
 struct Parameters: ros_base::ParametersBase{ 
 	std::string stringName;
 	double testReal;
-	bool testNoDefault;
 };
 typedef std::shared_ptr < const Parameters > Parameters_ptr;
 typedef std::shared_ptr < Variables > Variables_ptr;

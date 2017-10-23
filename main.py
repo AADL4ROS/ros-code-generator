@@ -150,6 +150,7 @@ def generateCodeForSystem(system_root, system_parent):
                     if new_thread != None:
                         p.threads.append( new_thread )
 
+            p.addTransformationFrameComponent()
             system.addNode( p )
 
 ###################

@@ -27,3 +27,8 @@ class ROSBase_ROSNode(Library):
     def __init__(self, _associated_class = None):
         super().__init__(_associated_class)
         self.path = "ros_base/ROSNode.h"
+
+class ROSBase_TF_Interface(Library):
+    def __init__(self, _associated_class = None):
+        super().__init__(_associated_class)
+        self.path = "ros_base/tf_interface.h"

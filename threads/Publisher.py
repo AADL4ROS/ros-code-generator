@@ -11,13 +11,13 @@ import messages.MessageFunctionSupport as mfs
 
 import datatypes.DatatypeConversion as dt
 
-from datatypes.Type import Int, Double, Void, ROS_TimerEvent, ROS_Timer, ROS_Publisher
+from datatypes.Type import ROSBase_PointerToTransformationFrames, Void, ROS_TimerEvent, ROS_Timer, ROS_Publisher
 
 from variables.Variable import Variable
 from methods.Method import Method
 from comments.Comment import Comment
 from datatypes.Type import Type
-from libraries.Library import Library
+from libraries.Library import Library, ROSBase_TF_Interface
 
 class Publisher(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
@@ -50,6 +50,13 @@ class Publisher(AADLThread):
         thread_function = tfs.getSubprogram( self.thread )
         if thread_function == None:
             return (False, "Unable to find the right Subprogram")
+
+        ############################
+        ### TRANSFORMATION FRAME ###
+        ############################
+
+        # Controllo l'uso del Transformation Frame
+        self.thread_uses_tf = self.setUsesTransformationFrame()
 
         ###################
         ### Output Port ###
@@ -114,6 +121,8 @@ class Publisher(AADLThread):
 
         if self.source_text_file == None:
             return (False, "Unable to find property Source_Text or Source_Name")
+
+        self.source_text_file.uses_tf = self.thread_uses_tf
         self.source_text_file.setFunctionType(self.output_type)
 
         #################

@@ -10,11 +10,11 @@ set( CMAKE_CXX_STANDARD 11 )
 ### Packages ###
 ################
 find_package(catkin REQUIRED COMPONENTS
-	ros_base
 	custom_msgs
 	roscpp
-	std_msgs
 	custom_srvs
+	std_msgs
+	ros_base
 )
 
 #############
@@ -26,10 +26,10 @@ include_directories(
 	${ros_base_INCLUDE_DIRS}
 	include
 )
-add_executable(publisher.impl src/Publisher.cpp)
+add_executable(talker.impl src/Publisher.cpp)
 add_executable(server_node.impl src/Server_Node.cpp)
 add_executable(talk_list.impl src/Talk_List_Node.cpp)
-target_link_libraries(publisher.impl
+target_link_libraries(talker.impl
 	${catkin_LIBRARIES}
 	${ros_base_LIBRARIES}
 )

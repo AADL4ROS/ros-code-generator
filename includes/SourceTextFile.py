@@ -1,6 +1,6 @@
 from includes.Include import Include
 from comments.Comment import Comment
-from libraries.Library import Library
+from libraries.Library import Library, ROSBase_TF_Interface
 
 
 class SourceTextFile(Include):
@@ -52,11 +52,11 @@ class SourceTextFile(Include):
             if self.associated_class.node_configuration.has_parameters:
                 code += " is.params(),"
 
-            if self.uses_tf:
-                code += " tf,"
-
             for p in self.function_parameters:
                 code += " {},".format(p.name)
+
+            if self.uses_tf:
+                code += " tf,"
 
             # Rimuovo l'ultima virgola
             code = code[:-1]
@@ -73,13 +73,13 @@ class SourceTextFile(Include):
             lib.setPath( self.associated_class.node_configuration.getSourceLibraryPath() )
             self.addLibrary( lib )
 
+        if self.uses_tf:
+            self.addLibrary( ROSBase_TF_Interface() )
+
         code = ""
 
         for l in self.libraries:
-            code += l.generateCode() + "\n"
-
-        if self.uses_tf:
-            code += "#include \"ros_base/tf_interface.h\"\n"
+            code += l.generateCode()
 
         code += "{} {}(".format( self.function_type.generateCode(), self.function_name )
 
@@ -94,11 +94,11 @@ class SourceTextFile(Include):
             for p in self.function_parameters:
                 code += " {},".format(p.generateCode())
 
+            if self.uses_tf:
+                code += " ros_base::TransformationFrames * tf,"
+
             # Rimuovo l'ultima virgola
             code = code[:-1]
-
-            if self.uses_tf:
-                code += ", ros_base::TransformationFrames * tf"
 
         code += ") {\n"
 

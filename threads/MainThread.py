@@ -5,7 +5,7 @@ from threads.AADLThread import AADLThread
 
 import threads.AADLThreadFunctionsSupport as tfs
 
-from libraries.Library import ROSBase_ROSNode
+from libraries.Library import ROSBase_ROSNode, ROSBase_TF_Interface
 
 from methods.Constructor    import Constructor
 from methods.Prepare        import Prepare
@@ -17,7 +17,7 @@ from asn1tools.parser import parse_file
 
 import os
 from datatypes.DatatypeConversion import getROSDatatypeFromASN1
-from datatypes.Type import Type
+from datatypes.Type import Type, ROSBase_PointerToTransformationFrames
 from variables.Variable import Variable
 
 from structs.ParametersStruct import ParametersStruct
@@ -61,6 +61,7 @@ class MainThread(AADLThread):
         # Creo il metodo costruttore per la classe
         self.constructor = Constructor( self.associated_class )
         self.associated_class.addPublicMethod( self.constructor )
+
 
     #####################
     ### GET ASN STATE ###

@@ -37,6 +37,13 @@ class ServiceServer(AADLThread):
         if main_thread == None:
             return (False, "Unable to get the Main Thread")
 
+        ############################
+        ### TRANSFORMATION FRAME ###
+        ############################
+
+        # Controllo l'uso del Transformation Frame
+        self.thread_uses_tf = self.setUsesTransformationFrame()
+
         ###################
         ### Output Port ###
         ###################
@@ -157,11 +164,18 @@ class ServiceServer(AADLThread):
         if function == None:
             return (False, "Unable to find the function subprogram")
 
-        self.source_text = tfs.getSourceText(function)
+        self.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText(function),
+                                                                        tfs.getSourceName(function))
 
-        comment_source_code = Comment(self.associated_class)
-        comment_source_code.setComment("Source text: {}".format(self.source_text))
-        self.server_callback.addMiddleCode(comment_source_code)
+        if self.source_text_file == None:
+            return (False, "Unable to find property Source_Text or Source_Name")
+
+        self.source_text_file.uses_tf = self.thread_uses_tf
+
+        # Aggiungo la chiamata alla funzione custom
+        if self.source_text_file != None:
+            code = "{};".format(self.source_text_file.generateInlineCode())
+            self.server_callback.addMiddleCode(code)
 
         self.associated_class.addPrivateMethod(self.server_callback)
 

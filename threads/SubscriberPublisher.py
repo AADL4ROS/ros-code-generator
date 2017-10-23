@@ -257,6 +257,13 @@ class SubscriberPublisher(AADLThread):
         if thread_function == None:
             return (False, "Unable to find the right Subprogram")
 
+        ############################
+        ### TRANSFORMATION FRAME ###
+        ############################
+
+        # Controllo l'uso del Transformation Frame
+        self.thread_uses_tf = self.setUsesTransformationFrame()
+
         ##################
         ### SUBSCRIBER ###
         ##################
@@ -281,6 +288,7 @@ class SubscriberPublisher(AADLThread):
         if self.source_text_file != None:
             self.source_text_file.setFunctionType(self.output_type)
             self.source_text_file.addFunctionParameter(self.sub_input_var)
+            self.source_text_file.uses_tf = self.thread_uses_tf
 
             code = "{}.publish({});".format(self.var_publisher_pub.name, self.source_text_file.generateInlineCode())
             self.sub_callback.addMiddleCode(code)

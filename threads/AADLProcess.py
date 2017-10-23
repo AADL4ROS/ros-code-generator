@@ -2,7 +2,9 @@ import threads.AADLThreadFunctionsSupport as tfs
 from comments.Comment import Comment
 import datetime
 from threads.AADLThread import isMainThread
-from libraries.Library import Library
+from libraries.Library import Library, ROSBase_TF_Interface
+from datatypes.Type import ROSBase_PointerToTransformationFrames
+from variables.Variable import Variable
 
 class AADLProcess():
     def __init__(self, process, system_root, system):
@@ -25,6 +27,11 @@ class AADLProcess():
         self.class_constants        = []
         self.class_public_methods   = []
         self.class_private_methods  = []
+
+        ############################
+        ### TRANSFORMATION FRAME ###
+        ############################
+        self.node_uses_tf = False
 
         ######################
         ### INTERNAL STATE ###
@@ -53,6 +60,25 @@ class AADLProcess():
             if isMainThread(t.type):
                 return t
         return None
+
+    ############################
+    ### TRANSFORMATION FRAME ###
+    ############################
+    def setUsesTransformationFrame(self, state):
+        if self.node_uses_tf == True:
+            return
+        self.node_uses_tf = state
+
+    def addTransformationFrameComponent(self):
+        if self.node_uses_tf:
+            tf_var = Variable(self)
+            tf_var.setName("tf")
+            tf_var.setType( ROSBase_PointerToTransformationFrames(self) )
+            self.addInternalVariable(tf_var)
+            self.getMainThread().constructor.addMiddleCode("{} = new ros_base::TransformationFrames();"
+                                                           .format(tf_var.name))
+
+            self.addLibrary(ROSBase_TF_Interface())
 
     ###############
     ### LIBRARY ###
@@ -96,11 +122,14 @@ class AADLProcess():
 
         self.addLibrary(source_import, add_to_cmake = False, add_to_package_xml = False)
 
-
     #################
     ### PARAMTERS ###
     #################
     def addParameter(self, _param):
+        for p in self.class_params:
+            if p.isEqualTo(_param):
+                return False
+
         self.class_params.append( _param )
 
     def removeParameter(self, _param):
@@ -114,9 +143,16 @@ class AADLProcess():
     ### VARIABLES ###
     #################
     def addVariable(self, _var):
+        for v in self.class_vars:
+            if v.isEqualTo(_var):
+                return False
+
         self.class_vars.append(_var)
 
     def addInternalVariable(self, _var):
+        for v in self.class_internal_vars:
+            if v.isEqualTo(_var):
+                return False
         self.class_internal_vars.append(_var)
 
     def removeVariable(self, _var):

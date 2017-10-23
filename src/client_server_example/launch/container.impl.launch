@@ -1,5 +1,5 @@
 <launch>
-	<node name="publisher_2" type="publisher.impl" pkg="client_server_example">
+	<node name="publisher_2" type="talker.impl" pkg="client_server_example">
 		<remap from="/out_topic" to="/pubsub" />
 	</node>
 	
@@ -8,7 +8,7 @@
 		<remap from="/out_topic" to="/re-sub-pub" />
 	</node>
 	
-	<node name="publisher" type="publisher.impl" pkg="client_server_example">
+	<node name="publisher" type="talker.impl" pkg="client_server_example">
 		<remap from="/out_topic" to="/pubsub" />
 	</node>
 	

@@ -93,6 +93,9 @@ class AADLThread():
         # Nome del thread
         self.name       = tfs.getName( self.thread )
 
+        # TF
+        self.thread_uses_tf = False
+
     def createSourceTextFileFromSourceText(self, source_text, source_name, function_type = Void()):
         if source_text == None or source_name == None:
             return None
@@ -103,6 +106,33 @@ class AADLThread():
         self.associated_class.addSourceFile(source_text_file)
 
         return source_text_file
+
+    def setUsesTransformationFrame(self):
+
+        # Controllo che il system in cui è incluso il process che include il thread abbia
+        # un subcomponent di tipo tf
+        if not tfs.hasTransformationFrameEnabledInSystem(self.system_root):
+            self.associated_class.setUsesTransformationFrame(False)
+            return False
+
+        # Controllo che ho una connessione che parte dal mio thread ed esce verso il
+        # process di tipo transformation frame
+        tf_source_port_name = "tf"
+        tf_connection_port_info = tfs.getConnectionPortInfoBySource(self.process, self.type, tf_source_port_name)
+
+        # Il thread NON usa sicuramente i transformation frame
+        if tf_connection_port_info == None:
+            self.associated_class.setUsesTransformationFrame(False)
+            return False
+
+        (parent_name, parent_port) = tfs.getDestFromPortInfo(tf_connection_port_info)
+
+        if not tfs.isConnectedToSystemTransformationFrame(self.system_root, parent_name, parent_port):
+            self.associated_class.setUsesTransformationFrame(False)
+            return False
+
+        self.associated_class.setUsesTransformationFrame(True)
+        return True
 
     # getDefaultTopicName
     # A partire dal thread attuale, cerca il nome di default del topic associato alla connessione

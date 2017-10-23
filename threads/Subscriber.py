@@ -50,6 +50,13 @@ class Subscriber(AADLThread):
         if thread_function == None:
             return (False, "Unable to find the right Subprogram")
 
+        ############################
+        ### TRANSFORMATION FRAME ###
+        ############################
+
+        # Controllo l'uso del Transformation Frame
+        self.thread_uses_tf = self.setUsesTransformationFrame()
+
         ##################
         ### Input Port ###
         ##################
@@ -116,6 +123,8 @@ class Subscriber(AADLThread):
 
         if self.source_text_file == None:
             return (False, "Unable to find property Source_Text or Source_Name")
+
+        self.source_text_file.uses_tf = self.thread_uses_tf
 
         #############
         ### TOPIC ###
