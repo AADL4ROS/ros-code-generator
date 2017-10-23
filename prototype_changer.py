@@ -41,9 +41,8 @@ def replace_prototypes(aadl_file, location=''):
                     if [proto_list, type_list, name_list, []] not in tree[match.group(2)][match.group(3)]:
                         tree[match.group(2)][match.group(3)].append([proto_list, type_list, name_list, []])
 
-            str_replace = match.group(3)+'_'+'_'.join(name_list)+'.'+match.group(4)
-            text = text.replace(match.group(3)+'.'+match.group(4), str_replace)
-            text = text.replace('('+match.group(5)+')', '')
+            text = re.sub(re.compile('('+match.group(3)+')\.('+match.group(4)+')\s+\('+match.group(5)+'\);'),
+                          match.group(3)+'_'+'_'.join(name_list)+'.'+match.group(4)+';', text)
 
         out_file.write(text)
 
@@ -74,9 +73,10 @@ def replace_prototypes(aadl_file, location=''):
 
             for thread_match in find_thread.finditer(text):
                 for proto_match in match_proto.finditer(thread_match.group(0)):
-                    for l in tree[l0][thread_match.group('type')][1:]:
-                        l[0] = [proto_match.group(1) if x == proto_match.group(3) else x for x in l[0]]
-                        l[3].append(proto_match.group(2))
+                    if thread_match.group('type') in tree[l0]:
+                        for l in tree[l0][thread_match.group('type')][1:]:
+                            l[0] = [proto_match.group(1) if x == proto_match.group(3) else x for x in l[0]]
+                            l[3].append(proto_match.group(2))
                 thread_block = re.sub(re.compile('provides\s+subprogram\s+access\s+\w+\s*;'),
                                       'provides subprogram access;', thread_match.group(0))
                 text = re.sub(thread_match.group(0), thread_block, text)
