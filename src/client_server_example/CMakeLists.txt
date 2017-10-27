@@ -10,12 +10,17 @@ set( CMAKE_CXX_STANDARD 11 )
 ### Packages ###
 ################
 find_package(catkin REQUIRED COMPONENTS
-	custom_msgs
-	custom_srvs
 	std_msgs
-	ros_base
+	custom_srvs
 	roscpp
+	ros_base
+	custom_msgs
 )
+
+##################################
+### MSGS and SRVS Dependencies ###
+##################################
+generate_messages()
 
 #############
 ### Build ###

@@ -1,6 +1,6 @@
 /**
  * Node Server_Node
- * File auto-generated on 27/10/2017 10:40:08
+ * File auto-generated on 27/10/2017 11:12:54
  */
 #include "ros_base/ROSNode.h"
 #include "client_server_example/Server_Node_configuration.h"
@@ -74,7 +74,7 @@ void Server_Node::errorHandling() {
  * Method receiver_service_callback auto-generated
  */
 bool Server_Node::receiver_service_callback(custom_srvs::ServiceA::Request &req, custom_srvs::ServiceA::Response &res) {
-	funzione_service( is.vars(), is.params());
+	return funzione_service( is.vars(), is.params(), req, res);
 }
 
 /**

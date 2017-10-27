@@ -22,6 +22,11 @@ add_message_files(
 	Complex.msg
 )
 
+##################################
+### MSGS and SRVS Dependencies ###
+##################################
+generate_messages()
+
 #############
 ### Build ###
 #############

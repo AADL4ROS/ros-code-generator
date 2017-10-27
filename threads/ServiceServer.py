@@ -174,7 +174,11 @@ class ServiceServer(AADLThread):
 
         # Aggiungo la chiamata alla funzione custom
         if self.source_text_file != None:
-            code = "{};".format(self.source_text_file.generateInlineCode())
+            self.source_text_file.addServiceReqAndRes(input_param_req, input_param_res)
+            self.source_text_file.addLibrary(service_library)
+
+            self.source_text_file.setFunctionType( Bool(self.associated_class) )
+            code = "return {};".format(self.source_text_file.generateInlineCode())
             self.server_callback.addMiddleCode(code)
 
         self.associated_class.addPrivateMethod(self.server_callback)

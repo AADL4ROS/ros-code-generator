@@ -27,6 +27,11 @@ class SourceTextFile(Include):
             lib.setPath("{}/{}.h".format(param.type.namespace, param.type.type_name))
             self.addLibrary(lib)
 
+    def addServiceReqAndRes(self, req, res):
+        self.function_parameters.append(req)
+        self.function_parameters.append(res)
+
+
     def isEqualTo(self, another_object):
 
         if self.file_name != another_object.file_name:
@@ -53,7 +58,8 @@ class SourceTextFile(Include):
                 code += " is.params(),"
 
             for p in self.function_parameters:
-                code += " {},".format(p.name)
+                param_name = p.name.replace("&", "")
+                code += " {},".format(param_name)
 
             if self.uses_tf:
                 code += " tf,"

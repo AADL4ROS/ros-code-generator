@@ -5,7 +5,7 @@
 	
 	<node name="talk_list_node" type="talk_list.impl" pkg="client_server_example">
 		<remap from="/in_topic" to="/pubsub" />
-		<remap from="/out_topic" to="/re-sub-pub" />
+		<remap from="/out_topic" to="/re_sub_pub" />
 	</node>
 	
 	<node name="publisher" type="talker.impl" pkg="client_server_example">
@@ -13,7 +13,7 @@
 	</node>
 	
 	<node name="server_node" type="server_node.impl" pkg="client_server_example">
-		<remap from="/out_topic" to="/re-sub-pub" />
+		<remap from="/out_topic" to="/re_sub_pub" />
 	</node>
 	
 </launch>
