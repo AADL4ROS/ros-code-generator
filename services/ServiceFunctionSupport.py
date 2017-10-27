@@ -9,6 +9,26 @@ from datatypes.DatatypeConversion import getROSDatatypeFromASN1
 
 asn_default_path = "../ocarina-ros/"
 
+"""
+Struttura base per un servizio
+
+Custom_Service DEFINITIONS ::= BEGIN
+
+	Request ::= SEQUENCE {
+		a Integer,
+		b PrintableString,
+		proc BOOLEAN
+	}
+
+	Response ::= SEQUENCE {
+		appended INTEGER,
+		length REAL,
+		pose geometry_msgs/Pose
+	}
+
+END
+"""
+
 def getServiceFromASN1(aadl_namespace, aadl_type, asn_source, associated_class):
     file_path = os.path.join(asn_default_path, asn_source)
 

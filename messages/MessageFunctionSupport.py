@@ -9,6 +9,14 @@ from datatypes.DatatypeConversion import getROSDatatypeFromASN1
 
 asn_default_path = "../ocarina-ros/"
 
+"""
+Struttura base di un messaggio
+
+Message DEFINITIONS ::= BEGIN
+	x ::= INTEGER
+END
+"""
+
 def getMessageFromASN1(aadl_namespace, aadl_type, asn_source, associated_class):
     file_path = os.path.join(asn_default_path, asn_source)
 
@@ -18,7 +26,7 @@ def getMessageFromASN1(aadl_namespace, aadl_type, asn_source, associated_class):
         log.error("Unable to parse ASN.1 file {}".format(file_path))
         return None
 
-    # Il nome del messaggio è la prima ed unica chiave del dizionario del file parsato
+
     new_message_intestazione = list(parsed.keys())[0]
 
     message = Message(aadl_namespace, aadl_type)
