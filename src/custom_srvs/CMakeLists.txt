@@ -10,9 +10,9 @@ set( CMAKE_CXX_STANDARD 11 )
 ### Packages ###
 ################
 find_package(catkin REQUIRED COMPONENTS
-	message_generation
-	geometry_msgs
 	roscpp
+	geometry_msgs
+	message_generation
 )
 
 ################

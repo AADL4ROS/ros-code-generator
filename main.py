@@ -40,8 +40,6 @@ today           = datetime.datetime.now()
 generated_on    = today.strftime("%d/%m/%Y %H:%M:%S")
 print( "Avvio generazione: {}".format(generated_on) )
 
-generated_and_saved_nodes = []
-
 def creaNuovoThread( system_root, process, thread, classname, associated_class ):
     if classname == None:
         return None

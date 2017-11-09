@@ -63,7 +63,7 @@ class ServiceServer(AADLThread):
         if conn_by_source:
             (source_parent_name, source_name) = tfs.getDestFromPortInfo(process_input_port)
         else:
-            (source_parent_name, source_name) = tfs.getSourceFromPortInfo(process_input_port)
+            (source_parent_name, source_name) = tfs.getSourceFromPortInfo(process_output_port)
 
         if source_parent_name == None or source_name == None:
             return (False, "Unable to find the process provides subprogram access port name")

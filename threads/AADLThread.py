@@ -73,6 +73,15 @@ def getPythonClassFromAADLThreadType(aadl_thread_type):
     if service_server.match(aadl_thread_type) != None:
         return "ServiceServer"
 
+    #############
+    ### TIMER ###
+    #############
+
+    # Identifica i thread di tipo publisher
+    publisher = re.compile("timer([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
+    if publisher.match(aadl_thread_type) != None:
+        return "Timer"
+
     return None
 
 

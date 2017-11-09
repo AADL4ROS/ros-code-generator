@@ -39,7 +39,6 @@ def getROSDatatypeFromASN1(asn_type, associated_class, is_msg_or_service = False
         ###############
         "BOOLEAN": "Bool",
 
-
         ############
         ### TIME ###
         ############

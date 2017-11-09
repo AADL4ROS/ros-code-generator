@@ -21,8 +21,6 @@ class AADLProcess():
         self.node_name              = self.aadl_node_name.title()
         self.type                   = tfs.getType( self.process )
         self.class_libraries        = []
-        self.class_params           = []
-        self.class_vars             = []
         self.class_internal_vars    = []
         self.class_constants        = []
         self.class_public_methods   = []
@@ -123,44 +121,14 @@ class AADLProcess():
         self.addLibrary(source_import, add_to_cmake = False, add_to_package_xml = False)
 
     #################
-    ### PARAMTERS ###
-    #################
-    def addParameter(self, _param):
-        for p in self.class_params:
-            if p.isEqualTo(_param):
-                return False
-
-        self.class_params.append( _param )
-
-    def removeParameter(self, _param):
-        try:
-            self.class_params.remove( _param )
-            return True
-        except ValueError:
-            return False
-
-    #################
     ### VARIABLES ###
     #################
-    def addVariable(self, _var):
-        for v in self.class_vars:
-            if v.isEqualTo(_var):
-                return False
-
-        self.class_vars.append(_var)
 
     def addInternalVariable(self, _var):
         for v in self.class_internal_vars:
             if v.isEqualTo(_var):
                 return False
         self.class_internal_vars.append(_var)
-
-    def removeVariable(self, _var):
-        try:
-            self.class_vars.remove(_var)
-            return True
-        except ValueError:
-            return False
 
     def removeInternalVariable(self, _var):
         try:
@@ -231,16 +199,6 @@ class AADLProcess():
         elif res != 0 and self.node_configuration == None:
             return False
 
-        # Ha gli stessi parametri
-        res = self.compareList(self.class_params, another_process.class_params)
-        if res != 0:
-            return False
-
-        # Ha le stesse variabili
-        res = self.compareList(self.class_vars, another_process.class_vars)
-        if res != 0:
-            return False
-
         # Ha le stesse variabili interne
         res = self.compareList(self.class_internal_vars, another_process.class_internal_vars)
         if res != 0:
@@ -273,9 +231,7 @@ class AADLProcess():
     ##############
 
     def hasPrivateData(self):
-        return  (len(self.class_private_methods) > 0 or \
-                len(self.class_params) > 0 or \
-                len(self.class_vars) > 0 )
+        return  (len(self.class_private_methods) > 0)
 
     #####################
     ### GENERATE CODE ###
@@ -328,20 +284,6 @@ class AADLProcess():
             for m in self.class_private_methods:
                 if m.namespace != None:
                     code += "\t{}\n".format( m.generateInterface() )
-
-            if len(self.class_params) > 0:
-                code += "\tstruct params {\n"
-                for param in self.class_params:
-                    code += "\t\t{}\n".format( param.generateCode() )
-
-                code +=  "\t} params;\n"
-
-            if len(self.class_vars) > 0:
-                code += "\tstruct vars {\n"
-                for var in self.class_vars:
-                    code += "\t\t{}\n".format( var.generateCode() )
-
-                code +=  "\t} vars;\n"
 
         for var in self.class_internal_vars:
             code += "\t{}\n".format( var.generateCode() )

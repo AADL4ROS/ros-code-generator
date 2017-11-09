@@ -17,4 +17,4 @@ class NodeSigintHandler(Method):
 
         self.addInputParameter( input_sig )
 
-        self.addTopCode( "g_request_shutdown = 1;");
+        self.addTopCode( "g_request_shutdown = 1;")

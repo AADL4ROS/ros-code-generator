@@ -10,10 +10,10 @@ set( CMAKE_CXX_STANDARD 11 )
 ### Packages ###
 ################
 find_package(catkin REQUIRED COMPONENTS
-	std_msgs
-	custom_srvs
 	roscpp
 	ros_base
+	std_msgs
+	custom_srvs
 	custom_msgs
 )
 

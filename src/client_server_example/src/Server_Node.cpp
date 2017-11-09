@@ -1,6 +1,6 @@
 /**
  * Node Server_Node
- * File auto-generated on 27/10/2017 11:12:54
+ * File auto-generated on 04/11/2017 15:30:57
  */
 #include "ros_base/ROSNode.h"
 #include "client_server_example/Server_Node_configuration.h"
