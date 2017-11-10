@@ -10,11 +10,11 @@ set( CMAKE_CXX_STANDARD 11 )
 ### Packages ###
 ################
 find_package(catkin REQUIRED COMPONENTS
-	roscpp
 	map_msgs
-	ros_base
 	nav_msgs
+	ros_base
 	geometry_msgs
+	roscpp
 )
 
 #############

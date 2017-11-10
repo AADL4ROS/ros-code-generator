@@ -6,6 +6,7 @@
 #include "ros_base/Configuration.h"
 #include "nav_msgs/Path.h"
 #include "geometry_msgs/Pose.h"
+
 struct Variables: ros_base::VariablesBase { 
 	Costmap2D costmap;
 	std::string mapFrame;

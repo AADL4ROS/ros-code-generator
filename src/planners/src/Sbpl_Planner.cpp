@@ -1,6 +1,6 @@
 /**
  * Node Sbpl_Planner
- * File auto-generated on 10/11/2017 15:42:15
+ * File auto-generated on 10/11/2017 16:10:03
  */
 #include "ros_base/ROSNode.h"
 #include "planners/sbpl_planner.h"
@@ -10,7 +10,7 @@
 #include "nav_msgs/OccupancyGrid.h"
 #include "planners/costmap_utils.h"
 #include "map_msgs/OccupancyGridUpdate.h"
-#include "nav_msgs/Path0.h"
+#include "nav_msgs/Path.h"
 
 
 class Sbpl_Planner : public ros_base::ROSNode {
@@ -79,7 +79,7 @@ bool Sbpl_Planner::prepare() {
 	sub_goal_cb = handle.subscribe("/goal", 1, &Sbpl_Planner::goal_cb_callback, this);
 	sub_costmap_cb = handle.subscribe("/global/grid", 1, &Sbpl_Planner::costmap_cb_callback, this);
 	sub_costmap_up_cb = handle.subscribe("/global/grid_updates", 1, &Sbpl_Planner::costmap_up_cb_callback, this);
-	pub_path_out_pub = handle.advertise < nav_msgs::Path0 > ("/path", 10);
+	pub_path_out_pub = handle.advertise < nav_msgs::Path > ("/path", 10);
 	timer_path_out_pub = handle.createTimer(ros::Duration(0.2), &Sbpl_Planner::path_out_pub_callback, this);
 	timer_replan_cb = handle.createTimer(ros::Duration(1), &Sbpl_Planner::replan_cb_callback, this);
 	return custom_prepare( is.vars(), is.params());

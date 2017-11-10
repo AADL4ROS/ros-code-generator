@@ -4,6 +4,7 @@
  * Auto-generated Internal State
  */
 #include "ros_base/Configuration.h"
+
 struct Variables: ros_base::VariablesBase { 
 	Costmap2D costmap;
 	std::string mapFrame;

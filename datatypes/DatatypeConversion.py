@@ -8,7 +8,13 @@ def getROSDatatypeFromAADL(aadl_namespace, aadl_type, associated_class):
     generic_type = datatypes.Type.Type(associated_class)
 
     generic_type.setNamespace(aadl_namespace)
-    generic_type.setTypeName(aadl_type)
+
+    # RIMUOVO LO 0 (zero) DALLA FINE DELLA STRINGA
+    type_name = aadl_type
+    if type_name.endswith("0"):
+        type_name = type_name[:-1]
+
+    generic_type.setTypeName(type_name)
 
     return generic_type
 

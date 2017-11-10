@@ -1,11 +1,11 @@
 /**
  * Node Dwa_Planner
- * File auto-generated on 10/11/2017 15:42:15
+ * File auto-generated on 10/11/2017 16:10:03
  */
 #include "ros_base/ROSNode.h"
 #include "planners/dwa_planner.h"
 #include "planners/Dwa_Planner_configuration.h"
-#include "nav_msgs/Path0.h"
+#include "nav_msgs/Path.h"
 #include "planners/save_path.h"
 #include "nav_msgs/OccupancyGrid.h"
 #include "planners/costmap_utils.h"
@@ -18,7 +18,7 @@ private:
 	bool prepare();
 	void tearDown();
 	void errorHandling();
-	void path_cb_callback(const nav_msgs::Path0::ConstPtr& msg);
+	void path_cb_callback(const nav_msgs::Path::ConstPtr& msg);
 	void costmap_cb_callback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
 	void costmap_up_cb_callback(const map_msgs::OccupancyGridUpdate::ConstPtr& msg);
 	void cmd_vel_pub_callback(const ros::TimerEvent& );
@@ -111,7 +111,7 @@ void Dwa_Planner::errorHandling() {
 /**
  * Method path_cb_callback auto-generated
  */
-void Dwa_Planner::path_cb_callback(const nav_msgs::Path0::ConstPtr& msg) {
+void Dwa_Planner::path_cb_callback(const nav_msgs::Path::ConstPtr& msg) {
 	savePath( is.vars(), is.params(), msg);
 }
 

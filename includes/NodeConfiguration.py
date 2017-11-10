@@ -51,6 +51,8 @@ class NodeConfiguration(Include):
         for l in self.libraries:
             code += l.generateCode()
 
+        code += "\n"
+
         # Aggiungo le struct
         for s in self.structs:
             code += "".join([gen_s + "\n" for gen_s in s.generateCode().split("\n")])
