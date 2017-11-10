@@ -1,6 +1,6 @@
 /**
  * Node Sbpl_Planner
- * File auto-generated on 10/11/2017 16:10:03
+ * File auto-generated on 10/11/2017 16:17:07
  */
 #include "ros_base/ROSNode.h"
 #include "planners/sbpl_planner.h"
@@ -132,6 +132,7 @@ void Sbpl_Planner::path_out_pub_callback(const ros::TimerEvent& ) {
  * Method replan_cb_callback auto-generated
  */
 void Sbpl_Planner::replan_cb_callback(const ros::TimerEvent& ) {
+	setReplan( is.vars(), is.params());
 }
 
 /**

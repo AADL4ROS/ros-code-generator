@@ -99,6 +99,11 @@ class Timer(AADLThread):
         input_par.setName("")
         self.timerCallback.addInputParameter( input_par )
 
+        # Aggiungo la chiamata alla funzione custome
+        if self.source_text_function != None:
+            code = "{};".format(self.source_text_function.generateInlineCode())
+            self.timerCallback.addMiddleCode(code)
+
         self.associated_class.addPrivateMethod( self.timerCallback )
 
         main_thread.prepare.addMiddleCode("{} = handle.createTimer(ros::Duration({}), {}, this);"
