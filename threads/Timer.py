@@ -19,10 +19,10 @@ class Timer(AADLThread):
         log.info("Timer thread {}".format(self.name))
 
         # Parametri del Timer
-        self.source_text_file   = None
-        self.frequency_in_hz    = None
-        self.period_in_seconds  = None
-        self.timerCallback      = None
+        self.source_text_function   = None
+        self.frequency_in_hz        = None
+        self.period_in_seconds      = None
+        self.timerCallback          = None
 
     def populateData(self):
         main_thread = self.associated_class.getMainThread()
@@ -49,13 +49,13 @@ class Timer(AADLThread):
         ### Source Text ###
         ###################
 
-        self.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText( thread_function ),
+        self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText( thread_function ),
                                                                         tfs.getSourceName( thread_function ))
 
-        if self.source_text_file == None:
+        if self.source_text_function == None:
             return (False, "Unable to find property Source_Text or Source_Name")
 
-        self.source_text_file.uses_tf = self.thread_uses_tf
+        self.source_text_function.setTF( self.thread_uses_tf )
 
         #################
         ### FREQUENCY ###

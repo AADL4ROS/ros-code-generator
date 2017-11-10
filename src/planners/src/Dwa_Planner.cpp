@@ -1,6 +1,6 @@
 /**
  * Node Dwa_Planner
- * File auto-generated on 10/11/2017 15:01:46
+ * File auto-generated on 10/11/2017 15:42:15
  */
 #include "ros_base/ROSNode.h"
 #include "planners/dwa_planner.h"
@@ -68,7 +68,7 @@ bool Dwa_Planner::prepare() {
 	handle.param<double>("robotConfiguration/min_rot_vel", p.robotConfiguration.min_rot_vel, 0.4);
 	handle.param<double>("goalTolerance/yaw_goal_tolerance", p.goalTolerance.yaw_goal_tolerance, 0.05);
 	handle.param<double>("goalTolerance/xy_goal_tolerance", p.goalTolerance.xy_goal_tolerance, 0.10);
-	handle.param<bool>("goalTolerance/latch_xy_goal_tolerance", p.goalTolerance.latch_xy_goal_tolerance, FALSE);
+	handle.param<bool>("goalTolerance/latch_xy_goal_tolerance", p.goalTolerance.latch_xy_goal_tolerance, false);
 	handle.param<double>("forwardSimulation/sim_time", p.forwardSimulation.sim_time, 1.7);
 	handle.param<double>("forwardSimulation/sim_granularity", p.forwardSimulation.sim_granularity, 0.025);
 	handle.param<int>("forwardSimulation/vx_samples", p.forwardSimulation.vx_samples, 3);
@@ -90,8 +90,7 @@ bool Dwa_Planner::prepare() {
 	sub_costmap_up_cb = handle.subscribe("/local/grid_updates", 1, &Dwa_Planner::costmap_up_cb_callback, this);
 	pub_cmd_vel_pub = handle.advertise < geometry_msgs::Twist > ("/cmd_vel", 10);
 	timer_cmd_vel_pub = handle.createTimer(ros::Duration(0.05), &Dwa_Planner::cmd_vel_pub_callback, this);
-	custom_prepare( is.vars(), is.params());
-	return true;
+	return custom_prepare( is.vars(), is.params());
 }
 
 /**

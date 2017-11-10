@@ -27,13 +27,13 @@ class Subscriber(AADLThread):
         self.input_port_name = "msg"
 
         # Parametri del Subscriber
-        self.process_port       = None
-        self.source_text_file   = None
-        self.topic              = None
-        self.subscriberCallback = None
-        self.input_type         = None
-        self.asn1_source_file   = None
-        self.queue_size         = None
+        self.process_port           = None
+        self.source_text_function   = None
+        self.topic                  = None
+        self.subscriberCallback     = None
+        self.input_type             = None
+        self.asn1_source_file       = None
+        self.queue_size             = None
 
     def populateData(self):
         main_thread = self.associated_class.getMainThread()
@@ -118,13 +118,13 @@ class Subscriber(AADLThread):
         ### Source Text ###
         ###################
 
-        self.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
+        self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
                                                                         tfs.getSourceName(thread_function))
 
-        if self.source_text_file == None:
+        if self.source_text_function == None:
             return (False, "Unable to find property Source_Text or Source_Name")
 
-        self.source_text_file.uses_tf = self.thread_uses_tf
+        self.source_text_function.setTF( self.thread_uses_tf )
 
         #############
         ### TOPIC ###
@@ -169,11 +169,11 @@ class Subscriber(AADLThread):
         input_var.setIsParameter()
 
         self.subscriberCallback.addInputParameter( input_var )
-        self.source_text_file.addFunctionParameter( input_var )
+        self.source_text_function.addFunctionParameter( input_var )
 
         # Aggiungo la chiamata alla funzione custome
-        if self.source_text_file != None:
-            code = "{};".format(self.source_text_file.generateInlineCode())
+        if self.source_text_function != None:
+            code = "{};".format(self.source_text_function.generateInlineCode())
             self.subscriberCallback.addMiddleCode(code)
 
         self.associated_class.addPrivateMethod( self.subscriberCallback )

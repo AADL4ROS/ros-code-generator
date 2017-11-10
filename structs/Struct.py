@@ -37,7 +37,7 @@ class Struct(CObject):
                 code += self.generateVariableAssignmentForVar(v, new_struct_name)
             return code
         else:
-            return "\t\t{}{}\n".format(struct_name, var.generateCodeOnlyAssignment())
+            return "{}{}\n".format(struct_name, var.generateCodeOnlyAssignment())
 
     def generateCode(self):
         code = ""

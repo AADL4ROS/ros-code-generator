@@ -5,6 +5,7 @@ from threads.AADLThread import isMainThread
 from libraries.Library import Library, ROSBase_TF_Interface
 from datatypes.Type import ROSBase_PointerToTransformationFrames
 from variables.Variable import Variable
+import os
 
 class AADLProcess():
     def __init__(self, process, system_root, system):
@@ -119,6 +120,13 @@ class AADLProcess():
         source_import.setPath( source_file.getSourceLibraryPath() )
 
         self.addLibrary(source_import, add_to_cmake = False, add_to_package_xml = False)
+
+    def getSourceFile(self, source_file_name):
+        (name, ext) = os.path.splitext(source_file_name)
+        for s in self.source_text_files:
+            if s.file_name == name:
+                return s
+        return None
 
     #################
     ### VARIABLES ###

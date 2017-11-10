@@ -1,6 +1,6 @@
 /**
  * Node Sbpl_Planner
- * File auto-generated on 10/11/2017 15:01:46
+ * File auto-generated on 10/11/2017 15:42:15
  */
 #include "ros_base/ROSNode.h"
 #include "planners/sbpl_planner.h"
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
  */
 bool Sbpl_Planner::prepare() {
 	Parameters p;
-	handle.param<bool>("replan", p.replan, FALSE);
+	handle.param<bool>("replan", p.replan, false);
 	handle.getParam("starting_epsilon", p.starting_epsilon);
 	handle.getParam("ending_epsilon", p.ending_epsilon);
 	handle.param<int>("dimensions", p.dimensions, 3);
@@ -82,8 +82,7 @@ bool Sbpl_Planner::prepare() {
 	pub_path_out_pub = handle.advertise < nav_msgs::Path0 > ("/path", 10);
 	timer_path_out_pub = handle.createTimer(ros::Duration(0.2), &Sbpl_Planner::path_out_pub_callback, this);
 	timer_replan_cb = handle.createTimer(ros::Duration(1), &Sbpl_Planner::replan_cb_callback, this);
-	custom_prepare( is.vars(), is.params());
-	return true;
+	return custom_prepare( is.vars(), is.params());
 }
 
 /**

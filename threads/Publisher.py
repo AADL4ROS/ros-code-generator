@@ -27,15 +27,15 @@ class Publisher(AADLThread):
         self.output_port_name = "msg"
 
         # Parametri del Publisher
-        self.process_port       = None
-        self.source_text_file   = None
-        self.frequency_in_hz    = None
-        self.period_in_seconds  = None
-        self.topic              = None
-        self.publisherCallback  = None
-        self.output_type        = None
-        self.asn1_source_file   = None
-        self.custom_message     = None
+        self.process_port           = None
+        self.source_text_function   = None
+        self.frequency_in_hz        = None
+        self.period_in_seconds      = None
+        self.topic                  = None
+        self.publisherCallback      = None
+        self.output_type            = None
+        self.asn1_source_file       = None
+        self.custom_message         = None
 
     def populateData(self):
         main_thread = self.associated_class.getMainThread()
@@ -116,14 +116,14 @@ class Publisher(AADLThread):
         ### Source Text ###
         ###################
 
-        self.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText( thread_function ),
+        self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText( thread_function ),
                                                                         tfs.getSourceName( thread_function ))
 
-        if self.source_text_file == None:
+        if self.source_text_function == None:
             return (False, "Unable to find property Source_Text or Source_Name")
 
-        self.source_text_file.uses_tf = self.thread_uses_tf
-        self.source_text_file.setFunctionType(self.output_type)
+        self.source_text_function.setTF( self.thread_uses_tf )
+        self.source_text_function.setFunctionType(self.output_type)
 
         #################
         ### FREQUENCY ###
@@ -190,9 +190,9 @@ class Publisher(AADLThread):
         self.publisherCallback.addInputParameter( input_par )
 
         # Aggiungo la chiamata alla funzione custome
-        if self.source_text_file != None:
+        if self.source_text_function != None:
             code = "{}.publish({});".format(var_publisher_pub.name,
-                                           self.source_text_file.generateInlineCode())
+                                           self.source_text_function.generateInlineCode())
             self.publisherCallback.addMiddleCode(code)
 
         self.associated_class.addPrivateMethod( self.publisherCallback )

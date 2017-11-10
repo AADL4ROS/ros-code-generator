@@ -1,4 +1,5 @@
 from includes.SourceTextFile import SourceTextFile
+from includes.SourceTextFunction import SourceTextFunction
 import threads.AADLThreadFunctionsSupport as tfs
 import re
 from datatypes.Type import Void
@@ -109,12 +110,18 @@ class AADLThread():
         if source_text == None or source_name == None:
             return None
 
-        source_text_file = SourceTextFile(self.associated_class, source_text, source_name)
-        source_text_file.setFunctionType( function_type )
+        source_text_file = self.associated_class.getSourceFile( source_text )
 
-        self.associated_class.addSourceFile(source_text_file)
+        if source_text_file == None:
+            source_text_file = SourceTextFile(self.associated_class, source_text)
+            self.associated_class.addSourceFile(source_text_file)
 
-        return source_text_file
+        source_text_function = SourceTextFunction(self.associated_class, source_text_file, source_name)
+        source_text_function.setFunctionType( function_type )
+
+        source_text_file.addFunction( source_text_function )
+
+        return source_text_function
 
     def setUsesTransformationFrame(self):
 

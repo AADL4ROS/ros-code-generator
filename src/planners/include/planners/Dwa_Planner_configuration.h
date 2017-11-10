@@ -12,10 +12,7 @@ struct Variables: ros_base::VariablesBase {
 	nav_msgs::Path current_path;
 	geometry_msgs::Pose current_goal;
 	Variables () {
-				
-				mapFrame = "map";
-				
-				
+		mapFrame = "map";
 	};
 };
 struct Parameters: ros_base::ParametersBase { 

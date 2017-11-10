@@ -161,13 +161,14 @@ class CMakeLists():
             text += ")\n"
 
         # Generate Message
-        text += self.generateHeaderCommentWithText("MSGS and SRVS Dependencies")
-        text += "generate_messages("
-        if len(self.msgs_srvs_dependecies) > 0:
-            text += "\n\tDEPENDENCIES\n"
-            for d in self.msgs_srvs_dependecies:
-                text += "\t{}\n".format(d)
-        text += ")\n"
+        if len(self.services) > 0 or len(self.messages) > 0:
+            text += self.generateHeaderCommentWithText("MSGS and SRVS Dependencies")
+            text += "generate_messages("
+            if len(self.msgs_srvs_dependecies) > 0:
+                text += "\n\tDEPENDENCIES\n"
+                for d in self.msgs_srvs_dependecies:
+                    text += "\t{}\n".format(d)
+            text += ")\n"
 
         # Build HARDCODED
         text += self.generateHeaderCommentWithText("Build")

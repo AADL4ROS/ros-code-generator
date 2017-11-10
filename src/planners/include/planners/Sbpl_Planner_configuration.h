@@ -14,12 +14,10 @@ struct Variables: ros_base::VariablesBase {
 		bool new_costmap;
 	} flags;
 	Variables () {
-				
-				mapFrame = "map";
-				
-				flags.new_goal = FALSE;
-				flags.new_plan = FALSE;
-				flags.new_costmap = FALSE;
+		mapFrame = "map";
+		flags.new_goal = false;
+		flags.new_plan = false;
+		flags.new_costmap = false;
 	};
 };
 struct Parameters: ros_base::ParametersBase { 

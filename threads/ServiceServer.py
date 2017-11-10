@@ -25,7 +25,7 @@ class ServiceServer(AADLThread):
 
         # Parametri del Subscriber
         self.process_port           = None # La porta provides subprogram access del process
-        self.source_text            = None
+        self.source_text_function   = None
         self.asn_description        = None
         self.service_name           = None
         self.default_service_name   = None
@@ -164,21 +164,21 @@ class ServiceServer(AADLThread):
         if function == None:
             return (False, "Unable to find the function subprogram")
 
-        self.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText(function),
+        self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(function),
                                                                         tfs.getSourceName(function))
 
-        if self.source_text_file == None:
+        if self.source_text_function == None:
             return (False, "Unable to find property Source_Text or Source_Name")
 
-        self.source_text_file.uses_tf = self.thread_uses_tf
+        self.source_text_function.setTF( self.thread_uses_tf )
 
         # Aggiungo la chiamata alla funzione custom
-        if self.source_text_file != None:
-            self.source_text_file.addServiceReqAndRes(input_param_req, input_param_res)
-            self.source_text_file.addLibrary(service_library)
+        if self.source_text_function != None:
+            self.source_text_function.addServiceReqAndRes(input_param_req, input_param_res)
+            self.source_text_function.addLibrary(service_library)
 
-            self.source_text_file.setFunctionType( Bool(self.associated_class) )
-            code = "return {};".format(self.source_text_file.generateInlineCode())
+            self.source_text_function.setFunctionType( Bool(self.associated_class) )
+            code = "return {};".format(self.source_text_function.generateInlineCode())
             self.server_callback.addMiddleCode(code)
 
         self.associated_class.addPrivateMethod(self.server_callback)

@@ -17,7 +17,7 @@ from asn1tools.parser import parse_file
 
 import os
 from datatypes.DatatypeConversion import getROSDatatypeFromASN1
-from datatypes.Type import Type, String
+from datatypes.Type import Type, String, Bool
 from variables.Variable import Variable
 
 from structs.ParametersStruct import ParametersStruct
@@ -106,6 +106,9 @@ class MainThread(AADLThread):
             if isinstance(tmp_param.type, String) and default_val != None:
                 default_val = "\"{}\"".format(default_val)
 
+            if isinstance(tmp_param.type, Bool) and default_val != None:
+                default_val = default_val.lower()
+
             tmp_param.setDefaultValue(default_val)
 
             return tmp_param
@@ -178,25 +181,25 @@ class MainThread(AADLThread):
         (prepare, tearDown, errorHandler) = tfs.getMainThreadFunctions( self.thread )
 
         self.prepare = Prepare( self.associated_class )
-        self.prepare.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText( prepare ),
+        self.prepare.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText( prepare ),
                                                                                 "custom_prepare" )
 
         self.tearDown = TearDown( self.associated_class )
-        self.tearDown.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText( tearDown ),
+        self.tearDown.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText( tearDown ),
                                                                                  "custom_teardown" )
 
         # Aggiungo la chiamata alla funzione custome
-        if self.tearDown.source_text_file != None:
-            code = "{};".format(self.tearDown.source_text_file.generateInlineCode())
+        if self.tearDown.source_text_function != None:
+            code = "{};".format(self.tearDown.source_text_function.generateInlineCode())
             self.tearDown.addMiddleCode(code)
 
         self.errorHandling = ErrorHandling( self.associated_class )
-        self.errorHandling.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText( errorHandler ),
+        self.errorHandling.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText( errorHandler ),
                                                                                       "custom_errorHandling" )
 
         # Aggiungo la chiamata alla funzione custome
-        if self.errorHandling.source_text_file != None:
-            code = "{};".format(self.errorHandling.source_text_file.generateInlineCode())
+        if self.errorHandling.source_text_function != None:
+            code = "{};".format(self.errorHandling.source_text_function.generateInlineCode())
             self.errorHandling.addBottomCode(code)
 
         self.associated_class.addPrivateMethod( self.prepare )
@@ -245,12 +248,13 @@ class MainThread(AADLThread):
                 self.prepare.addMiddleCode("is.initialize();")
 
         # Aggiungo la chiamata alla funzione custome
-        if self.prepare.source_text_file != None:
-            code = "{};".format(self.prepare.source_text_file.generateInlineCode())
+        if self.prepare.source_text_function != None:
+            self.prepare.source_text_function.setFunctionType( Bool(self.associated_class) )
+            code = "return {};".format(self.prepare.source_text_function.generateInlineCode())
             self.prepare.addBottomCode( code )
-
-        # Return alla fine del metodo main
-        self.prepare.addBottomCode("return true;")
+        else:
+            # Return alla fine del metodo main
+            self.prepare.addBottomCode("return true;")
 
         return (True, "")
 

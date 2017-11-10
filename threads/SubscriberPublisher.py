@@ -30,7 +30,7 @@ class SubscriberPublisher(AADLThread):
         self.output_port_name   = "msg_out"
 
         # Parametri comuni
-        self.source_text_file = None
+        self.source_text_function = None
 
         # Parametri della parte Subcriber
         self.sub_process_port       = None
@@ -282,15 +282,15 @@ class SubscriberPublisher(AADLThread):
         ### SOURCE TEXT ###
         ###################
 
-        self.source_text_file = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
+        self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
                                                                                 tfs.getSourceName(thread_function))
         # Aggiungo la chiamata alla funzione custome
-        if self.source_text_file != None:
-            self.source_text_file.setFunctionType(self.output_type)
-            self.source_text_file.addFunctionParameter(self.sub_input_var)
-            self.source_text_file.uses_tf = self.thread_uses_tf
+        if self.source_text_function != None:
+            self.source_text_function.setFunctionType(self.output_type)
+            self.source_text_function.addFunctionParameter(self.sub_input_var)
+            self.source_text_function.setTF( self.thread_uses_tf )
 
-            code = "{}.publish({});".format(self.var_publisher_pub.name, self.source_text_file.generateInlineCode())
+            code = "{}.publish({});".format(self.var_publisher_pub.name, self.source_text_function.generateInlineCode())
             self.sub_callback.addMiddleCode(code)
         else:
             return (False, "Unable to find Source_Text or Source_Name")
