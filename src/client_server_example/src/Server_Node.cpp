@@ -1,6 +1,6 @@
 /**
  * Node Server_Node
- * File auto-generated on 04/11/2017 15:30:57
+ * File auto-generated on 10/11/2017 14:16:09
  */
 #include "ros_base/ROSNode.h"
 #include "client_server_example/Server_Node_configuration.h"
@@ -49,6 +49,8 @@ bool Server_Node::prepare() {
 	Parameters p;
 	handle.param<std::string>("stringName", p.stringName, "ciao");
 	handle.param<double>("testReal", p.testReal, 0);
+	handle.param<double>("traj/test1", p.traj.test1, 1.0);
+	handle.param<int>("traj/test2", p.traj.test2, 2);
 	is.initialize(&p);
 	service_server_receiver = handle.advertiseService("service", &Server_Node::receiver_service_callback, this);
 	sub_subscriber = handle.subscribe("/out_topic", 1, &Server_Node::subscriber_callback, this);

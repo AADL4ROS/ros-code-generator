@@ -17,12 +17,14 @@ from asn1tools.parser import parse_file
 
 import os
 from datatypes.DatatypeConversion import getROSDatatypeFromASN1
-from datatypes.Type import Type, ROSBase_PointerToTransformationFrames
+from datatypes.Type import Type, String
 from variables.Variable import Variable
 
 from structs.ParametersStruct import ParametersStruct
 from structs.VariablesStruct import VariablesStruct
 from includes.NodeConfiguration import NodeConfiguration
+
+from structs.Struct import Struct
 
 import re
 
@@ -71,6 +73,43 @@ class MainThread(AADLThread):
     STATE_ASN_PARAMS        = "Parameters"
     STATE_ASN_VARS          = "Variables"
 
+    def getVariableFromASN1(self, p_v):
+        var_type = p_v['type']
+        var_name = p_v['name']
+
+        if 'default' in p_v:
+            default_val = p_v['default']
+            # Rimuovo i caratteri di escape
+            default_val = str(default_val).replace("\\", "")
+        else:
+            default_val = None
+
+        # Se mi trovo davanti ad un set, genero una struct con il suo contenuto
+        if var_type.upper() == "SET":
+
+            tmp_struct = Struct(self.associated_class, "{}_t".format(var_name))
+            tmp_struct.createInstanceWithName(var_name)
+
+            struct_members = p_v['members']
+            for m in struct_members:
+                tmp_param = self.getVariableFromASN1(m)
+                tmp_struct.addVariable(tmp_param)
+
+            return tmp_struct
+
+        else:
+            # Se ho una variabile semplice, aggiungo la variabile
+            tmp_param = Variable(self)
+            tmp_param.setType(getROSDatatypeFromASN1(var_type, self.associated_class))
+            tmp_param.setName(var_name)
+
+            if isinstance(tmp_param.type, String) and default_val != None:
+                default_val = "\"{}\"".format(default_val)
+
+            tmp_param.setDefaultValue(default_val)
+
+            return tmp_param
+
     # Ogni process/node ha un file che descrive params e vars, questo metodo si occupa
     # di processarlo ed aggiungere la variabili e parametri corretti
     def getStateASN(self):
@@ -98,24 +137,9 @@ class MainThread(AADLThread):
         params_asn  = parsed_asn[self.STATE_ASN_DEFINITION]['types'][self.STATE_ASN_PARAMS]['members']
         vars_asn    = parsed_asn[self.STATE_ASN_DEFINITION]['types'][self.STATE_ASN_VARS]['members']
 
-        # RegEx per controllare se una stringa inizia e finisce con le virgolette
-        string_apex_regex = re.compile("\"(.+)\"")
-
         for index, p_v in enumerate(params_asn + vars_asn):
-            var_type    = p_v['type']
-            var_name    = p_v['name']
-            if 'default' in p_v:
-                default_val = p_v['default']
-                # Rimuovo i caratteri di escape
-                default_val = str(default_val).replace("\\", "")
-            else:
-                default_val = None
 
-            tmp_param = Variable(self)
-            tmp_param.setType(getROSDatatypeFromASN1(var_type, self.associated_class))
-            tmp_param.setName(var_name)
-
-            tmp_param.setDefaultValue(default_val)
+            tmp_param = self.getVariableFromASN1(p_v)
 
             if index < len(params_asn):
                 parameters.append(tmp_param)
@@ -123,6 +147,31 @@ class MainThread(AADLThread):
                 variables.append(tmp_param)
 
         return (parameters, variables)
+
+    def createHandlerForParameter(self, p, struct_name = ""):
+
+        if isinstance(p, Struct):
+            new_struct_name = "{}/".format(p.create_instance_with_name)
+            if len(struct_name) > 0:
+                new_struct_name = "{}/{}".format(struct_name, new_struct_name)
+
+            for p_s in p.variables:
+                self.createHandlerForParameter(p_s, new_struct_name)
+
+        else:
+            if p.hasDefaultValue():
+                self.prepare.addMiddleCode("handle.param<{}>(\"{}{}\", p.{}{}, {});"
+                                           .format(p.type.generateCode(),
+                                                   struct_name,
+                                                   p.name,
+                                                   struct_name.replace("/", "."), # Al posto dello / ha il .
+                                                   p.name,
+                                                   p.default_value))
+            else:
+                self.prepare.addMiddleCode("handle.getParam(\"{}\", p.{});"
+                                           .format(p.name, p.name))
+
+            log.info("Parameters: {}".format(p.generateCode()))
 
     def populateData(self):
         # Ottengo tutti i dati relativi al main thread
@@ -187,17 +236,7 @@ class MainThread(AADLThread):
 
                 for p in parameters:
                     params_struct.addVariable(p)
-                    if p.hasDefaultValue():
-                        self.prepare.addMiddleCode("handle.param<{}>(\"{}\", p.{}, {});"
-                                                   .format(p.type.generateCode(),
-                                                           p.name,
-                                                           p.name,
-                                                           p.default_value))
-                    else:
-                        self.prepare.addMiddleCode("handle.getParam(\"{}\", p.{});"
-                                                   .format(p.name, p.name))
-
-                    log.info("Parameters: {}".format(p.generateCode()))
+                    self.createHandlerForParameter(p)
 
                 self.prepare.addMiddleCode("is.initialize(&p);")
                 self.associated_class.node_configuration.addStruct(params_struct)

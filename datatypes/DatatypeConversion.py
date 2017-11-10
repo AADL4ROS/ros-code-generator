@@ -27,7 +27,7 @@ def getROSDatatypeFromASN1(asn_type, associated_class, is_msg_or_service = False
         ###############
         ### INTEGER ###
         ###############
-        "INTEGER"   : "Int64",
+        "INTEGER"   : "Int",
 
         ###################
         ### REAL/DOUBLE ###
@@ -60,6 +60,9 @@ def getROSDatatypeFromASN1(asn_type, associated_class, is_msg_or_service = False
 
             if type_class_name == "Double":
                 type_class_name = "Float64"
+
+            if type_class_name == "Int":
+                type_class_name = "Int64"
 
         type_class = getattr(datatypes.Type, type_class_name)
 

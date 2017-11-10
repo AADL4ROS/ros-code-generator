@@ -18,6 +18,13 @@ class Struct(CObject):
         # a tutte le variabili è assegnato il loro valore di defualt
         self.has_constructor = False
 
+        # Se voglio generare subito una istanza della struct senza
+        # doverla dichiarare da qualche parte
+        self.create_instance_with_name = None
+
+    def createInstanceWithName(self, name):
+        self.create_instance_with_name = name
+
     def addVariable(self, var):
         self.variables.append(var)
 
@@ -30,12 +37,15 @@ class Struct(CObject):
         if self.super_class != None:
             code += ": {}".format(self.super_class)
 
-        code += "{ \n"
+        code += " { \n"
 
         # Con l'argomento generate_default_value = False dico di non generare la default value
         # anche se questa è presente
         for v in self.variables:
-            code += "\t{}\n".format( v.generateCode(generate_default_value = False) )
+            if isinstance(v, Struct):
+                code += "".join(["\t" + gen_s + "\n" for gen_s in v.generateCode().split("\n")])
+            else:
+                code += "\t{}\n".format( v.generateCode(generate_default_value = False) )
 
         # Se ha il costruttore, allora lo genero
         if self.has_constructor:
@@ -47,6 +57,11 @@ class Struct(CObject):
             code += "\t};\n"
 
         # Chiusura della struct
-        code += "};"
+        code += "}"
+
+        if self.create_instance_with_name != None:
+            code += " {}".format(self.create_instance_with_name)
+
+        code += ";"
 
         return code

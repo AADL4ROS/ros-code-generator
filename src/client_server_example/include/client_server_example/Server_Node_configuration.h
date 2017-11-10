@@ -4,15 +4,19 @@
  * Auto-generated Internal State
  */
 #include "ros_base/Configuration.h"
-struct Variables: ros_base::VariablesBase{ 
+struct Variables: ros_base::VariablesBase { 
 	double publisherFrequency;
 	Variables () {
 		publisherFrequency = 0;
 	};
 };
-struct Parameters: ros_base::ParametersBase{ 
+struct Parameters: ros_base::ParametersBase { 
 	std::string stringName;
 	double testReal;
+	struct traj_t { 
+		double test1;
+		int test2;
+	} traj;
 };
 typedef std::shared_ptr < const Parameters > Parameters_ptr;
 typedef std::shared_ptr < Variables > Variables_ptr;
