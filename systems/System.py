@@ -203,7 +203,8 @@ class System():
         # Se il nodo viene salvato, allora devo anche controllare che il tipo nel CMakeLists e quello
         # richiamato nel launch file coincidano
         n = self.launch_file.retrieveNode(node.aadl_node_name)
-        n.type = node.type
+        if n != None:
+            n.type = node.type
 
         # Genero i file da includere
         if node.node_configuration != None:

@@ -28,6 +28,17 @@ class Struct(CObject):
     def addVariable(self, var):
         self.variables.append(var)
 
+    def generateVariableAssignmentForVar(self, var, struct_name = ""):
+
+        if isinstance(var, Struct):
+            code = ""
+            new_struct_name = "{}{}.".format(struct_name, var.create_instance_with_name)
+            for v in var.variables:
+                code += self.generateVariableAssignmentForVar(v, new_struct_name)
+            return code
+        else:
+            return "\t\t{}{}\n".format(struct_name, var.generateCodeOnlyAssignment())
+
     def generateCode(self):
         code = ""
 
@@ -52,7 +63,9 @@ class Struct(CObject):
             code += "\t{} () {{\n".format(self.name)
 
             for v in self.variables:
-                code += "\t\t{}\n".format( v.generateCodeOnlyAssignment() )
+                for gen_s in self.generateVariableAssignmentForVar(v).split("\n"):
+                    if len(gen_s) > 0:
+                        code += "\t\t{}\n".format(gen_s)
 
             code += "\t};\n"
 
