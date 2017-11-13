@@ -6,8 +6,9 @@ from asn1tools.parser import parse_file
 from messages.Message import Message
 from variables.Variable import Variable
 from datatypes.DatatypeConversion import getROSDatatypeFromASN1
+import global_filepath
 
-asn_default_path = "../ocarina-ros/"
+asn_default_path = global_filepath.aadl_model_dir
 
 """
 Struttura base di un messaggio

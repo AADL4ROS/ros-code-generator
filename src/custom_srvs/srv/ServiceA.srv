@@ -1,7 +1,0 @@
-int64 a
-string b
-bool proc
----
-int64 appended
-float64 length
-geometry_msgs/Pose pose

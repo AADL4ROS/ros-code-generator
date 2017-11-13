@@ -7,7 +7,9 @@ from services.Service import Service
 from variables.Variable import Variable
 from datatypes.DatatypeConversion import getROSDatatypeFromASN1
 
-asn_default_path = "../ocarina-ros/"
+import global_filepath
+
+asn_default_path = global_filepath.aadl_model_dir
 
 """
 Struttura base per un servizio

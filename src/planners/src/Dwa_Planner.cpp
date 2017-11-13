@@ -1,6 +1,6 @@
 /**
  * Node Dwa_Planner
- * File auto-generated on 10/11/2017 16:17:07
+ * File auto-generated on 13/11/2017 12:14:48
  */
 #include "ros_base/ROSNode.h"
 #include "planners/dwa_planner.h"

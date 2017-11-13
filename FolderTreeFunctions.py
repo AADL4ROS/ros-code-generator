@@ -1,9 +1,9 @@
 import os
 import shutil
-import threads.AADLThreadFunctionsSupport as tfs
+import global_filepath
 
 # Output
-dir             = os.path.dirname(__file__)
+dir             = global_filepath.output_dir
 output_folder   = os.path.join(dir, "src")
 
 src_folder_name     = 'src'

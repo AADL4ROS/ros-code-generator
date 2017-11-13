@@ -26,7 +26,7 @@ from includes.NodeConfiguration import NodeConfiguration
 
 from structs.Struct import Struct
 
-import re
+import global_filepath
 
 ###################
 ### MAIN THREAD ###
@@ -127,7 +127,7 @@ class MainThread(AADLThread):
             return (parameters, variables)
 
         # @TODO: il percorso del file AADL è lo stesso del file XML
-        ocarina_ros_path = "../ocarina-ros/"
+        ocarina_ros_path = global_filepath.aadl_model_dir
         parsed_asn = parse_file(os.path.join(ocarina_ros_path, asn_file))
 
         # Estraggo tutti i tipi che NON sono Params o Vars

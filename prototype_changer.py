@@ -104,5 +104,3 @@ def replace_prototypes(aadl_file, location=''):
 
         in_pkg_file.close()
         out_pkg_file.close()
-
-replace_prototypes("planners.aadl", "../Osate/aadl-ros-new/packages/")
