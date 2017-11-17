@@ -105,6 +105,11 @@ def getUsagePackages(file):
 
 for path, subdirs, files in os.walk(aadl_file_directory):
     for name in files:
+
+        # Skip per i file di sistema
+        if name[0] == ".":
+            continue
+
         curr_file_path = os.path.realpath(os.path.join(path, name))
 
         (package, imported, property_sets) = getUsagePackages(curr_file_path)
@@ -185,8 +190,13 @@ rc = p.returncode
 if "Fine Ever XML" in output.decode():
     print("4. Ocarina backend ever_xml ended correctly.")
 else:
+    print("4. Error in Ocarina backend ever_xml")
+    print("\nOcarina errors:\n")
     print(err.decode())
+
+    print("\nOcarina output:\n")
     print(output.decode())
+    sys.exit(0)
 
 ###############################
 ### Step 4: Code Generation ###
@@ -228,15 +238,16 @@ if options.delete_xml_folder:
 else:
     print("\t+ XML model folder available at {}".format(xml_model_folder))
 
-for f in file_package_mapping:
-    file_path = file_package_mapping[f]['file']
+for path, _, files in os.walk(aadl_file_directory):
+    for name in files:
+        curr_file_path = os.path.realpath(os.path.join(path, name))
 
-    if "_mod.aadl" in file_path:
-        try:
-            os.remove(file_path)
-            print("\t+ Removed {}".format(file_path))
-        except:
-            print("\t+ Unable to remove {}".format(file_path))
-            pass
+        if "_mod.aadl" in curr_file_path:
+            try:
+                os.remove(curr_file_path)
+                print("\t+ Removed {}".format(curr_file_path))
+            except:
+                print("\t+ Unable to remove {}".format(curr_file_path))
+                pass
 
 printHeader("End procedure")
