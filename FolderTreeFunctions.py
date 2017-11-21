@@ -4,7 +4,7 @@ import global_filepath
 
 # Output
 dir             = global_filepath.output_dir
-output_folder   = os.path.join(dir, "src")
+output_folder   = dir#os.path.join(dir, "src")
 
 src_folder_name     = 'src'
 service_folder_name = 'srv'
