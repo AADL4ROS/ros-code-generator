@@ -12,6 +12,18 @@ class SourceTextFile(Include):
     def addFunction(self, f):
         self.functions.append(f)
 
+    def hasFunctionFromName(self, f_name):
+        for f in self.functions:
+            if f.function_name == f_name:
+                return True
+        return False
+
+    def getFunctionFromName(self, f_name):
+        for f in self.functions:
+            if f.function_name == f_name:
+                return f
+        return None
+
     def isEqualTo(self, another_object):
 
         if self.file_name != another_object.file_name:

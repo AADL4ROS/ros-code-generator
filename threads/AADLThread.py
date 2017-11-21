@@ -116,10 +116,14 @@ class AADLThread():
             source_text_file = SourceTextFile(self.associated_class, source_text)
             self.associated_class.addSourceFile(source_text_file)
 
-        source_text_function = SourceTextFunction(self.associated_class, source_text_file, source_name)
-        source_text_function.setFunctionType( function_type )
+        # Se ho già la funzione presente nel file, non la devo ri-creare
+        if source_text_file.hasFunctionFromName( source_name ):
+            source_text_function = source_text_file.getFunctionFromName( source_name )
+        else:
+            source_text_function = SourceTextFunction(self.associated_class, source_text_file, source_name)
+            source_text_function.setFunctionType( function_type )
 
-        source_text_file.addFunction( source_text_function )
+            source_text_file.addFunction( source_text_function )
 
         return source_text_function
 
