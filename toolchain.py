@@ -6,6 +6,7 @@ from prototype_changer import replace_prototypes
 from subprocess import Popen, PIPE
 import shutil
 import global_filepath
+import log
 
 """
 Gli step di questa toolchain saranno:
@@ -25,17 +26,20 @@ def printHeader(text):
 
 # Get current folder
 current_folder = os.getcwd()
+step_number    = 0
 
 # Get console argument
 parser = OptionParser()
 parser.add_option("-f", "--file", dest="filename",
-                  help="The AADL file containing the model description", metavar="FILE")
+                  help="The AADL file containing the model description (mandatory)", metavar="FILE")
 parser.add_option("-s", "--system", dest="system",
                   help="The system to be generated (optional)")
 parser.add_option("-o", "--output", dest="out_dir", metavar="DIR",
                   help="Output directory (optional)")
 parser.add_option("-x", "--xml", dest="delete_xml_folder", default=True, action="store_false",
-                  help="Delete XML model (optional, default = True)")
+                  help="If added, the XML model is kept, otherwise it is deleted at the end of the procedure (optional)")
+parser.add_option("-l", "--log", dest="log_level", metavar="LEVEL",
+                  help="Log level. Valid values: [INFO, WARNING, ERROR]")
 
 (options, args) = parser.parse_args()
 
@@ -54,14 +58,42 @@ else:
 
 printHeader("Starting procedure")
 
+if options.log_level != None:
+    level = str(options.log_level).upper()
+    if not log.is_valid_log_level(level):
+        print("Invalid log level {}. Used default INFO. See --help for more information.".format(level))
+    else:
+        log.set_log_level(level)
+        print("Log level: {}".format(level))
+
+def cleanUpAADL_ModFile(aadl_file_directory, should_print = False):
+    for path, _, files in os.walk(aadl_file_directory):
+        for name in files:
+            curr_file_path = os.path.realpath(os.path.join(path, name))
+
+            if "_mod.aadl" in curr_file_path:
+                try:
+                    os.remove(curr_file_path)
+                    if should_print:
+                        print("\t+ Removed {}".format(curr_file_path))
+                except:
+                    print("\t+ Unable to remove {}".format(curr_file_path))
+                    pass
+
 aadl_file_complete_path = os.path.join(current_folder, options.filename)
 
 aadl_file_directory = os.path.dirname(aadl_file_complete_path)
 aadl_file_name = os.path.basename(aadl_file_complete_path)
 
+step_number += 1
+print("{}. Environment initialization".format(step_number))
+
+cleanUpAADL_ModFile(aadl_file_directory, should_print=True)
+
 replace_prototypes(aadl_file_name, aadl_file_directory)
 
-print("1. Prototype changed")
+step_number += 1
+print("{}. Prototype changed".format(step_number))
 
 ####################################
 ### Step 2: Collecting all files ###
@@ -129,7 +161,8 @@ for path, subdirs, files in os.walk(aadl_file_directory):
             if p_set not in file_property_set_mapping:
                 file_property_set_mapping[p_set] = tmp_package
 
-print("2. Files collected and analyzed")
+step_number += 1
+print("{}. Files collected and analyzed".format(step_number))
 
 (system_package, system_imported, _) = getUsagePackages(aadl_file_complete_path)
 
@@ -156,7 +189,8 @@ while len(packages_to_import) > 0:
         tmp_desc = file_property_set_mapping[next_package]
         importFromDesc(tmp_desc)
 
-print("3. The following files will be used in the process:")
+step_number += 1
+print("{}. The following files will be used in the process:".format(step_number))
 for f in files_to_import:
     print("\t + " + f)
 
@@ -187,10 +221,11 @@ p = Popen(ocarina_parameters, cwd=xml_model_folder, stdout=PIPE, stderr=PIPE)
 output, err = p.communicate()
 rc = p.returncode
 
+step_number += 1
 if "Fine Ever XML" in output.decode():
-    print("4. Ocarina backend ever_xml ended correctly.")
+    print("{}. Ocarina backend ever_xml ended correctly.".format(step_number))
 else:
-    print("4. Error in Ocarina backend ever_xml")
+    print("{}. Error in Ocarina backend ever_xml".format(step_number))
     print("\nOcarina errors:\n")
     print(err.decode())
 
@@ -218,14 +253,14 @@ for path, _, files in os.walk(xml_model_folder):
         if curr_file_ext.replace(".", "") == "xml":
             global_filepath.xml_filename = name
             startGeneration()
-
-print("5. Code generation ended correctly.")
+step_number += 1
+print("{}. Code generation ended correctly.".format(step_number))
 
 ########################
 ### Step 4: Clean-up ###
 ########################
-
-print("6. Cleaning up:")
+step_number += 1
+print("{}. Cleaning up:".format(step_number))
 
 if options.delete_xml_folder:
     if os.path.exists(xml_model_folder):
@@ -238,16 +273,6 @@ if options.delete_xml_folder:
 else:
     print("\t+ XML model folder available at {}".format(xml_model_folder))
 
-for path, _, files in os.walk(aadl_file_directory):
-    for name in files:
-        curr_file_path = os.path.realpath(os.path.join(path, name))
-
-        if "_mod.aadl" in curr_file_path:
-            try:
-                os.remove(curr_file_path)
-                print("\t+ Removed {}".format(curr_file_path))
-            except:
-                print("\t+ Unable to remove {}".format(curr_file_path))
-                pass
+cleanUpAADL_ModFile(aadl_file_directory, should_print=True)
 
 printHeader("End procedure")
