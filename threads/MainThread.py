@@ -101,7 +101,7 @@ class MainThread(AADLThread):
             # Se ho una variabile semplice, aggiungo la variabile
             tmp_param = Variable(self)
             tmp_param.setType(getROSDatatypeFromASN1(var_type, self.associated_class))
-            print(p_v)
+            
             if 'tag' in p_v:
                 p_v_tags = p_v['tag']
                 if 'number' in p_v_tags:

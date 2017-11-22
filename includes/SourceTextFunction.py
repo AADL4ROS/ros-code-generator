@@ -58,23 +58,27 @@ class SourceTextFunction(CObject):
 
         code += "{}(".format(self.function_name)
 
+        fun_args = ""
         if self.associated_class.node_configuration != None:
             if self.associated_class.node_configuration.has_variables:
-                code += " is.vars(),"
+                fun_args += " is.vars(),"
 
             if self.associated_class.node_configuration.has_parameters:
-                code += " is.params(),"
+                fun_args += " is.params(),"
 
-            for p in self.function_parameters:
-                param_name = p.name.replace("&", "")
-                code += " {},".format(param_name)
+        # Aggiungo i parametri
+        for p in self.function_parameters:
+            param_name = p.name.replace("&", "")
+            fun_args += " {},".format(param_name)
 
-            if self.uses_tf:
-                code += " tf,"
+        if self.uses_tf:
+            fun_args += " tf,"
 
-            # Rimuovo l'ultima virgola
-            code = code[:-1]
+        # Rimuovo l'ultima virgola
+        if len(fun_args) > 0:
+            fun_args = fun_args[:-1].strip()
 
+        code += fun_args
         code += ")"
 
         return code
@@ -84,23 +88,26 @@ class SourceTextFunction(CObject):
 
         code += "{} {}(".format( self.function_type.generateCode(), self.function_name )
 
+        fun_args = ""
         if self.associated_class.node_configuration != None:
 
             if self.associated_class.node_configuration.has_variables:
-                code += " Variables_ptr v,"
+                fun_args += " Variables_ptr v,"
 
             if self.associated_class.node_configuration.has_parameters:
-                code += " Parameters_ptr p,"
+                fun_args += " Parameters_ptr p,"
 
-            for p in self.function_parameters:
-                code += " {},".format(p.generateCode())
+        for p in self.function_parameters:
+            fun_args += " {},".format(p.generateCode())
 
-            if self.uses_tf:
-                code += " ros_base::TransformationFrames * tf,"
+        if self.uses_tf:
+            fun_args += " ros_base::TransformationFrames * tf,"
 
-            # Rimuovo l'ultima virgola
-            code = code[:-1]
+        # Rimuovo l'ultima virgola
+        if len(fun_args) > 0:
+            fun_args = fun_args[:-1].strip()
 
+        code += fun_args
         code += ") {\n"
 
         # Commento per dire dove inserire il codice
