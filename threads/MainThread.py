@@ -101,6 +101,12 @@ class MainThread(AADLThread):
             # Se ho una variabile semplice, aggiungo la variabile
             tmp_param = Variable(self)
             tmp_param.setType(getROSDatatypeFromASN1(var_type, self.associated_class))
+
+            if 'tags' in p_v:
+                p_v_tags = p_v['tags']
+                if 'number' in p_v_tags:
+                    var_name = "{}[{}]".format(var_name, p_v_tags['number'])
+
             tmp_param.setName(var_name)
 
             if isinstance(tmp_param.type, String) and default_val != None:
@@ -257,4 +263,3 @@ class MainThread(AADLThread):
             self.prepare.addBottomCode("return true;")
 
         return (True, "")
-
