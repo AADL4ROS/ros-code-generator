@@ -27,6 +27,11 @@ class SourceTextFunction(CObject):
             self.source_text_file.addLibrary(lib)
 
     def addFunctionParameter(self, param):
+        # Se il parametro già esiste, allora non lo aggiugno.
+        for p in self.function_parameters:
+            if param.isEqualTo(p):
+                return
+
         self.function_parameters.append(param)
 
         if param.type.namespace != None:
