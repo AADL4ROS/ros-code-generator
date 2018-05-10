@@ -74,7 +74,7 @@ class AADLProcess():
             tf_var.setName("tf")
             tf_var.setType( ROSBase_PointerToTransformationFrames(self) )
             self.addInternalVariable(tf_var)
-            self.getMainThread().constructor.addMiddleCode("{} = new ros_base::TransformationFrames();"
+            self.getMainThread().constructor.addMiddleCode("{} = new node_base::TransformationFrames();"
                                                            .format(tf_var.name))
 
             self.addLibrary(ROSBase_TF_Interface())
@@ -283,7 +283,7 @@ class AADLProcess():
         ###########################
 
         code += "\n"
-        code += "class {} : public ros_base::ROSNode {{\n".format( self.class_name )
+        code += "class {} : public node_base::ROSNode {{\n".format( self.class_name )
 
         # INSTESTAZIONE METODI PRIVATI
         if self.hasPrivateData():

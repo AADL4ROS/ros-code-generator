@@ -5,4 +5,4 @@ class VariablesStruct(Struct):
         super().__init__( _associated_class, "Variables")
         self.has_constructor = True
 
-        self.super_class = "ros_base::VariablesBase"
+        self.super_class = "node_base::VariablesBase"

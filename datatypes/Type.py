@@ -203,11 +203,11 @@ class ROS_ServiceServer_Response(Type):
 class ROSBase_TransformationFrames(Type):
     def __init__(self, _associated_class):
         super().__init__( _associated_class )
-        self.setNamespace("ros_base")
+        self.setNamespace("node_base")
         self.setTypeName( "TransformationFrames" )
 
 class ROSBase_PointerToTransformationFrames(Type):
     def __init__(self, _associated_class):
         super().__init__( _associated_class )
-        self.setNamespace("ros_base")
+        self.setNamespace("node_base")
         self.setTypeName( "TransformationFrames *" )

@@ -101,7 +101,7 @@ class SourceTextFunction(CObject):
             fun_args += " {},".format(p.generateCode())
 
         if self.uses_tf:
-            fun_args += " ros_base::TransformationFrames * tf,"
+            fun_args += " node_base::TransformationFrames * tf,"
 
         # Rimuovo l'ultima virgola
         if len(fun_args) > 0:

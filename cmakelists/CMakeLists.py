@@ -178,7 +178,7 @@ class CMakeLists():
 
         text += "include_directories(\n"
         text += "\t${catkin_INCLUDE_DIRS}\n"
-        text += "\t${ros_base_INCLUDE_DIRS}\n"
+        text += "\t${node_base_INCLUDE_DIRS}\n"
         text += "\tinclude\n"
         text += ")\n"
 
@@ -188,7 +188,7 @@ class CMakeLists():
         for e in self.executables:
             text += "target_link_libraries({}\n".format(e['name'])
             text += "\t${catkin_LIBRARIES}\n"
-            text += "\t${ros_base_LIBRARIES}\n"
+            text += "\t${node_base_LIBRARIES}\n"
             text += ")\n"
 
         return text

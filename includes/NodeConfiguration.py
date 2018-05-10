@@ -46,7 +46,7 @@ class NodeConfiguration(Include):
         c.setComment("Auto-generated Internal State")
         code += c.generateCode()
 
-        code += "#include \"ros_base/Configuration.h\"\n"
+        code += "#include \"node_base/Configuration.h\"\n"
 
         for l in self.libraries:
             code += l.generateCode()
@@ -66,7 +66,7 @@ class NodeConfiguration(Include):
         if self.has_variables:
             code += "typedef std::shared_ptr < Variables > Variables_ptr;\n"
 
-        code += "class InternalState: ros_base::InternalStateBase {\n"
+        code += "class InternalState: node_base::InternalStateBase {\n"
         code += "public:\n"
 
         if self.has_variables:
@@ -83,7 +83,7 @@ class NodeConfiguration(Include):
 
             code += "\n"
 
-        code += "\tvoid initialize (ros_base::ParametersBase * p = NULL) {\n"
+        code += "\tvoid initialize (node_base::ParametersBase * p = NULL) {\n"
 
         if self.has_parameters:
             code += "\t\t_params = std::make_shared < const Parameters > (*static_cast < Parameters * > (p));\n"
