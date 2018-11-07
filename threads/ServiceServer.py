@@ -1,5 +1,4 @@
 import logging
-log = logging.getLogger("root")
 
 from threads.AADLThread import AADLThread
 
@@ -7,11 +6,13 @@ import threads.AADLThreadFunctionsSupport as tfs
 
 from datatypes.Type import Bool, ROS_ServiceServer, ROS_ServiceServer_Request, ROS_ServiceServer_Response
 
-from comments.Comment import Comment
 from variables.Variable import Variable
 import services.ServiceFunctionSupport as sfs
 from libraries.Library import Library
 from methods.Method import Method
+
+log = logging.getLogger("root")
+
 
 class ServiceServer(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
@@ -19,17 +20,17 @@ class ServiceServer(AADLThread):
         log.info("Service Server thread {}".format(self.name))
 
         # E' la porta che fornisce il servizio, in AADL è una provides subprogram access
-        self.input_port_name    = "srv"
-        self.called_name        = "called"
-        self.function_name      = "function"
+        self.input_port_name = "srv"
+        self.called_name = "called"
+        self.function_name = "function"
 
         # Parametri del Subscriber
-        self.process_port           = None # La porta provides subprogram access del process
-        self.source_text_function   = None
-        self.asn_description        = None
-        self.service_name           = None
-        self.default_service_name   = None
-        self.service                = None
+        self.process_port = None  # La porta provides subprogram access del process
+        self.source_text_function = None
+        self.asn_description = None
+        self.service_name = None
+        self.default_service_name = None
+        self.service = None
 
     def populateData(self):
         main_thread = self.associated_class.getMainThread()
@@ -100,7 +101,7 @@ class ServiceServer(AADLThread):
         if self.asn_description == None:
             # @TODO: Standard Service
             log.warning("STANDARD SERVICE")
-            #return (False, "Unable to find property Source_Text for the services caller with ASN.1 description")
+            # return (False, "Unable to find property Source_Text for the services caller with ASN.1 description")
         else:
             # Creo il servizio custom e lo associo al nodo che lo ha generato
             self.service = sfs.getServiceFromASN1(aadl_namespace,
@@ -112,7 +113,7 @@ class ServiceServer(AADLThread):
 
         # Genero ed aggiungo la libreria del services al nodo
         service_library = Library(self.associated_class)
-        service_library.setPath( "{}/{}.h".format(self.service.namespace, self.service.name) )
+        service_library.setPath("{}/{}.h".format(self.service.namespace, self.service.name))
         self.associated_class.addLibrary(service_library)
 
         ##########################
@@ -120,9 +121,9 @@ class ServiceServer(AADLThread):
         ##########################
 
         var_service_server = Variable(self.associated_class)
-        var_service_server.setName( "service_server_{}".format(self.name) )
-        var_service_server.setType( ROS_ServiceServer( self.associated_class) )
-        self.associated_class.addInternalVariable( var_service_server )
+        var_service_server.setName("service_server_{}".format(self.name))
+        var_service_server.setType(ROS_ServiceServer(self.associated_class))
+        self.associated_class.addInternalVariable(var_service_server)
 
         ###############################
         ### SERVICE SERVER CALLBACK ###
@@ -137,8 +138,8 @@ class ServiceServer(AADLThread):
         input_param_req = Variable(self.associated_class)
         input_param_req.setName("&req")
         input_param_req.setType(
-                ROS_ServiceServer_Request(self.associated_class,
-                                          "{}::{}".format(self.service.namespace, self.service.name))
+            ROS_ServiceServer_Request(self.associated_class,
+                                      "{}::{}".format(self.service.namespace, self.service.name))
         )
         input_param_req.setIsParameter()
 
@@ -146,8 +147,8 @@ class ServiceServer(AADLThread):
         input_param_res = Variable(self.associated_class)
         input_param_res.setName("&res")
         input_param_res.setType(
-                ROS_ServiceServer_Response(self.associated_class,
-                                          "{}::{}".format(self.service.namespace, self.service.name))
+            ROS_ServiceServer_Response(self.associated_class,
+                                       "{}::{}".format(self.service.namespace, self.service.name))
         )
         input_param_res.setIsParameter()
 
@@ -158,26 +159,26 @@ class ServiceServer(AADLThread):
         ### SOURCE TEXT ###
         ###################
         function = tfs.getSubcomponentByInfo(self.thread,
-                                           name         = self.function_name,
-                                           namespace    = "ros",
-                                           category     = "subprogram")
+                                             name=self.function_name,
+                                             namespace="ros",
+                                             category="subprogram")
         if function == None:
             return (False, "Unable to find the function subprogram")
 
         self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(function),
-                                                                        tfs.getSourceName(function))
+                                                                            tfs.getSourceName(function))
 
         if self.source_text_function == None:
             return (False, "Unable to find property Source_Text or Source_Name")
 
-        self.source_text_function.setTF( self.thread_uses_tf )
+        self.source_text_function.setTF(self.thread_uses_tf)
 
         # Aggiungo la chiamata alla funzione custom
         if self.source_text_function != None:
             self.source_text_function.addServiceReqAndRes(input_param_req, input_param_res)
             self.source_text_function.addLibrary(service_library)
 
-            self.source_text_function.setFunctionType( Bool(self.associated_class) )
+            self.source_text_function.setFunctionType(Bool(self.associated_class))
             code = "return {};".format(self.source_text_function.generateInlineCode())
             self.server_callback.addMiddleCode(code)
 

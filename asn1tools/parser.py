@@ -9,7 +9,6 @@ from pyparsing import \
     Literal, Keyword, Word, ZeroOrMore, Regex, printables, delimitedList, nums, \
     Group, Optional, Forward, StringEnd, OneOrMore, alphanums, Suppress, QuotedString
 
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -22,6 +21,7 @@ def convert_number(token):
         return int(token)
     except ValueError:
         return token
+
 
 def convert_str(token):
     try:
@@ -85,8 +85,8 @@ def convert_members(tokens):
         member['optional'] = 'OPTIONAL' in qualifiers
 
         if 'DEFAULT' in qualifiers:
-            member['default'] = convert_str( qualifiers[1] )
-            #member['default'] = convert_number(qualifiers[1])
+            member['default'] = convert_str(qualifiers[1])
+            # member['default'] = convert_number(qualifiers[1])
 
         tag = convert_tag(member_tokens[1])
 
@@ -248,9 +248,9 @@ def create_grammar():
 
     # Added by Andrea Semprebon
     quoted_string = QuotedString('"')
-    numbers       = Word(nums + ".-")
+    numbers = Word(nums + ".-")
 
-    #type_name = Regex(r'[A-Z][a-zA-Z0-9-]*')
+    # type_name = Regex(r'[A-Z][a-zA-Z0-9-]*')
     type_name = Regex(r'[a-zA-Z][_a-zA-Z0-9-]*')
     value_name = Word(alphanums + '-_')
     assignment = Literal('::=')
@@ -308,12 +308,12 @@ def create_grammar():
     # Modified adding quoted_string and numbers
     sequence << (SEQUENCE + lbrace
                  + Group(Optional(delimitedList(
-                     Group(Group(value_name
-                                 + tag
-                                 + type_)
-                           + Group(Optional(OPTIONAL)
-                                   + Optional(DEFAULT + (quoted_string | numbers | word) ))
-                           | dotx3))))
+                Group(Group(value_name
+                            + tag
+                            + type_)
+                      + Group(Optional(OPTIONAL)
+                              + Optional(DEFAULT + (quoted_string | numbers | word)))
+                      | dotx3))))
                  + rbrace)
 
     sequence_of << (SEQUENCE
@@ -333,23 +333,23 @@ def create_grammar():
     # Modified adding quoted_string and numbers
     set_ << (SET + lbrace
              + Group(Optional(delimitedList(
-                 Group(Group(value_name
-                             + tag
-                             + type_)
-                       + Group(Optional(OPTIONAL)
-                               + Optional(DEFAULT + (quoted_string | numbers | word)))
-                       | dotx3))))
+                Group(Group(value_name
+                            + tag
+                            + type_)
+                      + Group(Optional(OPTIONAL)
+                              + Optional(DEFAULT + (quoted_string | numbers | word)))
+                      | dotx3))))
              + rbrace)
 
     choice << (CHOICE
                + lbrace
                + Group(Optional(delimitedList(
-                   Group(Group(value_name
-                               + tag
-                               + type_)
-                         + Group(Optional(OPTIONAL)
-                                 + Optional(DEFAULT + word))
-                         | dotx3))))
+                Group(Group(value_name
+                            + tag
+                            + type_)
+                      + Group(Optional(OPTIONAL)
+                              + Optional(DEFAULT + word))
+                      | dotx3))))
                + rbrace)
 
     enumerated << (ENUMERATED + lbrace
@@ -507,7 +507,6 @@ def parse_string(string):
             modules[module_name]['tags'] = module[0][3][0]
 
         modules[module_name]['extensibility-implied'] = (module[0][4] != [])
-
 
     return modules
 

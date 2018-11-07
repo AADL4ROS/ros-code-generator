@@ -1,5 +1,6 @@
 import XMLTags
 
+
 def getConnectionInfo(c):
     conn_info = c.find("./" + XMLTags.tags['TAG_CONNECTION_PORT_INFO'])
 
@@ -14,16 +15,18 @@ def getConnectionInfo(c):
     return (source_port, source_type, source_name,
             dest_port, dest_type, dest_name)
 
+
 def getSubcomponentByName(system_root, process_name):
     try:
         subcomponent = system_root.find("./" +
                                         XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
-                                            XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
-                                                "[" + XMLTags.tags['TAG_NAME'] + "='" + process_name + "']")
+                                        XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
+                                        "[" + XMLTags.tags['TAG_NAME'] + "='" + process_name + "']")
         sub_category = subcomponent.find(XMLTags.tags['TAG_CATEGORY']).text
-        return (sub_category, subcomponent)
+        return sub_category, subcomponent
     except Exception:
-        return (None, None)
+        return None, None
+
 
 def getInvolvedProcessNamePerConnection(system_root, c):
     try:

@@ -3,19 +3,19 @@ import shutil
 import global_filepath
 
 # Output
-dir             = global_filepath.output_dir
-output_folder   = dir#os.path.join(dir, "src")
+global_dir = global_filepath.output_dir
+output_folder = global_dir  # os.path.join(dir, "src")
 
-src_folder_name     = 'src'
+src_folder_name = 'src'
 service_folder_name = 'srv'
 message_folder_name = 'msg'
-launch_folder_name  = 'launch'
+launch_folder_name = 'launch'
 include_folder_name = 'include'
 
-def createFolderTreeForSystem(namespace, delete = True):
 
+def createFolderTreeForSystem(namespace, delete=True):
     # Sanitize del nome della cartella del system
-    #system_name = system_name.replace(".", "_")
+    # system_name = system_name.replace(".", "_")
     system_name = namespace.replace("/", "_")
 
     system_folder = os.path.join(output_folder, system_name)
@@ -35,7 +35,7 @@ def createFolderTreeForSystem(namespace, delete = True):
     for f in other_folders:
         path = os.path.join(system_folder, f)
         if not os.path.exists(path):
-            os.makedirs( path )
+            os.makedirs(path)
 
     # Per la cartella include creo anche la sottocartella con il nome del package
     path = os.path.join(system_folder, include_folder_name, system_name)
@@ -43,6 +43,7 @@ def createFolderTreeForSystem(namespace, delete = True):
         os.makedirs(path)
 
     return system_folder
+
 
 def cleanLaunchFolderForSystemFolder(system_folder):
     output_folder = getLaunchFolderForSystemFolder(system_folder)
@@ -54,20 +55,26 @@ def cleanLaunchFolderForSystemFolder(system_folder):
         except Exception as e:
             print(e)
 
+
 def getSrcFolderForSystemFolder(system_folder):
     return os.path.join(system_folder, src_folder_name)
+
 
 def getLaunchFolderForSystemFolder(system_folder):
     return os.path.join(system_folder, launch_folder_name)
 
+
 def getServiceFolderForSystemFolder(system_folder):
     return os.path.join(system_folder, service_folder_name)
+
 
 def getMessageFolderForSystemFolder(system_folder):
     return os.path.join(system_folder, message_folder_name)
 
+
 def getIncludeFolderForSystemFolder(system_folder):
     return os.path.join(system_folder, include_folder_name)
+
 
 # Usato dal CMake per avere src/nome_file.cpp
 def getOnlySrcPathForNode(node_filename):

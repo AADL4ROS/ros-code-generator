@@ -1,6 +1,5 @@
-
 xml_folder_path = ""
-xml_filename    = ""
+xml_filename = ""
 
 json_filename = "tag_ever_xml.json"
 

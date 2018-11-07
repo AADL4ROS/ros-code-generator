@@ -1,10 +1,10 @@
 import datatypes.Type
 
+
 # getROSDatatypeFromAADL
 # La funzione traduce un datatype definito in AADL in un datatype
 # compatibile con ROS.
 def getROSDatatypeFromAADL(aadl_namespace, aadl_type, associated_class):
-
     generic_type = datatypes.Type.Type(associated_class)
 
     generic_type.setNamespace(aadl_namespace)
@@ -19,21 +19,20 @@ def getROSDatatypeFromAADL(aadl_namespace, aadl_type, associated_class):
     return generic_type
 
 
-def getROSDatatypeFromASN1(asn_type, associated_class, is_msg_or_service = False):
-
+def getROSDatatypeFromASN1(asn_type, associated_class, is_msg_or_service=False):
     mapping_asn_ros = {
         ##############
         ### STRING ###
         ##############
-        "PRINTABLESTRING"   : "String",
-        "STRING"            : "String",
-        "NUMERICSTRING"     : "String",
-        "IA5STRING"         : "String",
+        "PRINTABLESTRING": "String",
+        "STRING": "String",
+        "NUMERICSTRING": "String",
+        "IA5STRING": "String",
 
         ###############
         ### INTEGER ###
         ###############
-        "INTEGER"   : "Int",
+        "INTEGER": "Int",
 
         ###################
         ### REAL/DOUBLE ###
@@ -48,7 +47,7 @@ def getROSDatatypeFromASN1(asn_type, associated_class, is_msg_or_service = False
         ############
         ### TIME ###
         ############
-        "UTCTIME" : "Ros_Time"
+        "UTCTIME": "Ros_Time"
     }
 
     if asn_type.upper() in mapping_asn_ros:

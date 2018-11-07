@@ -16,6 +16,7 @@ Gli step di questa toolchain saranno:
 4. Lanciare il code-generator
 """
 
+
 def printHeader(text):
     text_len = len(text)
     out_str = ""
@@ -24,9 +25,10 @@ def printHeader(text):
     out_str += "{}\n".format("#" * (text_len + 8))
     print(out_str)
 
+
 # Get current folder
 current_folder = os.getcwd()
-step_number    = 0
+step_number = 0
 
 # Get console argument
 parser = OptionParser()
@@ -66,7 +68,8 @@ if options.log_level != None:
         log.set_log_level(level)
         print("Log level: {}".format(level))
 
-def cleanUpAADL_ModFile(aadl_file_directory, should_print = False):
+
+def cleanUpAADL_ModFile(aadl_file_directory, should_print=False):
     for path, _, files in os.walk(aadl_file_directory):
         for name in files:
             curr_file_path = os.path.realpath(os.path.join(path, name))
@@ -79,6 +82,7 @@ def cleanUpAADL_ModFile(aadl_file_directory, should_print = False):
                 except:
                     print("\t+ Unable to remove {}".format(curr_file_path))
                     pass
+
 
 aadl_file_complete_path = os.path.join(current_folder, options.filename)
 
@@ -110,6 +114,7 @@ find_with = re.compile('\s*with\s*(\w+\s*,?\s*)+\s*;')
 
 find_property_set = re.compile('\s*property\s*set\s*(\w+)\s*is')
 
+
 def getUsagePackages(file):
     matched_text = ""
     package_name = ""
@@ -118,7 +123,7 @@ def getUsagePackages(file):
         aadl_content = f.read()
 
     package_matches = find_package.findall(aadl_content)
-    property_sets   = find_property_set.findall(aadl_content)
+    property_sets = find_property_set.findall(aadl_content)
 
     for match in find_package.finditer(aadl_content):
         package_name = match.group(1)
@@ -146,8 +151,8 @@ for path, subdirs, files in os.walk(aadl_file_directory):
 
         (package, imported, property_sets) = getUsagePackages(curr_file_path)
 
-        tmp_package = {'file'    : curr_file_path,
-                       'imported': imported }
+        tmp_package = {'file': curr_file_path,
+                       'imported': imported}
 
         if len(package) > 0:
             if package not in file_package_mapping:
@@ -169,13 +174,15 @@ print("{}. Files collected and analyzed".format(step_number))
 packages_to_import = [p for p in system_imported]
 
 tmp_desc = file_package_mapping[system_package]
-files_to_import = [ tmp_desc['file'] ]
+files_to_import = [tmp_desc['file']]
+
 
 def importFromDesc(tmp_desc):
     tmp_file_to_import = tmp_desc['file']
     if tmp_file_to_import not in files_to_import:
         files_to_import.append(tmp_file_to_import)
         packages_to_import.extend(tmp_desc['imported'])
+
 
 # Importo via via che trovo i vari file che contengono i package usati
 while len(packages_to_import) > 0:
@@ -239,7 +246,7 @@ else:
 
 # Set the global_filepath parameters
 global_filepath.xml_folder_path = xml_model_folder
-global_filepath.aadl_model_dir  = aadl_file_directory
+global_filepath.aadl_model_dir = aadl_file_directory
 
 from code_generator import startGeneration
 

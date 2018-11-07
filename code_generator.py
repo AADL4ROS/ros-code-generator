@@ -1,15 +1,9 @@
 import importlib
 import os
 
-import log
-
-logger = log.setup_custom_logger("root")
-
 # Threads
 from threads.AADLThread import getPythonClassFromAADLThreadType, isMainThread
-
 from threads.AADLProcess import AADLProcess
-
 import threads.AADLThreadFunctionsSupport as tfs
 
 import FolderTreeFunctions as folderTree
@@ -23,28 +17,33 @@ import systems.SystemsManager as sm
 from systems.System import System
 
 import global_filepath
+import log
 
-def creaNuovoThread( system_root, process, thread, classname, associated_class ):
-    if classname == None:
+logger = log.setup_custom_logger("root")
+
+
+def creaNuovoThread(system_root, process, thread, classname, associated_class):
+    if not classname:
         return None
 
     # Importo il modulo che contiene la tipologia di thread che voglio aggiungere
-    thread_module   = importlib.import_module("threads." + classname)
+    thread_module = importlib.import_module("threads." + classname)
 
     # Ottengo la classe che gestisce quel particolare thread
-    thread_class    = getattr(thread_module, classname)
+    thread_class = getattr(thread_module, classname)
 
     # Creo una nuova istanza della classe relativa al thread e lancio quindi la procedura di
     # creazione effettiva del codice
-    new_thread      = thread_class(system_root, process, thread, associated_class)
+    new_thread = thread_class(system_root, process, thread, associated_class)
 
     (status, desc) = new_thread.populateData()
 
     if not status:
-        logger.error("Error during the generation of thread: {}\n\t{}".format( new_thread.name, desc ))
+        logger.error("Error during the generation of thread: {}\n\t{}".format(new_thread.name, desc))
         return None
 
     return new_thread
+
 
 def renameNodeClassIfAlreadyExisting(p, system_folder):
     src_folder = folderTree.getSrcFolderForSystemFolder(system_folder)
@@ -60,8 +59,8 @@ def renameNodeClassIfAlreadyExisting(p, system_folder):
         source_output_path = os.path.join(src_folder, filename)
         name_index += 1
 
-def generateCodeForSystem(system_root, system_parent):
 
+def generateCodeForSystem(system_root, system_parent):
     # Generando il system si generano anche i file CMakeLists e PackageXML
     # Viene generata tutto l'albero delle cartelle e viene resettato se necessario
     namespace = tfs.getNamespace(system_root)
@@ -80,14 +79,14 @@ def generateCodeForSystem(system_root, system_parent):
         # lo avviso che dovrà includermi
         if system_parent != None:
             if system_parent.launch_file != None:
-                system_parent.launch_file.addSubSystem( system.launch_file )
+                system_parent.launch_file.addSubSystem(system.launch_file)
 
     # Ricerco tutti i processi all'interno del system
     processes = system_root.findall("./" +
-                                        XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
-                                            XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
-                                                "[" + XMLTags.tags['TAG_CATEGORY'] + "='process']"+
-                                                "[" + XMLTags.tags['TAG_NAMESPACE'] + "='" + system.namespace + "']")
+                                    XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
+                                    XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
+                                    "[" + XMLTags.tags['TAG_CATEGORY'] + "='process']" +
+                                    "[" + XMLTags.tags['TAG_NAMESPACE'] + "='" + system.namespace + "']")
 
     # Scorro ogni processo. Per ogni processo controllo i subcomponent: in base alle varie tipologie
     # di subcomponent avvio la generazione di diversi nodi ROS
@@ -95,8 +94,7 @@ def generateCodeForSystem(system_root, system_parent):
         threads = process.findall("./" +
                                   XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
                                   XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
-                                            "[" + XMLTags.tags['TAG_CATEGORY'] + "='thread']")
-
+                                  "[" + XMLTags.tags['TAG_CATEGORY'] + "='thread']")
 
         # Cerco il main thread, che formerà la base per tutti gli altri thread.
         main_thread = process.find("./" +
@@ -111,29 +109,30 @@ def generateCodeForSystem(system_root, system_parent):
             p = AADLProcess(process, system_root, system)
             renameNodeClassIfAlreadyExisting(p, system.system_folder)
 
-            gen_main_thread = creaNuovoThread(  system_root,
-                                                process,
-                                                main_thread,
-                                                getPythonClassFromAADLThreadType(type),
-                                                p)
+            gen_main_thread = creaNuovoThread(system_root,
+                                              process,
+                                              main_thread,
+                                              getPythonClassFromAADLThreadType(type),
+                                              p)
             p.threads.append(gen_main_thread)
 
             for thread in threads:
-                #name        = (tfs.getName(thread)).lower()
-                type        = (tfs.getType(thread)).lower()
-                namespace   = (tfs.getNamespace(thread)).lower()
+                # name        = (tfs.getName(thread)).lower()
+                type = (tfs.getType(thread)).lower()
+                namespace = (tfs.getNamespace(thread)).lower()
 
-                if namespace == "ros" and not isMainThread(type):
-                    new_thread = creaNuovoThread(   system_root,
-                                                    process,
-                                                    thread,
-                                                    getPythonClassFromAADLThreadType(type),
-                                                    p)
+                if (namespace == "ros" or namespace == "global_state_machine") and not isMainThread(type):
+                    new_thread = creaNuovoThread(system_root,
+                                                 process,
+                                                 thread,
+                                                 getPythonClassFromAADLThreadType(type),
+                                                 p)
                     if new_thread != None:
-                        p.threads.append( new_thread )
+                        p.threads.append(new_thread)
 
             p.addTransformationFrameComponent()
-            system.addNode( p )
+            system.addNode(p)
+
 
 def startGeneration():
     #################
@@ -167,8 +166,8 @@ def startGeneration():
     # la mia system root, dopo mano a mano aggiungerò anche tutti gli altri system su
     # cui fare code-generation
     systems = [{
-        'system' : system_root,
-        'parent' : None
+        'system': system_root,
+        'parent': None
     }]
 
     while len(systems) > 0:
@@ -182,10 +181,10 @@ def startGeneration():
         # La prima visita si fa comunque alla system root, dopo si passa a visitare ricorsivamente
         # tutti i vari system
         sub_systems = s['system'].findall("./" +
-                                    XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
-                                    XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
-                                    XMLTags.tags['TAG_SYSTEM'] + "/" +
-                                    "[" + XMLTags.tags['TAG_CATEGORY'] + "='system']")
+                                          XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
+                                          XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
+                                          XMLTags.tags['TAG_SYSTEM'] + "/" +
+                                          "[" + XMLTags.tags['TAG_CATEGORY'] + "='system']")
 
         # Io so chi è il genitore dei nodi, mi basta chiedere il system con quel certo
         # namespace al systems manager

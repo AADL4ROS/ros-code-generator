@@ -1,4 +1,4 @@
-class CObject():
+class CObject:
     def __init__(self, _associated_class):
         self.associated_class = _associated_class
 

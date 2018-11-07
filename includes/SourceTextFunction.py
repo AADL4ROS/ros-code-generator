@@ -1,6 +1,6 @@
 from CObject import CObject
-from comments.Comment import Comment
 from libraries.Library import Library
+
 
 class SourceTextFunction(CObject):
     def __init__(self, _associated_class, source_text_file, function_name):
@@ -21,7 +21,7 @@ class SourceTextFunction(CObject):
     def setFunctionType(self, function_type):
         self.function_type = function_type
 
-        if self.function_type.namespace != None:
+        if self.function_type.namespace:
             lib = Library()
             lib.setPath("{}/{}.h".format(self.function_type.namespace, self.function_type.type_name))
             self.source_text_file.addLibrary(lib)
@@ -34,7 +34,7 @@ class SourceTextFunction(CObject):
 
         self.function_parameters.append(param)
 
-        if param.type.namespace != None:
+        if param.type.namespace:
             lib = Library()
             lib.setPath("{}/{}.h".format(param.type.namespace, param.type.type_name))
             self.source_text_file.addLibrary(lib)
@@ -48,7 +48,7 @@ class SourceTextFunction(CObject):
         if self.function_name != another_object.function_name:
             return False
 
-        if not self.function_type.isEqualTo( another_object.function_type ):
+        if not self.function_type.isEqualTo(another_object.function_type):
             return False
 
         return True
@@ -59,7 +59,7 @@ class SourceTextFunction(CObject):
         code += "{}(".format(self.function_name)
 
         fun_args = ""
-        if self.associated_class.node_configuration != None:
+        if self.associated_class.node_configuration:
             if self.associated_class.node_configuration.has_variables:
                 fun_args += " is.vars(),"
 
@@ -86,10 +86,10 @@ class SourceTextFunction(CObject):
     def generateCode(self):
         code = ""
 
-        code += "{} {}(".format( self.function_type.generateCode(), self.function_name )
+        code += "{} {}(".format(self.function_type.generateCode(), self.function_name)
 
         fun_args = ""
-        if self.associated_class.node_configuration != None:
+        if self.associated_class.node_configuration:
 
             if self.associated_class.node_configuration.has_variables:
                 fun_args += " Variables_ptr v,"
@@ -108,14 +108,15 @@ class SourceTextFunction(CObject):
             fun_args = fun_args[:-1].strip()
 
         code += fun_args
-        code += ") {\n"
+        code += ");\n"
+        # code += ") {\n"
 
         # Commento per dire dove inserire il codice
-        code += "\n"
-        c = Comment()
-        c.setComment("Insert here your custom code")
-        code += "".join(["\t{}\n".format(c_lin) for c_lin in c.generateCode().split("\n")])
+        # code += "\n"
+        # c = Comment()
+        # c.setComment("Insert here your custom code")
+        # code += "".join(["\t{}\n".format(c_lin) for c_lin in c.generateCode().split("\n")])
 
-        code += "}\n"
+        # code += "}\n"
 
         return code

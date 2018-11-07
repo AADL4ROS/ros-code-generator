@@ -1,21 +1,19 @@
 from CObject import CObject
 
-# Import per classi già definite
-import libraries.Library as lib
 
 class Type(CObject):
-    def __init__(self, _associated_class = None, _namespace = None, _type_name = None ):
-        super().__init__( _associated_class )
-        self.isConst    = False
-        self.namespace  = _namespace
-        self.type_name  = _type_name
-        self.library    = None
+    def __init__(self, _associated_class=None, _namespace=None, _type_name=None):
+        super().__init__(_associated_class)
+        self.isConst = False
+        self.namespace = _namespace
+        self.type_name = _type_name
+        self.library = None
         self.afterTypeName = ""
 
     def setAfterTypeName(self, _text):
         self.afterTypeName = _text
 
-    def setConst(self, _const = True):
+    def setConst(self, _const=True):
         self.isConst = _const
 
     def setNamespace(self, _namespace):
@@ -26,10 +24,10 @@ class Type(CObject):
 
     def setLibrary(self, _library):
         self.library = _library
-        self.associated_class.addLibrary( _library )
+        self.associated_class.addLibrary(_library)
 
     def removeLibrary(self):
-        self.associated_class.removeLibrary( self.library )
+        self.associated_class.removeLibrary(self.library)
         self.library = None
 
     def shouldImportLibrary(self):
@@ -58,7 +56,7 @@ class Type(CObject):
         return True
 
     def generateCodeForMessageAndService(self):
-        if self.namespace == None:
+        if self.namespace is None:
             return self.type_name
         else:
             return "{}/{}".format(self.namespace, self.type_name)
@@ -68,146 +66,171 @@ class Type(CObject):
         if self.isConst:
             const_str = "const "
 
-        if ( self.namespace == None ):
+        if self.namespace is None:
             return "{}{}{}".format(const_str, self.type_name, self.afterTypeName)
         else:
             return "{}{}::{}{}".format(const_str, self.namespace, self.type_name, self.afterTypeName)
 
+
 class Object(Type):
     def __init__(self, _associated_class, name):
-        super().__init__( _associated_class )
-        self.setTypeName( name )
+        super().__init__(_associated_class)
+        self.setTypeName(name)
+
 
 class Nothing(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setTypeName( "" )
+        super().__init__(_associated_class)
+        self.setTypeName("")
+
 
 class Void(Type):
-    def __init__(self, _associated_class = None):
-        super().__init__( _associated_class )
-        self.setTypeName( "void" )
+    def __init__(self, _associated_class=None):
+        super().__init__(_associated_class)
+        self.setTypeName("void")
+
 
 class Int(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setTypeName( "int" )
+        super().__init__(_associated_class)
+        self.setTypeName("int")
+
 
 class Int64(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setTypeName( "int64" )
+        super().__init__(_associated_class)
+        self.setTypeName("int64")
+
 
 class Bool(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setTypeName( "bool" )
+        super().__init__(_associated_class)
+        self.setTypeName("bool")
+
 
 class Double(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setTypeName( "double" )
+        super().__init__(_associated_class)
+        self.setTypeName("double")
+
 
 class Float64(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setTypeName( "float64" )
+        super().__init__(_associated_class)
+        self.setTypeName("float64")
+
 
 class String(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setNamespace( "std" )
-        self.setTypeName( "string" )
+        super().__init__(_associated_class)
+        self.setNamespace("std")
+        self.setTypeName("string")
+
 
 class StdMsgsString(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setNamespace( "std_msgs" )
-        self.setTypeName( "String" )
+        super().__init__(_associated_class)
+        self.setNamespace("std_msgs")
+        self.setTypeName("String")
+
 
 class MsgSrv_String(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setTypeName( "string" )
+        super().__init__(_associated_class)
+        self.setTypeName("string")
+
 
 class Char(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setTypeName( "char" )
+        super().__init__(_associated_class)
+        self.setTypeName("char")
 
-class PointerToCharPointer(Type): #char **
+
+class PointerToCharPointer(Type):  # char **
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setTypeName( "char**" )
+        super().__init__(_associated_class)
+        self.setTypeName("char**")
+
 
 class ROS_Time(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
+        super().__init__(_associated_class)
         self.setNamespace("ros")
-        self.setTypeName( "Time" )
+        self.setTypeName("Time")
+
 
 class MsgSrv_Time(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setTypeName( "time" )
+        super().__init__(_associated_class)
+        self.setTypeName("time")
+
 
 class ROS_TimerEvent(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
-        self.setConst(_const = True)
+        super().__init__(_associated_class)
+        self.setConst(_const=True)
         self.setNamespace("ros")
-        self.setTypeName( "TimerEvent&" )
+        self.setTypeName("TimerEvent&")
+
 
 class ROS_Timer(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
+        super().__init__(_associated_class)
         self.setNamespace("ros")
-        self.setTypeName( "Timer" )
+        self.setTypeName("Timer")
+
 
 class ROS_Publisher(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
+        super().__init__(_associated_class)
         self.setNamespace("ros")
-        self.setTypeName( "Publisher" )
+        self.setTypeName("Publisher")
+
 
 class ROS_Subscriber(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
+        super().__init__(_associated_class)
         self.setNamespace("ros")
-        self.setTypeName( "Subscriber" )
+        self.setTypeName("Subscriber")
+
 
 class ROS_ServiceClient(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
+        super().__init__(_associated_class)
         self.setNamespace("ros")
-        self.setTypeName( "ServiceClient" )
+        self.setTypeName("ServiceClient")
+
 
 class ROS_ServiceServer(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
+        super().__init__(_associated_class)
         self.setNamespace("ros")
-        self.setTypeName( "ServiceServer" )
+        self.setTypeName("ServiceServer")
+
 
 class ROS_ServiceServer_Request(Type):
     def __init__(self, _associated_class, namespace):
-        super().__init__( _associated_class )
+        super().__init__(_associated_class)
         self.setNamespace(namespace)
-        self.setTypeName( "Request" )
+        self.setTypeName("Request")
+
 
 class ROS_ServiceServer_Response(Type):
     def __init__(self, _associated_class, namespace):
-        super().__init__( _associated_class )
+        super().__init__(_associated_class)
         self.setNamespace(namespace)
-        self.setTypeName( "Response" )
+        self.setTypeName("Response")
+
 
 class ROSBase_TransformationFrames(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
+        super().__init__(_associated_class)
         self.setNamespace("node_base")
-        self.setTypeName( "TransformationFrames" )
+        self.setTypeName("TransformationFrames")
+
 
 class ROSBase_PointerToTransformationFrames(Type):
     def __init__(self, _associated_class):
-        super().__init__( _associated_class )
+        super().__init__(_associated_class)
         self.setNamespace("node_base")
-        self.setTypeName( "TransformationFrames *" )
+        self.setTypeName("TransformationFrames *")

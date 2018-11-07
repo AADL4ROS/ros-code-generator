@@ -3,7 +3,8 @@ import os
 
 
 def replace_prototypes(aadl_file, location=''):
-    find_proto = re.compile('(\w+):\s+thread\s+(?:(\w+)::)?(\w+)\.(\w+)\s+\(((?:\w+\s+=>\s+(?:data|subprogram)\s+(?:\w+::)?\w+(?:\s*?,\s*?)?)+)\);')
+    find_proto = re.compile(
+        '(\w+):\s+thread\s+(?:(\w+)::)?(\w+)\.(\w+)\s+\(((?:\w+\s+=>\s+(?:data|subprogram)\s+(?:\w+::)?\w+(?:\s*?,\s*?)?)+)\);')
     get_proto = re.compile('(\w+)\s+=>\s+(data|subprogram)\s+(?:(\w+)::)?(\w+)')
 
     (filename, ext) = os.path.splitext(aadl_file)
@@ -41,8 +42,9 @@ def replace_prototypes(aadl_file, location=''):
                     if [proto_list, type_list, name_list, []] not in tree[match.group(2)][match.group(3)]:
                         tree[match.group(2)][match.group(3)].append([proto_list, type_list, name_list, []])
 
-            text = re.sub(re.compile('('+match.group(3)+')\.('+match.group(4)+')\s+\('+match.group(5)+'\);'),
-                          match.group(3)+'_'+'_'.join(name_list)+'.'+match.group(4)+';', text)
+            text = re.sub(
+                re.compile('(' + match.group(3) + ')\.(' + match.group(4) + ')\s+\(' + match.group(5) + '\);'),
+                match.group(3) + '_' + '_'.join(name_list) + '.' + match.group(4) + ';', text)
 
         out_file.write(text)
 
@@ -68,8 +70,8 @@ def replace_prototypes(aadl_file, location=''):
                 for e in ex_pkgs:
                     if e not in pkgs[l0]:
                         pkgs[l0].append(e)
-            with_line = 'with '+', '.join(pkgs[l0]) + ';\n\n'
-            text = re.sub(re.compile('public(?:\s+with\s+((?:\w+(?:\s*,\s*?)?)+);)?'), 'public\n\t'+with_line, text)
+            with_line = 'with ' + ', '.join(pkgs[l0]) + ';\n\n'
+            text = re.sub(re.compile('public(?:\s+with\s+((?:\w+(?:\s*,\s*?)?)+);)?'), 'public\n\t' + with_line, text)
 
             for thread_match in find_thread.finditer(text):
                 for proto_match in match_proto.finditer(thread_match.group(0)):
@@ -81,7 +83,7 @@ def replace_prototypes(aadl_file, location=''):
                                       'provides subprogram access;', thread_match.group(0))
                 text = re.sub(thread_match.group(0), thread_block, text)
 
-            text = re.sub(re.compile('end '+l0+';'), '', text)
+            text = re.sub(re.compile('end ' + l0 + ';'), '', text)
 
             out_pkg_file.write(text)
 
@@ -90,17 +92,17 @@ def replace_prototypes(aadl_file, location=''):
             for e in tree[l0][t][1:]:
                 new_name = t
                 for n in e[2]:
-                    new_name = new_name+'_'+n
-                out_pkg_file.write('\tthread '+new_name+' extends '+t+'\n')
+                    new_name = new_name + '_' + n
+                out_pkg_file.write('\tthread ' + new_name + ' extends ' + t + '\n')
                 out_pkg_file.write('\t\tfeatures\n')
                 for p, tp, po in zip(e[0], e[1], e[3]):
-                    out_pkg_file.write('\t\t\t'+p+': refined to '+po+' '+tp+';\n')
-                out_pkg_file.write('\tend '+new_name+';\n\n')
+                    out_pkg_file.write('\t\t\t' + p + ': refined to ' + po + ' ' + tp + ';\n')
+                out_pkg_file.write('\tend ' + new_name + ';\n\n')
 
-                impl = '.'+tree[l0][t][0]
-                out_pkg_file.write('\tthread implementation '+new_name+impl+' extends '+t+impl+'\n')
-                out_pkg_file.write('\tend '+new_name+impl+';\n\n')
-        out_pkg_file.write('end '+l0+';')
+                impl = '.' + tree[l0][t][0]
+                out_pkg_file.write('\tthread implementation ' + new_name + impl + ' extends ' + t + impl + '\n')
+                out_pkg_file.write('\tend ' + new_name + impl + ';\n\n')
+        out_pkg_file.write('end ' + l0 + ';')
 
         in_pkg_file.close()
         out_pkg_file.close()

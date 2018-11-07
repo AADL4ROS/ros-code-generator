@@ -1,8 +1,6 @@
 import logging
-log = logging.getLogger("root")
 
 from pint import UnitRegistry
-ureg = UnitRegistry()
 
 from threads.AADLThread import AADLThread
 
@@ -15,9 +13,12 @@ from datatypes.Type import Void, ROS_Subscriber, ROS_Publisher
 
 from variables.Variable import Variable
 from methods.Method import Method
-from comments.Comment import Comment
 from datatypes.Type import Type
 from libraries.Library import Library
+
+log = logging.getLogger("root")
+ureg = UnitRegistry()
+
 
 class SubscriberPublisher(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
@@ -25,30 +26,30 @@ class SubscriberPublisher(AADLThread):
         log.info("SubscriberPublisher thread {}".format(self.name))
 
         # Parametri del SubscriberPubslisher
-        self.main_thread        = None
-        self.input_port_name    = "msg_in"
-        self.output_port_name   = "msg_out"
+        self.main_thread = None
+        self.input_port_name = "msg_in"
+        self.output_port_name = "msg_out"
 
         # Parametri comuni
         self.source_text_function = None
 
         # Parametri della parte Subcriber
-        self.sub_process_port       = None
-        self.sub_asn1_source_file   = None
-        self.sub_topic              = None
-        self.sub_queue_size         = None
-        self.sub_callback           = None
-        self.input_type             = None
-        self.sub_custom_msg         = None
-        self.sub_input_var          = None
+        self.sub_process_port = None
+        self.sub_asn1_source_file = None
+        self.sub_topic = None
+        self.sub_queue_size = None
+        self.sub_callback = None
+        self.input_type = None
+        self.sub_custom_msg = None
+        self.sub_input_var = None
 
         # Parametri della parte Publisher
-        self.pub_process_port       = None
-        self.pub_topic              = None
-        self.pub_asn1_source_file   = None
-        self.output_type            = None
-        self.pub_custom_msg         = None
-        self.var_publisher_pub      = None
+        self.pub_process_port = None
+        self.pub_topic = None
+        self.pub_asn1_source_file = None
+        self.output_type = None
+        self.pub_custom_msg = None
+        self.var_publisher_pub = None
 
     def populateSubscriberData(self):
         ##################
@@ -70,7 +71,6 @@ class SubscriberPublisher(AADLThread):
 
         if self.sub_process_port == None:
             return (False, "Unable to find the process input port name feature")
-
 
         ##################
         ### INPUT TYPE ###
@@ -161,8 +161,8 @@ class SubscriberPublisher(AADLThread):
         self.associated_class.addPrivateMethod(self.sub_callback)
 
         self.main_thread.prepare.addMiddleCode("{} = handle.subscribe(\"{}\", {}, {}, this);"
-                                          .format(var_subscriber_pub.name, self.topic, self.queue_size,
-                                                  self.sub_callback.getThreadPointer()))
+                                               .format(var_subscriber_pub.name, self.topic, self.queue_size,
+                                                       self.sub_callback.getThreadPointer()))
 
         return (True, "")
 
@@ -228,7 +228,7 @@ class SubscriberPublisher(AADLThread):
         ### TOPIC ###
         #############
 
-        (status, desc) = self.getDefaultTopicName( self.output_port_name, output=True )
+        (status, desc) = self.getDefaultTopicName(self.output_port_name, output=True)
         if status == False:
             return (status, desc)
 
@@ -242,10 +242,10 @@ class SubscriberPublisher(AADLThread):
         self.associated_class.addInternalVariable(self.var_publisher_pub)
 
         self.main_thread.prepare.addMiddleCode("{} = handle.advertise<{}>(\"{}\", 10);"
-                                          .format(self.var_publisher_pub.name, self.output_type.generateCode(), self.topic))
+                                               .format(self.var_publisher_pub.name, self.output_type.generateCode(),
+                                                       self.topic))
 
         return (True, "")
-
 
     def populateData(self):
         self.main_thread = self.associated_class.getMainThread()
@@ -253,7 +253,7 @@ class SubscriberPublisher(AADLThread):
         if self.main_thread == None:
             return (False, "Unable to get the Main Thread")
 
-        thread_function = tfs.getSubprogram( self.thread )
+        thread_function = tfs.getSubprogram(self.thread)
         if thread_function == None:
             return (False, "Unable to find the right Subprogram")
 
@@ -283,12 +283,12 @@ class SubscriberPublisher(AADLThread):
         ###################
 
         self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
-                                                                                tfs.getSourceName(thread_function))
+                                                                            tfs.getSourceName(thread_function))
         # Aggiungo la chiamata alla funzione custome
         if self.source_text_function != None:
             self.source_text_function.setFunctionType(self.output_type)
             self.source_text_function.addFunctionParameter(self.sub_input_var)
-            self.source_text_function.setTF( self.thread_uses_tf )
+            self.source_text_function.setTF(self.thread_uses_tf)
 
             code = "{}.publish({});".format(self.var_publisher_pub.name, self.source_text_function.generateInlineCode())
             self.sub_callback.addMiddleCode(code)

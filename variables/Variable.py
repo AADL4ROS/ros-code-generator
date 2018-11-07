@@ -1,14 +1,15 @@
 from CObject import CObject
 
+
 class Variable(CObject):
-    def __init__(self, _associated_class = None ):
-        super().__init__( _associated_class )
-        self.type           = None
-        self.name           = None
-        self.default_value  = None
+    def __init__(self, _associated_class=None):
+        super().__init__(_associated_class)
+        self.type = None
+        self.name = None
+        self.default_value = None
         self.is_function_param = False
 
-    def setIsParameter(self, _param = True):
+    def setIsParameter(self, _param=True):
         self.is_function_param = _param
 
     def setType(self, _type):
@@ -48,13 +49,13 @@ class Variable(CObject):
 
         return "{} = {};".format(self.name, self.default_value)
 
-    def generateCode(self, generate_default_value = True):
+    def generateCode(self, generate_default_value=True):
         default = ""
         if self.default_value != None and generate_default_value:
-            default = " = {}".format( self.default_value )
+            default = " = {}".format(self.default_value)
 
         punto_e_virgola = ";"
         if self.is_function_param:
             punto_e_virgola = ""
 
-        return "{} {}{}{}".format( self.type.generateCode(), self.name, default, punto_e_virgola )
+        return "{} {}{}{}".format(self.type.generateCode(), self.name, default, punto_e_virgola)

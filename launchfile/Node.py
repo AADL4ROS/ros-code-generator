@@ -1,17 +1,17 @@
 import XMLTags
 import logging
-log = logging.getLogger("root")
-
 from launchfile.Remap import Remap
-
 import threads.AADLThreadFunctionsSupport as tfs
 
-class Node():
+log = logging.getLogger("root")
+
+
+class Node:
     def __init__(self, process):
-        self.process    = process
-        self.name       = tfs.getName(process)
-        self.type       = tfs.getType(process)
-        self.namespace  = tfs.getNamespace(process)
+        self.process = process
+        self.name = tfs.getName(process)
+        self.type = tfs.getType(process)
+        self.namespace = tfs.getNamespace(process)
 
         self.remap = []
         self.topic_ports = {}
@@ -35,12 +35,10 @@ class Node():
             return False
 
         (topic_properties_namespace, default_topic_name) = self.getDefaultTopicName(port)
-        (topic_properties_namespace, new_topic_name)     = self.getTopicName(connection)
+        (topic_properties_namespace, new_topic_name) = self.getTopicName(connection)
 
-        if default_topic_name is None or \
-            new_topic_name is None:
-            log.warning("No topic remap for port {} of process {}"
-                        .format(port_name, self.name))
+        if default_topic_name is None or new_topic_name is None:
+            log.warning("No topic remap for port {} of process {}".format(port_name, self.name))
             return True
 
         # Se ho già controllato quella porta vado oltre
@@ -48,8 +46,7 @@ class Node():
             if self.topic_ports[port_name] == new_topic_name:
                 return True
             else:
-                log.error("Multiple topics defined for port {} of process {}"
-                            .format(port_name, self.name))
+                log.error("Multiple topics defined for port {} of process {}".format(port_name, self.name))
                 return False
 
         r = Remap(default_topic_name, new_topic_name)
@@ -71,13 +68,12 @@ class Node():
     def generateCode(self):
         text = ""
 
-        text += "<node name=\"{}\" type=\"{}\" pkg=\"{}\">\n"\
+        text += "<node name=\"{}\" type=\"{}\" pkg=\"{}\">\n" \
             .format(self.name, self.type, self.namespace)
 
         for r in self.remap:
-            text += "\t{}\n".format( r.generateCode() )
+            text += "\t{}\n".format(r.generateCode())
 
         text += "</node>\n"
 
         return text
-

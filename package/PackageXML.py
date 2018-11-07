@@ -2,17 +2,18 @@ import os
 from lxml import etree
 
 # Username and email of the main package maintainer
-kMAINTAINER_NAME    = "Name"
-kMAINTAINER_EMAIL   = "email@example.org"
+kMAINTAINER_NAME = "Name"
+kMAINTAINER_EMAIL = "email@example.org"
 
 kPACKAGE_FILENAME = "package.xml"
 
-class PackageXML():
-    def __init__(self, system):
-        self.system         = system
-        self.project_name   = system.namespace
 
-        self.dependencies   = []
+class PackageXML:
+    def __init__(self, system):
+        self.system = system
+        self.project_name = system.namespace
+
+        self.dependencies = []
 
         # Aggiungo i pacchetti standard
         self.addDependency("roscpp")
@@ -34,7 +35,7 @@ class PackageXML():
         self.dependencies.append(dep)
 
         # Rimuovo eventuali duplicati
-        self.dependencies = list(set( self.dependencies ))
+        self.dependencies = list(set(self.dependencies))
 
     def removeDependency(self, lib):
         try:
@@ -110,6 +111,6 @@ class PackageXML():
         package.append(run_depend)
 
         return etree.tostring(package,
-                              pretty_print = True,
-                              xml_declaration = True,
-                              encoding = "UTF-8")
+                              pretty_print=True,
+                              xml_declaration=True,
+                              encoding="UTF-8")

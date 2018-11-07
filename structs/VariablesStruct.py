@@ -1,5 +1,6 @@
 from structs.Struct import Struct
 
+
 class VariablesStruct(Struct):
     def __init__(self, _associated_class):
         super().__init__( _associated_class, "Variables")

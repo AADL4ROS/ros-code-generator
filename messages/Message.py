@@ -3,26 +3,26 @@ import systems.SystemsManager as sm
 from systems.System import System
 import FolderTreeFunctions as folderTree
 
-class Message():
+
+class Message:
     def __init__(self, namespace, name):
-        self.name           = name
-        self.namespace      = namespace
+        self.name = name
+        self.namespace = namespace
 
         # Mi prendo il system associato e se questo non esiste ne creo uno nuovo
         self.system = sm.getSystemForNamespace(namespace)
 
-        if self.system == None:
-            self.system = System(system_root=None,
-                                 namespace = namespace)
+        if self.system is None:
+            self.system = System(system_root=None, namespace=namespace)
             sm.addSystem(self.system)
 
-        self.parameters     = []
-        self.dependencies   = []
+        self.parameters = []
+        self.dependencies = []
 
     def addParameter(self, param):
         self.parameters.append(param)
 
-        if param.type.namespace != None:
+        if param.type.namespace:
             self.addDependency(param.type.namespace)
 
     def addDependency(self, dep):

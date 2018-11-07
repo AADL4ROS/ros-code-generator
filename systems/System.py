@@ -1,6 +1,4 @@
 import logging
-log = logging.getLogger("root")
-
 import XMLTags
 import os
 
@@ -15,13 +13,16 @@ from launchfile.LaunchFile import LaunchFile
 from launchfile.Node import Node
 import launchfile.LaunchFileFunctionSupport as lfsf
 
-class System():
-    def __init__(self, system_root, namespace = None):
+log = logging.getLogger("root")
+
+
+class System:
+    def __init__(self, system_root, namespace=None):
 
         # Caso di system veri e propri che contengono process
-        if system_root != None:
-            self.system_root    = system_root
-            self.namespace      = tfs.getNamespace(system_root)
+        if system_root:
+            self.system_root = system_root
+            self.namespace = tfs.getNamespace(system_root)
             # Log dell'inizio della generazione del system
             log.info("System {}".format(tfs.getType(system_root)))
 
@@ -33,16 +34,16 @@ class System():
             log.info("Data system {}".format(self.namespace))
 
         # Creo i file CMakeLists e PackageXML
-        self.cmake_list     = CMakeLists( self )
-        self.package_xml    = PackageXML( self )
+        self.cmake_list = CMakeLists(self)
+        self.package_xml = PackageXML(self)
 
         # Variabile che conterrà il launch file
-        self.launch_file    = None
+        self.launch_file = None
 
         # Resetto la struttura di cartelle (eliminando anche tutti i file) solamente alla prima generazione
         # del namespace, in tutte le altre i file non vengono eliminati
         self.system_folder = folderTree.createFolderTreeForSystem(self.namespace,
-                                                             delete=(not sm.isSystemAlreadyReset(self.namespace)))
+                                                                  delete=(not sm.isSystemAlreadyReset(self.namespace)))
         sm.addResetSystem(self.namespace)
 
         # Contiene tutti i nodi da generare
@@ -68,11 +69,11 @@ class System():
     # Alla fine di questa procedura il launch file sa esattamente quali nodi deve aggiungere e quali no
     def createLaunchFile(self):
         log.info("Start launch file creation for system {}".format(self.namespace))
-        self.launch_file = LaunchFile( self )
+        self.launch_file = LaunchFile(self)
 
         # Dopo aver creato il launch file, analizzo tutte le connessioni del system e me le salvo
         system_connections = self.system_root.findall("./" + XMLTags.tags['TAG_CONNECTIONS'] + "/" +
-                                                 XMLTags.tags['TAG_CONNECTION'])
+                                                      XMLTags.tags['TAG_CONNECTION'])
 
         for c in system_connections:
             # Cerco le info <port_info> per ciascuna connessione, in modo
@@ -80,14 +81,14 @@ class System():
             process_name_list = lfsf.getInvolvedProcessNamePerConnection(self.system_root, c)
             if process_name_list is None:
                 log.warning("Unable to retrieve involved process in connection: {}"
-                         .format(c.find(XMLTags.tags['TAG_NAME']).text))
+                            .format(c.find(XMLTags.tags['TAG_NAME']).text))
                 continue
 
             for p in process_name_list:
                 (sub_category, subcomponent) = lfsf.getSubcomponentByName(self.system_root, p['name'])
 
                 # Se non trovo nulla salto
-                if sub_category == None or subcomponent == None:
+                if sub_category is None or subcomponent is None:
                     continue
 
                 # Se è un process, allora lo aggiungo alla lista di quelli che dovranno essere gestiti
@@ -101,19 +102,19 @@ class System():
                     status = status and n.addPortForTopicFromPortName(p['port'], c)
                     if not status:
                         log.error("Node {} error in remapping topic name"
-                                     .format(p['name']))
+                                  .format(p['name']))
 
                     if status:
                         if not hasNode:
                             self.launch_file.addNode(n)
                             log.info("Node {} added successfully"
-                                        .format(p['name']))
+                                     .format(p['name']))
                         else:
                             log.info("Node {} updated successfully"
-                                        .format(p['name']))
+                                     .format(p['name']))
                     else:
                         log.error("Node {} encountered an error and it was not added to the launch file"
-                                     .format(p['name']))
+                                  .format(p['name']))
 
         log.info("End launch file creation for system {}".format(self.namespace))
 
@@ -152,10 +153,10 @@ class System():
 
     def isAlreadyGenerated(self, node):
         for n in self.nodes:
-            if n.generated and n.isEqualTo( node ):
-                return (True, n.class_name)
+            if n.generated and n.isEqualTo(node):
+                return True, n.class_name
 
-        return (False, None)
+        return False, None
 
     def saveNode(self, node):
         (already_generated, generated_node_name) = self.isAlreadyGenerated(node)
@@ -181,12 +182,11 @@ class System():
         # eseguibile con quel name (quindi node.type) esiste già. Siccome abbiamo generato il nodo
         # vogliamo anche compilarlo e quindi cerchiamo un name (node.type) che ancora non è stato usato
 
-
         # Dopo il salvataggio aggiungo il nodo al file CMake
         added_to_executable = self.cmake_list.addExecutable({
-                                    'name': node.type,
-                                    'path': folderTree.getOnlySrcPathForNode(filename)
-                                })
+            'name': node.type,
+            'path': folderTree.getOnlySrcPathForNode(filename)
+        })
         index_incremental_name = 2
 
         while not added_to_executable:
@@ -203,11 +203,11 @@ class System():
         # Se il nodo viene salvato, allora devo anche controllare che il tipo nel CMakeLists e quello
         # richiamato nel launch file coincidano
         n = self.launch_file.retrieveNode(node.aadl_node_name)
-        if n != None:
+        if n:
             n.type = node.type
 
         # Genero i file da includere
-        if node.node_configuration != None:
+        if node.node_configuration:
             node.node_configuration.saveFile()
 
         for f in node.source_text_files:
@@ -239,7 +239,7 @@ class System():
     ##################################
 
     def saveLaunchFile(self):
-        if self.launch_file != None:
+        if self.launch_file:
             self.launch_file.saveLaunchFile()
 
     #######################

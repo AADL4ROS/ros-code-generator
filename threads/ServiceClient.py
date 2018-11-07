@@ -1,15 +1,14 @@
 import logging
-log = logging.getLogger("root")
-
 from threads.AADLThread import AADLThread
-
 import threads.AADLThreadFunctionsSupport as tfs
-
-from datatypes.Type import Void, ROS_ServiceClient
-
+from datatypes.Type import ROS_ServiceClient
 from variables.Variable import Variable
 import services.ServiceFunctionSupport as sfs
+from services.Service import Service
 from libraries.Library import Library
+
+log = logging.getLogger("root")
+
 
 class ServiceClient(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
@@ -17,16 +16,16 @@ class ServiceClient(AADLThread):
         log.info("Service Client thread {}".format(self.name))
 
         # E' la porta che fornisce il servizio, in AADL è una provides subprogram access
-        self.output_port_name   = "srv"
-        self.caller_name        = "caller"
+        self.output_port_name = "srv"
+        self.caller_name = "caller"
 
         # Parametri del Subscriber
-        self.process_port           = None # La porta requires subprogram access del process
-        self.source_text            = None
-        self.asn_description        = None
-        self.service_name           = None
-        self.default_service_name   = None
-        self.service                = None
+        self.process_port = None  # La porta requires subprogram access del process
+        self.source_text = None
+        self.asn_description = None
+        self.service_name = None
+        self.default_service_name = None
+        self.service = None
 
     def populateData(self):
         main_thread = self.associated_class.getMainThread()
@@ -38,7 +37,7 @@ class ServiceClient(AADLThread):
         ### Output Port ###
         ###################
 
-        # Essendo birezeizonale posso trovare la connessione sia come source che come dest
+        # Essendo bidirezionale posso trovare la connessione sia come source che come dest
         conn_by_source = True
         process_output_port = tfs.getConnectionPortInfoBySource(self.process, self.type, self.output_port_name)
         if process_output_port == None:
@@ -47,7 +46,7 @@ class ServiceClient(AADLThread):
 
         if process_output_port == None:
             return (False, "Unable to find the right binding between process requires subprogram access port and "
-                            "thread input port")
+                           "thread input port")
 
         if conn_by_source:
             (dest_parent_name, dest_name) = tfs.getDestFromPortInfo(process_output_port)
@@ -74,29 +73,31 @@ class ServiceClient(AADLThread):
         ### ASN.1 Request and Response ###
         ##################################
 
-        caller = tfs.getSubcomponentByInfo(self.thread,
-                                           name         = self.caller_name,
-                                           namespace    = "ros",
-                                           category     = "subprogram")
+        (aadl_namespace, aadl_type) = tfs.getPortDatatypeByPort(self.process_port)
+        if aadl_namespace is None or aadl_type is None:
+            return False, "Unable to identify process port type"
 
-        if caller == None:
-            return (False, "Unable to find the right subprogram associated with the services")
+        # Controllo se c'è un file ASN.1 associato alla porta. Se c'è allora il tipo di servizio
+        # è custom e lo dovrò generare, mentre se non c'è allora è un servizio standard ROS
+        port_data_info = tfs.getPortDataInfo(self.process_port)
+        if port_data_info is None:
+            return False, "Unable to get the port data info for process port"
 
-        self.asn_description = tfs.getSourceText(caller)
+        self.asn_description = tfs.getSourceText(port_data_info)
 
-        if self.asn_description == None:
-            return (False, "Unable to find property Source_Text for the services caller with ASN.1 description")
+        if self.asn_description is None:
+            self.service = Service(aadl_namespace, aadl_type)
+        else:
+            # Creo il servizio custom e lo associo al nodo che lo ha generato
+            self.service = sfs.getServiceFromASN1(self.asn_description, self.associated_class)
+        # if self.service == None:
+        #     return (False, "Error in ASN.1 parsing")
 
-        # Creo il servizio custom e lo associo al nodo che lo ha generato
-        self.service = sfs.getServiceFromASN1( self.asn_description, self.associated_class)
-        if self.service == None:
-            return (False, "Error in ASN.1 parsing")
-
-        self.associated_class.addService( self.service )
+        # self.associated_class.addService( self.service )
 
         # Genero ed aggiungo la libreria del services al nodo
-        service_library = Library(self.associated_class)
-        service_library.setPath( "{}/{}.h".format(self.associated_class.namespace, self.service.name) )
+        service_library = Library(self.service.namespace)
+        service_library.setPath("{}/{}.h".format(self.service.namespace, self.service.name))
         self.associated_class.addLibrary(service_library)
 
         ##########################
@@ -104,14 +105,14 @@ class ServiceClient(AADLThread):
         ##########################
 
         var_serviceclient = Variable(self.associated_class)
-        var_serviceclient.setName( "service_client_{}".format(self.name) )
-        var_serviceclient.setType( ROS_ServiceClient( self.associated_class) )
-        self.associated_class.addInternalVariable( var_serviceclient )
+        var_serviceclient.setName("service_client_{}".format(self.name))
+        var_serviceclient.setType(ROS_ServiceClient(self.associated_class))
+        self.associated_class.addInternalVariable(var_serviceclient)
 
         main_thread.prepare.addMiddleCode("{} = handle.serviceClient<{}::{}>(\"{}\");"
                                           .format(var_serviceclient.name,
-                                                  self.associated_class.namespace,
+                                                  self.service.namespace,
                                                   self.service.name,
                                                   self.default_service_name))
 
-        return (True, "")
+        return True, ""

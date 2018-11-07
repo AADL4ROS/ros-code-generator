@@ -6,13 +6,16 @@ systems = []
 # del system
 already_reset_systems = set()
 
+
 def addSystem(system):
     global systems
     systems.append( system )
 
+
 def addResetSystem(system_namespace):
     global already_reset_systems
     already_reset_systems.add(system_namespace)
+
 
 def getSystemForNamespace(namespace):
     global systems
@@ -21,6 +24,7 @@ def getSystemForNamespace(namespace):
             return s
 
     return None
+
 
 def generateAllSystems():
     global systems
@@ -34,4 +38,4 @@ def generateAllSystems():
 # solamente una volta, senza perdere i file mano a mano generati
 def isSystemAlreadyReset(system_namespace):
     global already_reset_systems
-    return (system_namespace in already_reset_systems)
+    return system_namespace in already_reset_systems

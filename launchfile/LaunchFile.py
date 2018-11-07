@@ -1,10 +1,12 @@
 import XMLTags
 import logging
-log = logging.getLogger("root")
 import FolderTreeFunctions as folderTree
 import os
 
-class LaunchFile():
+log = logging.getLogger("root")
+
+
+class LaunchFile:
     def __init__(self, system):
         self.system = system
 

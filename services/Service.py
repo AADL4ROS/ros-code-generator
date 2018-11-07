@@ -3,7 +3,8 @@ import systems.SystemsManager as sm
 from systems.System import System
 import FolderTreeFunctions as folderTree
 
-class Service():
+
+class Service:
     def __init__(self, namespace, name):
         self.name = name
         self.namespace = namespace
@@ -11,9 +12,9 @@ class Service():
         # Mi prendo il system associato e se questo non esiste ne creo uno nuovo
         self.system = sm.getSystemForNamespace(namespace)
 
-        if self.system == None:
+        if self.system is None:
             self.system = System(system_root=None,
-                                 namespace = namespace)
+                                 namespace=namespace)
             sm.addSystem(self.system)
 
         self.requests = []
@@ -23,13 +24,13 @@ class Service():
     def addRequest(self, req):
         self.requests.append(req)
 
-        if req.type.namespace != None:
+        if req.type.namespace:
             self.addDependency(req.type.namespace)
 
     def addResponse(self, res):
         self.responses.append(res)
 
-        if res.type.namespace != None:
+        if res.type.namespace:
             self.addDependency(res.type.namespace)
 
     def addDependency(self, dep):

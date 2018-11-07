@@ -1,11 +1,12 @@
-import XMLTags
 import logging
+
 log = logging.getLogger("root")
 
-class Remap():
+
+class Remap:
     def __init__(self, original_name, new_name):
-        self.original_name  = original_name
-        self.new_name       = new_name
+        self.original_name = original_name
+        self.new_name = new_name
 
     def sanitizeTopicName(self, topic_name):
         name = topic_name.replace("-", "_")

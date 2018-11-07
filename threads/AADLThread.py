@@ -4,11 +4,16 @@ import threads.AADLThreadFunctionsSupport as tfs
 import re
 from datatypes.Type import Void
 
+import logging
+log = logging.getLogger("root")
+
+
 # isMainThread()
 # Funzione usata da AADLProcess, viene scritta qua per rendere uniforme il codice
 def isMainThread(aadl_thread_type):
     main_thread = re.compile("main_loop([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
-    return (main_thread.match(aadl_thread_type) != None)
+    return main_thread.match(aadl_thread_type) is not None
+
 
 # In questa funzione è presente il nome del modulo e della classe che gestisce la creazione di quel
 # particolare tipo di thread. Un caso di esempio è il seguente.
@@ -33,7 +38,7 @@ def getPythonClassFromAADLThreadType(aadl_thread_type):
 
     # Identifica i thread di tipo publisher
     publisher = re.compile("publisher([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
-    if publisher.match(aadl_thread_type) != None:
+    if publisher.match(aadl_thread_type):
         return "Publisher"
 
     ##################
@@ -42,7 +47,7 @@ def getPythonClassFromAADLThreadType(aadl_thread_type):
 
     # Identifica i thread di tipo subscriber
     subscriber = re.compile("callback([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
-    if subscriber.match(aadl_thread_type) != None:
+    if subscriber.match(aadl_thread_type):
         return "Subscriber"
 
     ############################
@@ -53,7 +58,7 @@ def getPythonClassFromAADLThreadType(aadl_thread_type):
     # messaggio ricevuto in input su un topic su un topic di output dopo averlo
     # eventualmente manipolato
     subscriber = re.compile("call_pub([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
-    if subscriber.match(aadl_thread_type) != None:
+    if subscriber.match(aadl_thread_type):
         return "SubscriberPublisher"
 
     ######################
@@ -64,6 +69,9 @@ def getPythonClassFromAADLThreadType(aadl_thread_type):
     #service_client = re.compile("client([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
     #if service_client.match(aadl_thread_type) != None:
     #    return "ServiceClient"
+    service_client = re.compile("client([_a-zA-Z0-9:\.]*)", re.IGNORECASE)
+    if service_client.match(aadl_thread_type):
+        return "ServiceClient"
 
     ######################
     ### SERVICE SERVER ###
@@ -71,7 +79,7 @@ def getPythonClassFromAADLThreadType(aadl_thread_type):
 
     # Identifica i thread di tipo service server
     service_server = re.compile("service_provider([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
-    if service_server.match(aadl_thread_type) != None:
+    if service_server.match(aadl_thread_type):
         return "ServiceServer"
 
     #############
@@ -80,50 +88,50 @@ def getPythonClassFromAADLThreadType(aadl_thread_type):
 
     # Identifica i thread di tipo publisher
     publisher = re.compile("timer([_a-zA-Z0-9:\.]*)\.impl", re.IGNORECASE)
-    if publisher.match(aadl_thread_type) != None:
+    if publisher.match(aadl_thread_type):
         return "Timer"
 
     return None
 
 
 # Classe da cui ereditano tutti i thread
-class AADLThread():
+class AADLThread:
     def __init__(self, _system_root, _process, _thread, _associated_class):
         # AADLProcess a cui un AADLThread fa riferimento
         self.associated_class = _associated_class
 
         # Processo e thread relativi
-        self.system_root    = _system_root
-        self.process        = _process
-        self.thread         = _thread
+        self.system_root = _system_root
+        self.process = _process
+        self.thread = _thread
 
         # Tipo thread
-        self.type       = tfs.getType(self.thread)
+        self.type = tfs.getType(self.thread)
 
         # Nome del thread
-        self.name       = tfs.getName( self.thread )
+        self.name = tfs.getName(self.thread)
 
         # TF
         self.thread_uses_tf = False
 
-    def createSourceTextFileFromSourceText(self, source_text, source_name, function_type = Void()):
-        if source_text == None or source_name == None:
+    def createSourceTextFileFromSourceText(self, source_text, source_name, function_type=Void()):
+        if source_text is None or source_name is None:
             return None
 
-        source_text_file = self.associated_class.getSourceFile( source_text )
+        source_text_file = self.associated_class.getSourceFile(source_text)
 
-        if source_text_file == None:
+        if source_text_file is None:
             source_text_file = SourceTextFile(self.associated_class, source_text)
             self.associated_class.addSourceFile(source_text_file)
 
         # Se ho già la funzione presente nel file, non la devo ri-creare
-        if source_text_file.hasFunctionFromName( source_name ):
-            source_text_function = source_text_file.getFunctionFromName( source_name )
+        if source_text_file.hasFunctionFromName(source_name):
+            source_text_function = source_text_file.getFunctionFromName(source_name)
         else:
             source_text_function = SourceTextFunction(self.associated_class, source_text_file, source_name)
-            source_text_function.setFunctionType( function_type )
+            source_text_function.setFunctionType(function_type)
 
-            source_text_file.addFunction( source_text_function )
+            source_text_file.addFunction(source_text_function)
 
         return source_text_function
 
@@ -141,7 +149,7 @@ class AADLThread():
         tf_connection_port_info = tfs.getConnectionPortInfoBySource(self.process, self.type, tf_source_port_name)
 
         # Il thread NON usa sicuramente i transformation frame
-        if tf_connection_port_info == None:
+        if tf_connection_port_info is None:
             self.associated_class.setUsesTransformationFrame(False)
             return False
 
@@ -161,15 +169,15 @@ class AADLThread():
     # di input (nel caso di un Subscriber), oppure di output (nel caso di un Publisher)
     def getDefaultTopicName(self, thread_port_name, input=False, output=False):
         if not input and not output:
-            return (False, "No direction specified")
+            return False, "No direction specified"
 
         thread_name = tfs.getName(self.thread)
 
         # Ottengo tutte le connesioni di un processo che mappano la porta specificata in process_port_name
         # del thread associato a questo processo con una porta qualunque del thread.
         connections = tfs.getAllConnectionsPerPort(self.process, thread_name, thread_port_name,
-                                                    input=input,
-                                                    output=output)
+                                                   input=input,
+                                                   output=output)
 
         names = []
 
@@ -191,22 +199,23 @@ class AADLThread():
 
             (topic_namespace, topic_name) = tfs.getDefaultTopicName(process_port)
 
-            if topic_namespace == None or topic_name == None:
-                return (False, "Unable to get topic name")
+            if topic_namespace is None or topic_name is None:
+                return False, "Unable to get topic name"
 
             names.append(topic_name)
 
-        names = list(set(names)) # Rimuovo i duplicati
+        # Rimuovo i duplicati
+        names = list(set(names))
 
         if len(names) < 1:
-            return (False, "No topic name defined")
+            return False, "No topic name defined"
 
         if len(names) > 1:
-            return (False, "Multiple topic names defined")
+            return False, "Multiple topic names defined"
 
         self.topic = names[0]
 
-        return (True, "")
+        return True, ""
 
     def populateData(self):
         raise NotImplementedError("populateData deve essere implementata da ogni subclass di Thread")

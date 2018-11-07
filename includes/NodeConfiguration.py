@@ -3,6 +3,7 @@ from comments.Comment import Comment
 from libraries.Library import Library, ROSBase_TF_Interface
 from structs.Struct import Struct
 
+
 class NodeConfiguration(Include):
     def __init__(self, _associated_class):
         super().__init__(_associated_class, "{}_configuration".format(_associated_class.node_name))
@@ -10,8 +11,7 @@ class NodeConfiguration(Include):
         self.structs = []
 
         self.has_parameters = False
-        self.has_variables  = False
-
+        self.has_variables = False
 
     def examineStructForLibraris(self, s):
         for v in s.variables:
@@ -23,7 +23,7 @@ class NodeConfiguration(Include):
                 # Se fra le variabili delle struct che aggiungo ce ne sono alcune
                 # che hanno bisogno di importare delle librerie (ovvero hanno un namespace)
                 # allora le processo
-                if v.type.namespace != None:
+                if v.type.namespace:
                     lib = Library()
                     lib.setPath("{}/{}.h".format(v.type.namespace, v.type.type_name))
                     self.addLibrary(lib)
@@ -34,7 +34,7 @@ class NodeConfiguration(Include):
 
     def generateCode(self):
         if self.associated_class.node_uses_tf:
-            self.addLibrary( ROSBase_TF_Interface() )
+            self.addLibrary(ROSBase_TF_Interface())
 
         code = ""
 
@@ -93,7 +93,6 @@ class NodeConfiguration(Include):
 
         code += "\t}\n"
         code += "};\n"
-
 
         # Chiusura finale visto che si è aperto con degli ifndef
         code += "#endif"

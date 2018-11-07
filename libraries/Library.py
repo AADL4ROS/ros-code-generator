@@ -1,9 +1,10 @@
 from CObject import CObject
 import os
 
+
 class Library(CObject):
-    def __init__(self, _associated_class = None ):
-        super().__init__( _associated_class )
+    def __init__(self, _associated_class=None):
+        super().__init__(_associated_class)
         self.path = None
 
     def setPath(self, _path):
@@ -13,22 +14,24 @@ class Library(CObject):
     # Ritorna il nome del package.
     # Es. std_msgs/String.h -> std_msgs
     def getPackageName(self):
-        if self.path != None:
+        if self.path:
             return os.path.dirname(self.path)
         return ""
 
     def isEqualTo(self, _other_library):
-        return (self.path == _other_library.path)
+        return self.path == _other_library.path
 
     def generateCode(self):
-        return "#include \"{}\"\n".format( self.path )
+        return "#include \"{}\"\n".format(self.path)
+
 
 class ROSBase_ROSNode(Library):
-    def __init__(self, _associated_class = None):
+    def __init__(self, _associated_class=None):
         super().__init__(_associated_class)
         self.path = "node_base/ROSNode.h"
 
+
 class ROSBase_TF_Interface(Library):
-    def __init__(self, _associated_class = None):
+    def __init__(self, _associated_class=None):
         super().__init__(_associated_class)
         self.path = "node_base/tf_interface.h"

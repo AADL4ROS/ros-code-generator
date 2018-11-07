@@ -1,7 +1,8 @@
 from CObject import CObject
 
+
 class Comment(CObject):
-    def __init__(self, _associated_class = None):
+    def __init__(self, _associated_class=None):
         super().__init__(_associated_class)
         self.text = None
 
@@ -9,7 +10,7 @@ class Comment(CObject):
         self.text = _text
 
     def generateCode(self):
-        if self.text == None:
+        if self.text is None:
             return ""
 
         split_string = self.text.split("\n")

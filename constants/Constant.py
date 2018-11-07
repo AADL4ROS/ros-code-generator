@@ -1,10 +1,11 @@
 from CObject import CObject
 
+
 class Constant(CObject):
-    def __init__(self, _associated_class = None ):
-        super().__init__( _associated_class )
-        self.name   = None
-        self.value  = None
+    def __init__(self, _associated_class=None):
+        super().__init__(_associated_class)
+        self.name = None
+        self.value = None
 
     def setName(self, _name):
         self.name = _name
@@ -22,4 +23,4 @@ class Constant(CObject):
         return True
 
     def generateCode(self):
-        return "#define {} \"{}\"".format( self.name, self.value )
+        return "#define {} \"{}\"".format(self.name, self.value)

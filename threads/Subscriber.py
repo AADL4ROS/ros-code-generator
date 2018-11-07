@@ -1,23 +1,21 @@
 import logging
-log = logging.getLogger("root")
-
 from pint import UnitRegistry
-ureg = UnitRegistry()
 
 from threads.AADLThread import AADLThread
 
 import threads.AADLThreadFunctionsSupport as tfs
 import messages.MessageFunctionSupport as mfs
-
 import datatypes.DatatypeConversion as dt
-
 from datatypes.Type import Void, ROS_Subscriber
 
 from variables.Variable import Variable
 from methods.Method import Method
-from comments.Comment import Comment
 from datatypes.Type import Type
 from libraries.Library import Library
+
+log = logging.getLogger("root")
+ureg = UnitRegistry()
+
 
 class Subscriber(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
@@ -27,13 +25,13 @@ class Subscriber(AADLThread):
         self.input_port_name = "msg"
 
         # Parametri del Subscriber
-        self.process_port           = None
-        self.source_text_function   = None
-        self.topic                  = None
-        self.subscriberCallback     = None
-        self.input_type             = None
-        self.asn1_source_file       = None
-        self.queue_size             = None
+        self.process_port = None
+        self.source_text_function = None
+        self.topic = None
+        self.subscriberCallback = None
+        self.input_type = None
+        self.asn1_source_file = None
+        self.queue_size = None
 
     def populateData(self):
         main_thread = self.associated_class.getMainThread()
@@ -46,7 +44,7 @@ class Subscriber(AADLThread):
         # - Topic
         # - Input Type
 
-        thread_function = tfs.getSubprogram( self.thread )
+        thread_function = tfs.getSubprogram(self.thread)
         if thread_function == None:
             return (False, "Unable to find the right Subprogram")
 
@@ -119,12 +117,12 @@ class Subscriber(AADLThread):
         ###################
 
         self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
-                                                                        tfs.getSourceName(thread_function))
+                                                                            tfs.getSourceName(thread_function))
 
         if self.source_text_function == None:
             return (False, "Unable to find property Source_Text or Source_Name")
 
-        self.source_text_function.setTF( self.thread_uses_tf )
+        self.source_text_function.setTF(self.thread_uses_tf)
 
         #############
         ### TOPIC ###
@@ -139,7 +137,7 @@ class Subscriber(AADLThread):
         ##################
 
         queue_size_default_value = 1
-        self.queue_size = tfs.getSubscriberQueueSize( self.thread, port_name=self.input_port_name )
+        self.queue_size = tfs.getSubscriberQueueSize(self.thread, port_name=self.input_port_name)
 
         if self.queue_size == None:
             self.queue_size = queue_size_default_value
@@ -150,33 +148,33 @@ class Subscriber(AADLThread):
         ######################
 
         var_subscriber_pub = Variable(self.associated_class)
-        var_subscriber_pub.setName( "sub_{}".format(self.name) )
-        var_subscriber_pub.setType( ROS_Subscriber( self.associated_class) )
-        self.associated_class.addInternalVariable( var_subscriber_pub )
+        var_subscriber_pub.setName("sub_{}".format(self.name))
+        var_subscriber_pub.setType(ROS_Subscriber(self.associated_class))
+        self.associated_class.addInternalVariable(var_subscriber_pub)
 
         ###########################
         ### SUBSCRIBER CALLBACK ###
         ###########################
 
-        self.subscriberCallback = Method( self.associated_class )
-        self.subscriberCallback.method_name = "{}_callback".format( self.name )
-        self.subscriberCallback.return_type = Void( self.associated_class )
+        self.subscriberCallback = Method(self.associated_class)
+        self.subscriberCallback.method_name = "{}_callback".format(self.name)
+        self.subscriberCallback.return_type = Void(self.associated_class)
         self.subscriberCallback.namespace = self.associated_class.class_name
 
-        input_var = Variable( self.associated_class )
-        input_var.setType( self.input_type )
-        input_var.setName( "msg" )
+        input_var = Variable(self.associated_class)
+        input_var.setType(self.input_type)
+        input_var.setName("msg")
         input_var.setIsParameter()
 
-        self.subscriberCallback.addInputParameter( input_var )
-        self.source_text_function.addFunctionParameter( input_var )
+        self.subscriberCallback.addInputParameter(input_var)
+        self.source_text_function.addFunctionParameter(input_var)
 
         # Aggiungo la chiamata alla funzione custome
         if self.source_text_function != None:
             code = "{};".format(self.source_text_function.generateInlineCode())
             self.subscriberCallback.addMiddleCode(code)
 
-        self.associated_class.addPrivateMethod( self.subscriberCallback )
+        self.associated_class.addPrivateMethod(self.subscriberCallback)
 
         main_thread.prepare.addMiddleCode("{} = handle.subscribe(\"{}\", {}, {}, this);"
                                           .format(var_subscriber_pub.name, self.topic, self.queue_size,

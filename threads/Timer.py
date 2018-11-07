@@ -1,8 +1,5 @@
 import logging
-log = logging.getLogger("root")
-
 from pint import UnitRegistry
-ureg = UnitRegistry()
 
 from threads.AADLThread import AADLThread
 
@@ -13,16 +10,20 @@ from datatypes.Type import Void, ROS_TimerEvent, ROS_Timer
 from variables.Variable import Variable
 from methods.Method import Method
 
+log = logging.getLogger("root")
+ureg = UnitRegistry()
+
+
 class Timer(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
         super().__init__(_system_root, _process, _thread, _associated_class)
         log.info("Timer thread {}".format(self.name))
 
         # Parametri del Timer
-        self.source_text_function   = None
-        self.frequency_in_hz        = None
-        self.period_in_seconds      = None
-        self.timerCallback          = None
+        self.source_text_function = None
+        self.frequency_in_hz = None
+        self.period_in_seconds = None
+        self.timerCallback = None
 
     def populateData(self):
         main_thread = self.associated_class.getMainThread()
@@ -34,7 +35,7 @@ class Timer(AADLThread):
         # - Source Text
         # - Period
 
-        thread_function = tfs.getSubprogram( self.thread )
+        thread_function = tfs.getSubprogram(self.thread)
         if thread_function == None:
             return (False, "Unable to find the right Subprogram")
 
@@ -49,19 +50,19 @@ class Timer(AADLThread):
         ### Source Text ###
         ###################
 
-        self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText( thread_function ),
-                                                                        tfs.getSourceName( thread_function ))
+        self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
+                                                                            tfs.getSourceName(thread_function))
 
         if self.source_text_function == None:
             return (False, "Unable to find property Source_Text or Source_Name")
 
-        self.source_text_function.setTF( self.thread_uses_tf )
+        self.source_text_function.setTF(self.thread_uses_tf)
 
         #################
         ### FREQUENCY ###
         #################
 
-        (period, period_unit) = tfs.getPeriod( self.thread )
+        (period, period_unit) = tfs.getPeriod(self.thread)
 
         if period == None or period_unit == None:
             return (False, "Unable to find property Period with relative value and unit")
@@ -69,7 +70,7 @@ class Timer(AADLThread):
         # Conversione in secondi della frequenza a partire da qualunque unità di misura
         try:
             period_quantity = ureg("{} {}".format(period, period_unit))
-            period_quantity.ito( ureg.second )
+            period_quantity.ito(ureg.second)
             self.frequency_in_hz = 1.0 / period_quantity.magnitude
             self.period_in_seconds = period_quantity.magnitude
         except ValueError:
@@ -88,26 +89,26 @@ class Timer(AADLThread):
         ### TIMER CALLBACK ###
         ######################
 
-        self.timerCallback = Method( self.associated_class )
-        self.timerCallback.method_name = "{}_callback".format( self.name )
-        self.timerCallback.return_type = Void( self.associated_class )
+        self.timerCallback = Method(self.associated_class)
+        self.timerCallback.method_name = "{}_callback".format(self.name)
+        self.timerCallback.return_type = Void(self.associated_class)
         self.timerCallback.namespace = self.associated_class.class_name
 
-        input_par = Variable( self.associated_class )
+        input_par = Variable(self.associated_class)
         input_par.setIsParameter()
-        input_par.setType( ROS_TimerEvent( self.associated_class ) )
+        input_par.setType(ROS_TimerEvent(self.associated_class))
         input_par.setName("")
-        self.timerCallback.addInputParameter( input_par )
+        self.timerCallback.addInputParameter(input_par)
 
         # Aggiungo la chiamata alla funzione custome
         if self.source_text_function != None:
             code = "{};".format(self.source_text_function.generateInlineCode())
             self.timerCallback.addMiddleCode(code)
 
-        self.associated_class.addPrivateMethod( self.timerCallback )
+        self.associated_class.addPrivateMethod(self.timerCallback)
 
         main_thread.prepare.addMiddleCode("{} = handle.createTimer(ros::Duration({}), {}, this);"
-                                            .format(var_timer.name, self.period_in_seconds,
-                                                    self.timerCallback.getThreadPointer() ))
+                                          .format(var_timer.name, self.period_in_seconds,
+                                                  self.timerCallback.getThreadPointer()))
 
         return (True, "")

@@ -1,8 +1,5 @@
 import logging
-log = logging.getLogger("root")
-
 from pint import UnitRegistry
-ureg = UnitRegistry()
 
 from threads.AADLThread import AADLThread
 
@@ -11,13 +8,16 @@ import messages.MessageFunctionSupport as mfs
 
 import datatypes.DatatypeConversion as dt
 
-from datatypes.Type import ROSBase_PointerToTransformationFrames, Void, ROS_TimerEvent, ROS_Timer, ROS_Publisher
+from datatypes.Type import Void, ROS_TimerEvent, ROS_Timer, ROS_Publisher
 
 from variables.Variable import Variable
 from methods.Method import Method
-from comments.Comment import Comment
 from datatypes.Type import Type
-from libraries.Library import Library, ROSBase_TF_Interface
+from libraries.Library import Library
+
+log = logging.getLogger("root")
+ureg = UnitRegistry()
+
 
 class Publisher(AADLThread):
     def __init__(self, _system_root, _process, _thread, _associated_class):
@@ -27,15 +27,15 @@ class Publisher(AADLThread):
         self.output_port_name = "msg"
 
         # Parametri del Publisher
-        self.process_port           = None
-        self.source_text_function   = None
-        self.frequency_in_hz        = None
-        self.period_in_seconds      = None
-        self.topic                  = None
-        self.publisherCallback      = None
-        self.output_type            = None
-        self.asn1_source_file       = None
-        self.custom_message         = None
+        self.process_port = None
+        self.source_text_function = None
+        self.frequency_in_hz = None
+        self.period_in_seconds = None
+        self.topic = None
+        self.publisherCallback = None
+        self.output_type = None
+        self.asn1_source_file = None
+        self.custom_message = None
 
     def populateData(self):
         main_thread = self.associated_class.getMainThread()
@@ -47,7 +47,7 @@ class Publisher(AADLThread):
         # - Source Text
         # - Period
 
-        thread_function = tfs.getSubprogram( self.thread )
+        thread_function = tfs.getSubprogram(self.thread)
         if thread_function == None:
             return (False, "Unable to find the right Subprogram")
 
@@ -111,25 +111,24 @@ class Publisher(AADLThread):
 
         self.output_type.setLibrary(output_type_library)
 
-
         ###################
         ### Source Text ###
         ###################
 
-        self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText( thread_function ),
-                                                                        tfs.getSourceName( thread_function ))
+        self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
+                                                                            tfs.getSourceName(thread_function))
 
         if self.source_text_function == None:
             return (False, "Unable to find property Source_Text or Source_Name")
 
-        self.source_text_function.setTF( self.thread_uses_tf )
+        self.source_text_function.setTF(self.thread_uses_tf)
         self.source_text_function.setFunctionType(self.output_type)
 
         #################
         ### FREQUENCY ###
         #################
 
-        (period, period_unit) = tfs.getPeriod( self.thread )
+        (period, period_unit) = tfs.getPeriod(self.thread)
 
         if period == None or period_unit == None:
             return (False, "Unable to find property Period with relative value and unit")
@@ -137,7 +136,7 @@ class Publisher(AADLThread):
         # Conversione in secondi della frequenza a partire da qualunque unità di misura
         try:
             period_quantity = ureg("{} {}".format(period, period_unit))
-            period_quantity.ito( ureg.second )
+            period_quantity.ito(ureg.second)
             self.frequency_in_hz = 1.0 / period_quantity.magnitude
             self.period_in_seconds = period_quantity.magnitude
         except ValueError:
@@ -161,9 +160,9 @@ class Publisher(AADLThread):
         #####################
 
         var_publisher_pub = Variable(self.associated_class)
-        var_publisher_pub.setName( "pub_{}".format(self.name) )
-        var_publisher_pub.setType( ROS_Publisher( self.associated_class) )
-        self.associated_class.addInternalVariable( var_publisher_pub )
+        var_publisher_pub.setName("pub_{}".format(self.name))
+        var_publisher_pub.setType(ROS_Publisher(self.associated_class))
+        self.associated_class.addInternalVariable(var_publisher_pub)
 
         #######################
         ### PUBLISHER TIMER ###
@@ -178,30 +177,30 @@ class Publisher(AADLThread):
         ### PUBLISHER CALLBACK ###
         ##########################
 
-        self.publisherCallback = Method( self.associated_class )
-        self.publisherCallback.method_name = "{}_callback".format( self.name )
-        self.publisherCallback.return_type = Void( self.associated_class )
+        self.publisherCallback = Method(self.associated_class)
+        self.publisherCallback.method_name = "{}_callback".format(self.name)
+        self.publisherCallback.return_type = Void(self.associated_class)
         self.publisherCallback.namespace = self.associated_class.class_name
 
-        input_par = Variable( self.associated_class )
+        input_par = Variable(self.associated_class)
         input_par.setIsParameter()
-        input_par.setType( ROS_TimerEvent( self.associated_class ) )
+        input_par.setType(ROS_TimerEvent(self.associated_class))
         input_par.setName("")
-        self.publisherCallback.addInputParameter( input_par )
+        self.publisherCallback.addInputParameter(input_par)
 
         # Aggiungo la chiamata alla funzione custome
         if self.source_text_function != None:
             code = "{}.publish({});".format(var_publisher_pub.name,
-                                           self.source_text_function.generateInlineCode())
+                                            self.source_text_function.generateInlineCode())
             self.publisherCallback.addMiddleCode(code)
 
-        self.associated_class.addPrivateMethod( self.publisherCallback )
+        self.associated_class.addPrivateMethod(self.publisherCallback)
 
         main_thread.prepare.addMiddleCode("{} = handle.advertise < {} > (\"{}\", 10);"
                                           .format(var_publisher_pub.name, self.output_type.generateCode(), self.topic))
 
         main_thread.prepare.addMiddleCode("{} = handle.createTimer(ros::Duration({}), {}, this);"
-                                            .format(var_timer_pub.name, self.period_in_seconds,
-                                                    self.publisherCallback.getThreadPointer() ))
+                                          .format(var_timer_pub.name, self.period_in_seconds,
+                                                  self.publisherCallback.getThreadPointer()))
 
         return (True, "")

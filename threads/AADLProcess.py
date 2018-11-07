@@ -7,25 +7,26 @@ from datatypes.Type import ROSBase_PointerToTransformationFrames
 from variables.Variable import Variable
 import os
 
-class AADLProcess():
+
+class AADLProcess:
     def __init__(self, process, system_root, system):
-        self.process        = process
-        self.system_root    = system_root
-        self.system         = system
-        self.namespace      = self.system.namespace
+        self.process = process
+        self.system_root = system_root
+        self.system = system
+        self.namespace = self.system.namespace
 
         ##############################
         ### PARAMETRI DELLA CLASSE ###
         ##############################
-        self.aadl_node_name         = tfs.getName( self.process )
-        self.class_name             = self.aadl_node_name.title()
-        self.node_name              = self.aadl_node_name.title()
-        self.type                   = tfs.getType( self.process )
-        self.class_libraries        = []
-        self.class_internal_vars    = []
-        self.class_constants        = []
-        self.class_public_methods   = []
-        self.class_private_methods  = []
+        self.aadl_node_name = tfs.getName(self.process)
+        self.class_name = self.aadl_node_name.title()
+        self.node_name = self.aadl_node_name.title()
+        self.type = tfs.getType(self.process)
+        self.class_libraries = []
+        self.class_internal_vars = []
+        self.class_constants = []
+        self.class_public_methods = []
+        self.class_private_methods = []
 
         ############################
         ### TRANSFORMATION FRAME ###
@@ -64,7 +65,7 @@ class AADLProcess():
     ### TRANSFORMATION FRAME ###
     ############################
     def setUsesTransformationFrame(self, state):
-        if self.node_uses_tf == True:
+        if self.node_uses_tf:
             return
         self.node_uses_tf = state
 
@@ -72,7 +73,7 @@ class AADLProcess():
         if self.node_uses_tf:
             tf_var = Variable(self)
             tf_var.setName("tf")
-            tf_var.setType( ROSBase_PointerToTransformationFrames(self) )
+            tf_var.setType(ROSBase_PointerToTransformationFrames(self))
             self.addInternalVariable(tf_var)
             self.getMainThread().constructor.addMiddleCode("{} = new node_base::TransformationFrames();"
                                                            .format(tf_var.name))
@@ -82,25 +83,25 @@ class AADLProcess():
     ###############
     ### LIBRARY ###
     ###############
-    def addLibrary(self, _lib, add_to_cmake = True, add_to_package_xml = True):
+    def addLibrary(self, _lib, add_to_cmake=True, add_to_package_xml=True):
         for l in self.class_libraries:
             if l.isEqualTo(_lib):
                 return False
 
-        self.class_libraries.append( _lib )
+        self.class_libraries.append(_lib)
 
         if add_to_cmake:
-            self.system.cmake_list.addPackage( _lib )
+            self.system.cmake_list.addPackage(_lib)
 
         if add_to_package_xml:
-            self.system.package_xml.addDependency( _lib )
+            self.system.package_xml.addDependency(_lib)
         return True
 
     def removeLibrary(self, _lib):
         try:
-            self.class_libraries.remove( _lib )
+            self.class_libraries.remove(_lib)
             self.system.cmake_list.removePackage(_lib)
-            self.system.package_xml.removeDependency( _lib )
+            self.system.package_xml.removeDependency(_lib)
             return True
         except ValueError:
             return False
@@ -111,15 +112,15 @@ class AADLProcess():
 
     def setNodeConfiguration(self, node_config):
         self.node_configuration = node_config
-        self.addSourceFile( self.node_configuration )
+        self.addSourceFile(self.node_configuration)
 
     def addSourceFile(self, source_file):
         self.source_text_files.append(source_file)
 
         source_import = Library()
-        source_import.setPath( source_file.getSourceLibraryPath() )
+        source_import.setPath(source_file.getSourceLibraryPath())
 
-        self.addLibrary(source_import, add_to_cmake = False, add_to_package_xml = False)
+        self.addLibrary(source_import, add_to_cmake=False, add_to_package_xml=False)
 
     def getSourceFile(self, source_file_name):
         (name, ext) = os.path.splitext(source_file_name)
@@ -164,7 +165,7 @@ class AADLProcess():
 
     def addPublicMethod(self, _method):
         if _method not in self.class_public_methods:
-            self.class_public_methods.append( _method )
+            self.class_public_methods.append(_method)
 
     def addPrivateMethod(self, _method):
         if _method not in self.class_private_methods:
@@ -202,9 +203,9 @@ class AADLProcess():
         # Include le stesse librerie
         # Res > 1 nel caso in cui ci sia la node configuration, altrimenti no
         res = self.compareList(self.class_libraries, another_process.class_libraries)
-        if res > 1 and self.node_configuration != None:
+        if res > 1 and self.node_configuration:
             return False
-        elif res != 0 and self.node_configuration == None:
+        elif res != 0 and self.node_configuration is None:
             return False
 
         # Ha le stesse variabili interne
@@ -239,7 +240,7 @@ class AADLProcess():
     ##############
 
     def hasPrivateData(self):
-        return  (len(self.class_private_methods) > 0)
+        return len(self.class_private_methods) > 0
 
     #####################
     ### GENERATE CODE ###
@@ -254,11 +255,11 @@ class AADLProcess():
         today = datetime.datetime.now()
         generated_on = today.strftime("%d/%m/%Y %H:%M:%S")
 
-        text = "Node {}\n".format( self.node_name )
+        text = "Node {}\n".format(self.node_name)
         text += "File auto-generated on {}".format(generated_on)
 
         disclaimer = Comment()
-        disclaimer.setComment( text )
+        disclaimer.setComment(text)
 
         code += disclaimer.generateCode()
 
@@ -283,26 +284,26 @@ class AADLProcess():
         ###########################
 
         code += "\n"
-        code += "class {} : public node_base::ROSNode {{\n".format( self.class_name )
+        code += "class {} : public node_base::ROSNode {{\n".format(self.class_name)
 
         # INSTESTAZIONE METODI PRIVATI
         if self.hasPrivateData():
             code += "private:\n"
 
             for m in self.class_private_methods:
-                if m.namespace != None:
-                    code += "\t{}\n".format( m.generateInterface() )
+                if m.namespace:
+                    code += "\t{}\n".format(m.generateInterface())
 
         for var in self.class_internal_vars:
-            code += "\t{}\n".format( var.generateCode() )
+            code += "\t{}\n".format(var.generateCode())
 
         # INSTESTAZIONE METODI PUBBLICI
         if len(self.class_public_methods) > 0:
             code += "public:\n"
 
             for m in self.class_public_methods:
-                if m.namespace != None:
-                    code += "\t{}\n".format( m.generateInterface() )
+                if m.namespace:
+                    code += "\t{}\n".format(m.generateInterface())
 
         # Chiudo l'intestazione della classe
         code += "};"
@@ -315,5 +316,4 @@ class AADLProcess():
         for m in self.class_private_methods + self.class_public_methods:
             code += m.generateCode()
 
-        #print( code )
         return code

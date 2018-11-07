@@ -1,5 +1,4 @@
 from includes.Include import Include
-from comments.Comment import Comment
 from libraries.Library import Library, ROSBase_TF_Interface
 
 
@@ -34,13 +33,13 @@ class SourceTextFile(Include):
     def generateCode(self):
         # Subito prima di generare il codice devo aggiungere la libreria con la node configuration
         # se serve ed è usata
-        if self.associated_class.node_configuration != None:
+        if self.associated_class.node_configuration:
             lib = Library()
-            lib.setPath( self.associated_class.node_configuration.getSourceLibraryPath() )
-            self.addLibrary( lib )
+            lib.setPath(self.associated_class.node_configuration.getSourceLibraryPath())
+            self.addLibrary(lib)
 
         if self.uses_tf:
-            self.addLibrary( ROSBase_TF_Interface() )
+            self.addLibrary(ROSBase_TF_Interface())
 
         code = ""
 

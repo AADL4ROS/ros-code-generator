@@ -2,21 +2,22 @@ import os
 
 kCMAKE_LIST_FILENAME = "CMakeLists.txt"
 
-class CMakeLists():
+
+class CMakeLists:
     def __init__(self, system):
-        self.system         = system
-        self.project_name   = system.namespace
+        self.system = system
+        self.project_name = system.namespace
 
         self.cmake_minimum_req_version = "2.8.3"
         self.use_C11 = True
 
-        self.packages               = []
-        self.executables            = []
-        self.services               = []
-        self.messages               = []
-        self.msgs_srvs_dependecies  = []
+        self.packages = []
+        self.executables = []
+        self.services = []
+        self.messages = []
+        self.msgs_srvs_dependencies = []
 
-        # Aggiungo i pacchetti standard
+        # Adding standard packages
         self.addPackage("roscpp")
 
     def addPackage(self, lib):
@@ -35,7 +36,7 @@ class CMakeLists():
         self.packages.append(pkg)
 
         # Rimuovo eventuali duplicati
-        self.packages = list(set( self.packages ))
+        self.packages = list(set(self.packages))
 
     def removePackage(self, lib):
         try:
@@ -66,7 +67,7 @@ class CMakeLists():
         self.services.append(ser.getSRVFilename())
 
         # Rimuovo eventuali duplicati
-        self.services = list(set( self.services ))
+        self.services = list(set(self.services))
 
         if self.hasMessagesOrServices():
             self.addPackage("message_generation")
@@ -79,7 +80,7 @@ class CMakeLists():
         self.messages.append(msg.getMSGFilename())
 
         # Rimuovo eventuali duplicati
-        self.messages = list(set( self.messages ))
+        self.messages = list(set(self.messages))
 
         if self.hasMessagesOrServices():
             self.addPackage("message_generation")
@@ -89,10 +90,10 @@ class CMakeLists():
             self.addMessageOrServiceDependency(d)
 
     def addMessageOrServiceDependency(self, dep):
-        self.msgs_srvs_dependecies.append(dep)
+        self.msgs_srvs_dependencies.append(dep)
 
         # Rimuovo eventuali duplicati
-        self.msgs_srvs_dependecies = list(set(self.msgs_srvs_dependecies))
+        self.msgs_srvs_dependencies = list(set(self.msgs_srvs_dependencies))
 
     def hasMessagesOrServices(self):
         return (len(self.messages) > 0 or len(self.services) > 0)
@@ -105,7 +106,7 @@ class CMakeLists():
         #   del testo del commento più il numero di hastag prima e dopo il testo
         #   (ecco spiegato il *2) più 2 cancelletti che sono gli spazi prima e dopo
         #   il testo. Tanta complicazione per nulla, lo so
-        total_hashtag_length = (len(text) + number_of_hashtag_before_text * 2 + 2 )
+        total_hashtag_length = (len(text) + number_of_hashtag_before_text * 2 + 2)
 
         comment = "\n"
         comment += "#" * total_hashtag_length
@@ -139,7 +140,7 @@ class CMakeLists():
         text += "find_package(catkin REQUIRED COMPONENTS\n"
 
         # Aggiungo anche i package relativi alle dipendenze dei messaggi e dei servizi
-        for p in set(self.packages + self.msgs_srvs_dependecies):
+        for p in set(self.packages + self.msgs_srvs_dependencies):
             text += "\t{}\n".format(p)
 
         text += ")\n"
@@ -164,9 +165,9 @@ class CMakeLists():
         if len(self.services) > 0 or len(self.messages) > 0:
             text += self.generateHeaderCommentWithText("MSGS and SRVS Dependencies")
             text += "generate_messages("
-            if len(self.msgs_srvs_dependecies) > 0:
+            if len(self.msgs_srvs_dependencies) > 0:
                 text += "\n\tDEPENDENCIES\n"
-                for d in self.msgs_srvs_dependecies:
+                for d in self.msgs_srvs_dependencies:
                     text += "\t{}\n".format(d)
             text += ")\n"
 

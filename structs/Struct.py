@@ -28,7 +28,7 @@ class Struct(CObject):
     def addVariable(self, var):
         self.variables.append(var)
 
-    def generateVariableAssignmentForVar(self, var, struct_name = ""):
+    def generateVariableAssignmentForVar(self, var, struct_name=""):
 
         if isinstance(var, Struct):
             code = ""
@@ -45,7 +45,7 @@ class Struct(CObject):
         # Intestazione della struct
         code += "struct {}".format(self.name)
 
-        if self.super_class != None:
+        if self.super_class:
             code += ": {}".format(self.super_class)
 
         code += " { \n"
@@ -56,7 +56,7 @@ class Struct(CObject):
             if isinstance(v, Struct):
                 code += "".join(["\t" + gen_s + "\n" for gen_s in v.generateCode().split("\n")])
             else:
-                code += "\t{}\n".format( v.generateCode(generate_default_value = False) )
+                code += "\t{}\n".format(v.generateCode(generate_default_value=False))
 
         # Se ha il costruttore, allora lo genero
         if self.has_constructor:
@@ -72,7 +72,7 @@ class Struct(CObject):
         # Chiusura della struct
         code += "}"
 
-        if self.create_instance_with_name != None:
+        if self.create_instance_with_name:
             code += " {}".format(self.create_instance_with_name)
 
         code += ";"
