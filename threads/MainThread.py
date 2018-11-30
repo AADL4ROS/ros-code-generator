@@ -27,6 +27,11 @@ from structs.Struct import Struct
 
 import global_filepath
 
+# from jsonschema import validate, exceptions
+import jsonschema
+import json
+import sys
+
 log = logging.getLogger("root")
 
 
@@ -120,9 +125,47 @@ class MainThread(AADLThread):
 
             return tmp_param
 
+    # TODO Work from here - Z.
+    def getStateJSON(self):
+        parameters = []
+        variables = []
+
+        # get the name of the JSON file
+        json_file = tfs.getSourceText(self.process)
+        json_schema = tfs.getInternalStateSourceText(self.process)
+
+        if not json_file or not json_schema:
+            log.warning("No Params and Vars file specified for {}".format(self.associated_class.node_name))
+            return parameters, variables
+
+        # absolute location of the JSON file
+        # TODO - assumption: AADL and XML file locations are the same
+        json_file = os.path.join(global_filepath.aadl_model_dir, json_file)
+        json_schema = os.path.join(global_filepath.aadl_model_dir, json_schema)
+        json_base_schema = json_file = sys.path[0]+"/internal_state_base.schema.json"
+
+        try:
+            loaded_json_file = json.load(open(json_file))
+            loaded_json_schema = json.load(open(json_schema))
+            loaded_json_base_schema = json.load(open(json_base_schema))
+        except json.JSONDecodeError:
+            print("invalid json file")
+            return parameters, variables
+
+        print(json.dumps(loaded_json_file))
+        print(json.dumps(loaded_json_schema))
+
+        try:
+            jsonschema.validate(loaded_json_file, loaded_json_base_schema)
+            jsonschema.validate(loaded_json_file, loaded_json_schema)
+        except jsonschema.exceptions.ValidationError:
+            print("validation failed")
+            return parameters, variables
+
+        return parameters, variables
+
     # Ogni process/node ha un file che descrive params e vars, questo metodo si occupa
     # di processarlo ed aggiungere la variabili e parametri corretti
-    # TODO Work from here - Z.
     def getStateASN(self):
         parameters = []
         variables = []
@@ -219,7 +262,8 @@ class MainThread(AADLThread):
         self.associated_class.addPrivateMethod(self.errorHandling)
 
         # Ottengo lo stato (parameters, variables) in ASN.1 del nodo
-        (parameters, variables) = self.getStateASN()
+        # (parameters, variables) = self.getStateASN()
+        (parameters, variables) = self.getStateJSON()
 
         # Se ho almeno parametri o variabili, allora genero
         # anche la node configuration, altrimenti no
@@ -268,4 +312,4 @@ class MainThread(AADLThread):
             # Return alla fine del metodo main
             self.prepare.addBottomCode("return true;")
 
-        return (True, "")
+        return True, ""

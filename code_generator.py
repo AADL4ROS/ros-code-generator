@@ -135,6 +135,8 @@ def generateCodeForSystem(system_root, system_parent):
 
 
 def startGeneration():
+    XMLTags.initialize()
+
     #################
     ### PARAMETRI ###
     #################

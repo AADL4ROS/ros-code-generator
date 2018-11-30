@@ -267,3 +267,5 @@ $RECYCLE.BIN/
 # End of https://www.gitignore.io/api/macos,linux,pycharm,windows,sublimetext
 
 analyzer
+test.py
+test

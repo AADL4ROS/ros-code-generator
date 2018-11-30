@@ -314,6 +314,24 @@ def getName(start):
 ###################
 ### Source Text ###
 ###################
+# TODO is this the right place?
+def getInternalStateSourceText(start):
+    try:
+        internal_state = start.find("./" +
+                                    XMLTags.tags['TAG_SUBCOMPONENTS'] + "/" +
+                                    XMLTags.tags['TAG_SUBCOMPONENT'] + "/" +
+                                    "["+XMLTags.tags['TAG_NAME']+"='internal_state']")
+
+        source_text_property = internal_state.find("./" +
+                                                   XMLTags.tags['TAG_PROPERTIES'] + "/" +
+                                                   XMLTags.tags['TAG_PROPERTY'] + "/" +
+                                                   "[" + XMLTags.tags['TAG_PROPERTY_NAME'] + "='Source_Text']")
+        source_text = source_text_property.find(XMLTags.tags['TAG_PROPERTY_VALUE']).text
+        return source_text
+    except AttributeError:
+        return None
+
+
 def getSourceText(start):
     try:
         source_text_property = start.find("./" +
