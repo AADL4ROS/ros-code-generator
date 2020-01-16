@@ -29,9 +29,9 @@ class Message:
         self.dependencies.append(dep)
         self.dependencies = list(set(self.dependencies))
 
-    ##################
-    ### COMPARISON ###
-    ##################
+    ##############
+    # COMPARISON #
+    ##############
     def elementIsInList(self, elem, list):
         for l in list:
             if elem.isEqualTo(l):
@@ -51,9 +51,9 @@ class Message:
 
         return True
 
-    ##############
-    ### SAVING ###
-    ##############
+    ##########
+    # SAVING #
+    ##########
 
     def saveMessageMSG(self):
         system_folder = folderTree.getMessageFolderForSystemFolder(self.system.system_folder)

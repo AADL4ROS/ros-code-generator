@@ -94,7 +94,7 @@ class Subscriber(AADLThread):
             else:
                 self.input_type = raw_output_type
         else:
-            self.custom_message = mfs.getMessageFromASN1(aadl_namespace,
+            self.custom_message = mfs.getMessageFromJSON(aadl_namespace,
                                                          aadl_type,
                                                          port_data_source_asn,
                                                          self.associated_class)

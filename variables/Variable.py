@@ -22,7 +22,7 @@ class Variable(CObject):
         self.default_value = _default_value
 
     def hasDefaultValue(self):
-        return (self.default_value != None)
+        return self.default_value is not None
 
     def isEqualTo(self, another_variable):
         # Stesso nome
@@ -44,18 +44,18 @@ class Variable(CObject):
 
     # Usata dei costrutturi delle struct
     def generateCodeOnlyAssignment(self):
-        if self.default_value == None:
+        if self.default_value is None:
             return ""
 
         return "{} = {};".format(self.name, self.default_value)
 
     def generateCode(self, generate_default_value=True):
         default = ""
-        if self.default_value != None and generate_default_value:
+        if self.default_value and generate_default_value:
             default = " = {}".format(self.default_value)
 
-        punto_e_virgola = ";"
+        semicolon = ";"
         if self.is_function_param:
-            punto_e_virgola = ""
+            semicolon = ""
 
-        return "{} {}{}{}".format(self.type.generateCode(), self.name, default, punto_e_virgola)
+        return "{} {}{}{}".format(self.type.generateCode(), self.name, default, semicolon)

@@ -1,67 +1,44 @@
 import logging
 import os
-from asn1tools.parser import parse_file
+import json
 from services.Service import Service
 from variables.Variable import Variable
-from datatypes.DatatypeConversion import getROSDatatypeFromASN1
+from datatypes.DatatypeConversion import getROSMsgtypeFromJSON
+
 
 import global_filepath
 
 log = logging.getLogger("root")
 asn_default_path = global_filepath.aadl_model_dir
 
-"""
-Struttura base per un servizio
 
-Custom_Service DEFINITIONS ::= BEGIN
-
-    Request ::= SEQUENCE {
-        a Integer,
-        b PrintableString,
-        proc BOOLEAN
-    }
-
-    Response ::= SEQUENCE {
-    appended INTEGER,
-    length REAL,
-    pose geometry_msgs/Pose
-    }
-
-END
-"""
-
-
-def getServiceFromASN1(aadl_namespace, aadl_type, asn_source, associated_class):
-    file_path = os.path.join(asn_default_path, asn_source)
+def getServiceFromJSON(aadl_namespace, aadl_type, json_source, associated_class):
+    file_path = os.path.join(asn_default_path, json_source)
 
     try:
-        parsed = parse_file(file_path)
-    except:
-        log.error("Unable to parse ASN.1 file {}".format(file_path))
+        parsed = json.load(open(file_path))
+    except json.JSONDecodeError:
+        log.error("Unable to load JSON file {}".format(file_path))
         return None
-
-    # Il nome del servizio è la prima ed unica chiave del dizionario del file parsato
-    new_service_intestazione = list(parsed.keys())[0]
 
     service = Service(aadl_namespace, aadl_type)
 
-    requests_asn = parsed[new_service_intestazione]['types']['Request']['members']
-    responses_asn = parsed[new_service_intestazione]['types']['Response']['members']
+    requests_json = parsed['Request']['properties']
+    responses_json = parsed['Response']['properties']
 
-    for r in requests_asn:
+    for key, value in requests_json.items():
         var = Variable()
-        var.setName(r['name'])
-        var.setType(getROSDatatypeFromASN1(r['type'], associated_class, is_msg_or_service=True))
+        var.setName(key)
+        var.setType(getROSMsgtypeFromJSON(value['type'], associated_class))
         var.setIsParameter()
-
         service.addRequest(var)
 
-    for r in responses_asn:
+    for key, value in responses_json.items():
         var = Variable()
-        var.setName(r['name'])
-        var.setType(getROSDatatypeFromASN1(r['type'], associated_class, is_msg_or_service=True))
+        var.setName(key)
+        # TODO string format + nested messages
+        var.setType(getROSMsgtypeFromJSON(value['type'], associated_class))
         var.setIsParameter()
-
         service.addResponse(var)
 
     # Aggiungo il messaggio al suo relativo system

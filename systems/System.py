@@ -20,7 +20,7 @@ class System:
     def __init__(self, system_root, namespace=None):
 
         # Caso di system veri e propri che contengono process
-        if system_root:
+        if system_root is not None:
             self.system_root = system_root
             self.namespace = tfs.getNamespace(system_root)
             # Log dell'inizio della generazione del system

@@ -36,28 +36,28 @@ class ServiceServer(AADLThread):
         main_thread = self.associated_class.getMainThread()
 
         if main_thread == None:
-            return (False, "Unable to get the Main Thread")
+            return False, "Unable to get the Main Thread"
 
-        ############################
-        ### TRANSFORMATION FRAME ###
-        ############################
+        #########################
+        # TRANSFORMATION FRAME #
+        ########################
 
         # Controllo l'uso del Transformation Frame
         self.thread_uses_tf = self.setUsesTransformationFrame()
 
-        ###################
-        ### Output Port ###
-        ###################
+        ###############
+        # Output Port #
+        ###############
 
         # Essendo birezeizonale posso trovare la connessione sia come source che come dest
         conn_by_source = True
         process_input_port = tfs.getConnectionPortInfoBySource(self.process, self.type, self.input_port_name)
 
-        if process_input_port == None:
+        if process_input_port is None:
             conn_by_source = False
             process_output_port = tfs.getConnectionPortInfoByDest(self.process, self.type, self.input_port_name)
 
-        if process_input_port == None:
+        if process_input_port is None:
             return (False, "Unable to find the right binding between process requires subprogram access port and "
                            "thread input port")
 
@@ -66,13 +66,13 @@ class ServiceServer(AADLThread):
         else:
             (source_parent_name, source_name) = tfs.getSourceFromPortInfo(process_output_port)
 
-        if source_parent_name == None or source_name == None:
-            return (False, "Unable to find the process provides subprogram access port name")
+        if source_parent_name is None or source_name is None:
+            return False, "Unable to find the process provides subprogram access port name"
 
         self.process_port = tfs.getFeatureByName(self.process, name=source_name)
 
-        if self.process_port == None:
-            return (False, "Unable to find the process provides subprogram access port feature")
+        if self.process_port is None:
+            return False, "Unable to find the process provides subprogram access port feature"
 
         # Dopo aver trovato la porta del process, controllo il nome di default del
         # services associato
@@ -104,7 +104,7 @@ class ServiceServer(AADLThread):
             # return (False, "Unable to find property Source_Text for the services caller with ASN.1 description")
         else:
             # Creo il servizio custom e lo associo al nodo che lo ha generato
-            self.service = sfs.getServiceFromASN1(aadl_namespace,
+            self.service = sfs.getServiceFromJSON(aadl_namespace,
                                                   aadl_type,
                                                   self.asn_description,
                                                   self.associated_class)
@@ -155,21 +155,21 @@ class ServiceServer(AADLThread):
         self.server_callback.addInputParameter(input_param_req)
         self.server_callback.addInputParameter(input_param_res)
 
-        ###################
-        ### SOURCE TEXT ###
-        ###################
+        ###############
+        # SOURCE TEXT #
+        ###############
         function = tfs.getSubcomponentByInfo(self.thread,
                                              name=self.function_name,
                                              namespace="ros",
                                              category="subprogram")
-        if function == None:
-            return (False, "Unable to find the function subprogram")
+        if function is None:
+            return False, "Unable to find the function subprogram"
 
         self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(function),
                                                                             tfs.getSourceName(function))
 
-        if self.source_text_function == None:
-            return (False, "Unable to find property Source_Text or Source_Name")
+        if self.source_text_function is None:
+            return False, "Unable to find property Source_Text or Source_Name"
 
         self.source_text_function.setTF(self.thread_uses_tf)
 

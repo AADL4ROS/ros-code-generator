@@ -89,7 +89,7 @@ class ServiceClient(AADLThread):
             self.service = Service(aadl_namespace, aadl_type)
         else:
             # Creo il servizio custom e lo associo al nodo che lo ha generato
-            self.service = sfs.getServiceFromASN1(self.asn_description, self.associated_class)
+            self.service = sfs.getServiceFromJSON(self.asn_description, self.associated_class)
         # if self.service == None:
         #     return (False, "Error in ASN.1 parsing")
 

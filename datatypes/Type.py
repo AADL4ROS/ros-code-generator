@@ -31,7 +31,7 @@ class Type(CObject):
         self.library = None
 
     def shouldImportLibrary(self):
-        return (self.library != None)
+        return self.library is not None
 
     def isEqualTo(self, another_type):
         if self.isConst != another_type.isConst:
@@ -43,11 +43,11 @@ class Type(CObject):
         if self.type_name != another_type.type_name:
             return False
 
-        if self.library != None:
+        if self.library:
             if not self.library.isEqualTo(another_type.library):
                 return False
         else:
-            if another_type.library != None:
+            if another_type.library:
                 return False
 
         if self.afterTypeName != another_type.afterTypeName:

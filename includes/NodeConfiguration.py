@@ -15,18 +15,11 @@ class NodeConfiguration(Include):
 
     def examineStructForLibraris(self, s):
         for v in s.variables:
-
             if isinstance(v, Struct):
                 self.examineStructForLibraris(v)
-
             else:
-                # Se fra le variabili delle struct che aggiungo ce ne sono alcune
-                # che hanno bisogno di importare delle librerie (ovvero hanno un namespace)
-                # allora le processo
-                if v.type.namespace:
-                    lib = Library()
-                    lib.setPath("{}/{}.h".format(v.type.namespace, v.type.type_name))
-                    self.addLibrary(lib)
+                if v.type.library:
+                    self.addLibrary(v.type.library)
 
     def addStruct(self, struct):
         self.structs.append(struct)

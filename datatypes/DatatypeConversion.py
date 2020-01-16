@@ -1,4 +1,5 @@
 import datatypes.Type
+import libraries.Library
 
 
 # getROSDatatypeFromAADL
@@ -19,72 +20,46 @@ def getROSDatatypeFromAADL(aadl_namespace, aadl_type, associated_class):
     return generic_type
 
 
-def getROSDatatypeFromASN1(asn_type, associated_class, is_msg_or_service=False):
-    mapping_asn_ros = {
-        ##############
-        ### STRING ###
-        ##############
-        "PRINTABLESTRING": "String",
-        "STRING": "String",
-        "NUMERICSTRING": "String",
-        "IA5STRING": "String",
-
-        ###############
-        ### INTEGER ###
-        ###############
-        "INTEGER": "Int",
-
-        ###################
-        ### REAL/DOUBLE ###
-        ###################
-        "REAL": "Double",
-
-        ###############
-        ### BOOLEAN ###
-        ###############
-        "BOOLEAN": "Bool",
-
-        ############
-        ### TIME ###
-        ############
-        "UTCTIME": "Ros_Time"
+def getROSMsgtypeFromJSON(json_type, associated_class, str_format=None):
+    mapping_json_ros = {
+        "string": "MsgSrv_String",
+        "number": "Float64",
+        "integer": "Int64",
+        "boolean": "Bool"
     }
 
-    if asn_type.upper() in mapping_asn_ros:
-        type_class_name = mapping_asn_ros[asn_type.upper()]
+    if json_type.lower() in mapping_json_ros:
+        type_class_name = mapping_json_ros[json_type.lower()]
 
-        # Nel caso in cui si stesse mandando una stringa in un messaggio oppure
-        # in un servizio, questa viene gestita come std_msgs::String e non come
-        # una classica std::string. Stessa cosa per altre casistiche
-        if is_msg_or_service:
-            if type_class_name == "String":
-                type_class_name = "MsgSrv_String"
-
-            if type_class_name == "Ros_Time":
-                type_class_name = "MsgSrv_Time"
-
-            if type_class_name == "Double":
-                type_class_name = "Float64"
-
-            if type_class_name == "Int":
-                type_class_name = "Int64"
+        # ugly special case
+        if type_class_name == "String" and str_format == "date-time":
+            type_class_name = "Ros_Time"
 
         type_class = getattr(datatypes.Type, type_class_name)
 
+    return type_class(associated_class)
+
+
+def manageComplexType(complex_type, include, associated_class):
+    generic_type = datatypes.Type.Type(associated_class)
+    generic_type.setTypeName(complex_type)
+    lib = libraries.Library.Library(associated_class)
+    lib.setPath(include)
+    generic_type.setLibrary(lib)
+
+    return generic_type
+
+
+def getROSDatatypeFromJSON(json_type, associated_class):
+    mapping_json_ros = {
+        "string": "String",
+        "number": "Double",
+        "integer": "Int",
+        "boolean": "Bool"
+    }
+
+    if json_type.lower() in mapping_json_ros:
+        type_class_name = mapping_json_ros[json_type.lower()]
+        type_class = getattr(datatypes.Type, type_class_name)
+
         return type_class(associated_class)
-    else:
-        generic_type = datatypes.Type.Type(associated_class)
-
-        # Cerco il nome ed il namespace in caso di cose come std_msgs::String
-        type_component = asn_type.split("/")
-
-        if len(type_component) == 1:
-            generic_type.setTypeName(asn_type)
-        elif len(type_component) == 2:
-            generic_type.setNamespace(type_component[0])
-            generic_type.setTypeName(type_component[1])
-        else:
-            # Casistica che non dovrebbe mai accadere, ma la gestiamo per sicurezza
-            generic_type.setTypeName(asn_type)
-
-        return generic_type

@@ -65,38 +65,38 @@ class Publisher(AADLThread):
         # Ottengo la connesione che mappa la porta di input del thread subscriber
         # con quella che entra nel process
         process_output_port = tfs.getConnectionPortInfoBySource(self.process, self.type, self.output_port_name)
-        if process_output_port == None:
-            return (False, "Unable to find the right binding between process input port and thread input port")
+        if process_output_port is None:
+            return False, "Unable to find the right binding between process input port and thread input port"
 
         (dest_parent_name, dest_name) = tfs.getDestFromPortInfo(process_output_port)
 
-        if dest_parent_name == None or dest_name == None:
-            return (False, "Unable to find the process input port name")
+        if dest_parent_name is None or dest_name is None:
+            return False, "Unable to find the process input port name"
 
         self.process_port = tfs.getFeatureByName(self.process, name=dest_name)
-        if self.process_port == None:
-            return (False, "Unable to find the process input port name feature")
+        if self.process_port is None:
+            return False, "Unable to find the process input port name feature"
 
         (aadl_namespace, aadl_type) = tfs.getPortDatatypeByPort(self.process_port)
-        if aadl_namespace == None or aadl_type == None:
-            return (False, "Unable to identify process port type")
+        if aadl_namespace is None or aadl_type is None:
+            return False, "Unable to identify process port type"
 
         # Controllo se c'è un file ASN.1 associato alla porta. Se c'è allora il tipo di messaggio
         # è custom e lo dovrò generare, mentre se non c'è allora è un messaggio standard ROS
         port_data_info = tfs.getPortDataInfo(self.process_port)
-        if port_data_info == None:
-            return (False, "Unable to get the port data info for process port")
+        if port_data_info is None:
+            return False, "Unable to get the port data info for process port"
 
         port_data_source_asn = tfs.getSourceText(port_data_info)
-        if port_data_source_asn == None:
+        if port_data_source_asn is None:
             # Se è None allora non c'è alcun file ASN.1 associato e quindi è un messaggio standard ROS
             raw_output_type = dt.getROSDatatypeFromAADL(aadl_namespace, aadl_type, self.associated_class)
-            if raw_output_type == None:
-                return (False, "Datatype {} NOT supported".format(raw_output_type))
+            if raw_output_type is None:
+                return False, "Datatype {} NOT supported".format(raw_output_type)
             else:
                 self.output_type = raw_output_type
         else:
-            self.custom_message = mfs.getMessageFromASN1(aadl_namespace,
+            self.custom_message = mfs.getMessageFromJSON(aadl_namespace,
                                                          aadl_type,
                                                          port_data_source_asn,
                                                          self.associated_class)
@@ -118,8 +118,8 @@ class Publisher(AADLThread):
         self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
                                                                             tfs.getSourceName(thread_function))
 
-        if self.source_text_function == None:
-            return (False, "Unable to find property Source_Text or Source_Name")
+        if self.source_text_function is None:
+            return False, "Unable to find property Source_Text or Source_Name"
 
         self.source_text_function.setTF(self.thread_uses_tf)
         self.source_text_function.setFunctionType(self.output_type)
@@ -130,8 +130,8 @@ class Publisher(AADLThread):
 
         (period, period_unit) = tfs.getPeriod(self.thread)
 
-        if period == None or period_unit == None:
-            return (False, "Unable to find property Period with relative value and unit")
+        if period is None or period_unit is None:
+            return False, "Unable to find property Period with relative value and unit"
 
         # Conversione in secondi della frequenza a partire da qualunque unità di misura
         try:
@@ -140,7 +140,7 @@ class Publisher(AADLThread):
             self.frequency_in_hz = 1.0 / period_quantity.magnitude
             self.period_in_seconds = period_quantity.magnitude
         except ValueError:
-            return (False, "Unable to convert Period in seconds")
+            return False, "Unable to convert Period in seconds"
 
         # param_freq = Variable( self.associated_class )
         # param_freq.setName( "frequency_{}".format(self.name) )
@@ -152,8 +152,8 @@ class Publisher(AADLThread):
         #############
 
         (status, desc) = self.getDefaultTopicName(self.output_port_name, output=True)
-        if status == False:
-            return (status, desc)
+        if status is False:
+            return status, desc
 
         #####################
         ### PUBLISHER VAR ###
@@ -189,7 +189,7 @@ class Publisher(AADLThread):
         self.publisherCallback.addInputParameter(input_par)
 
         # Aggiungo la chiamata alla funzione custome
-        if self.source_text_function != None:
+        if self.source_text_function:
             code = "{}.publish({});".format(var_publisher_pub.name,
                                             self.source_text_function.generateInlineCode())
             self.publisherCallback.addMiddleCode(code)
@@ -203,4 +203,4 @@ class Publisher(AADLThread):
                                           .format(var_timer_pub.name, self.period_in_seconds,
                                                   self.publisherCallback.getThreadPointer()))
 
-        return (True, "")
+        return True, ""

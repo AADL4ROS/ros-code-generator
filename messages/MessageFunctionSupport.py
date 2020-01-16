@@ -1,42 +1,35 @@
 import logging
 import os
-from asn1tools.parser import parse_file
+import json
 from messages.Message import Message
 from variables.Variable import Variable
-from datatypes.DatatypeConversion import getROSDatatypeFromASN1
+from datatypes.DatatypeConversion import getROSMsgtypeFromJSON
 import global_filepath
 
 log = logging.getLogger("root")
-asn_default_path = global_filepath.aadl_model_dir
-
-"""
-Struttura base di un messaggio
-
-Message DEFINITIONS ::= BEGIN
-    x ::= INTEGER
-END
-"""
+json_default_path = global_filepath.aadl_model_dir
 
 
-def getMessageFromASN1(aadl_namespace, aadl_type, asn_source, associated_class):
-    file_path = os.path.join(asn_default_path, asn_source)
+def getMessageFromJSON(aadl_namespace, aadl_type, json_source, associated_class):
+    file_path = os.path.join(json_default_path, json_source)
 
     try:
-        parsed = parse_file(file_path)
-    except:
-        log.error("Unable to parse ASN.1 file {}".format(file_path))
+        parsed = json.load(open(file_path))
+    except json.JSONDecodeError:
+        log.error("Unable to load JSON file {}".format(file_path))
         return None
 
-    new_message_intestazione = list(parsed.keys())[0]
+    # new_msg_header = list(parsed.keys())[0]
 
     message = Message(aadl_namespace, aadl_type)
 
-    parameters_asn = parsed[new_message_intestazione]['values']
+    # parameters_asn = parsed[new_msg_header]['values']
 
-    for val, spec in parameters_asn.items():
+    for key, value in parsed["properties"].items():
         var = Variable()
-        var.setName(val)
-        var.setType(getROSDatatypeFromASN1(spec['value'], associated_class, is_msg_or_service=True))
+        var.setName(key)
+        # TODO string format + nested messages
+        var.setType(getROSMsgtypeFromJSON(value["type"], associated_class))
         var.setIsParameter()
 
         message.addParameter(var)

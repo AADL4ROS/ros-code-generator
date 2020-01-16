@@ -12,10 +12,9 @@ from methods.TearDown import TearDown
 from methods.ErrorHandling import ErrorHandling
 from methods.NodeSigintHandler import NodeSigintHandler
 from methods.Main import Main
-from asn1tools.parser import parse_file
 
 import os
-from datatypes.DatatypeConversion import getROSDatatypeFromASN1
+from datatypes.DatatypeConversion import getROSDatatypeFromJSON, manageComplexType
 from datatypes.Type import Type, String, Bool
 from variables.Variable import Variable
 
@@ -27,7 +26,6 @@ from structs.Struct import Struct
 
 import global_filepath
 
-# from jsonschema import validate, exceptions
 import jsonschema
 import json
 import sys
@@ -48,6 +46,10 @@ class MainThread(AADLThread):
         self.tearDown = None
         self.errorHandling = None
         self.constructor = None
+
+        self.JSON_STATE = "InternalState"
+        self.JSON_PARAMS = "Parameters"
+        self.JSON_VARS = "Variables"
 
         # Aggiungo la libreria base del nostro nodo ROS
         self.associated_class.addLibrary(ROSBase_ROSNode())
@@ -71,61 +73,31 @@ class MainThread(AADLThread):
         self.constructor = Constructor(self.associated_class)
         self.associated_class.addPublicMethod(self.constructor)
 
-    #################
-    # GET ASN STATE #
-    #################
-
-    STATE_ASN_DEFINITION = "InternalState"
-    STATE_ASN_PARAMS = "Parameters"
-    STATE_ASN_VARS = "Variables"
-
-    def getVariableFromASN1(self, p_v):
-        var_type = p_v['type']
-        var_name = p_v['name']
-
-        if 'default' in p_v:
-            default_val = p_v['default']
-            # Rimuovo i caratteri di escape
-            default_val = str(default_val).replace("\\", "")
-        else:
-            default_val = None
-
-        # Se mi trovo davanti ad un set, genero una struct con il suo contenuto
-        if var_type.upper() == "SET":
-
-            tmp_struct = Struct(self.associated_class, "{}_t".format(var_name))
-            tmp_struct.createInstanceWithName(var_name)
-
-            struct_members = p_v['members']
-            for m in struct_members:
-                tmp_param = self.getVariableFromASN1(m)
-                tmp_struct.addVariable(tmp_param)
-
-            return tmp_struct
-
-        else:
-            # Se ho una variabile semplice, aggiungo la variabile
+    def getVariableFromJSON(self, pv_name, pv_schema, pv_value):
+        if pv_schema.get("type", "empty") != "object":
+            # p is the name of the variable, list_of_params[p]["type"] is the type
             tmp_param = Variable(self)
-            tmp_param.setType(getROSDatatypeFromASN1(var_type, self.associated_class))
-
-            if 'tag' in p_v:
-                p_v_tags = p_v['tag']
-                if 'number' in p_v_tags:
-                    var_name = "{}[{}]".format(var_name, p_v_tags['number'])
-
-            tmp_param.setName(var_name)
-
-            if isinstance(tmp_param.type, String) and default_val:
-                default_val = "\"{}\"".format(default_val)
-
-            if isinstance(tmp_param.type, Bool) and default_val:
-                default_val = default_val.lower()
-
-            tmp_param.setDefaultValue(default_val)
+            tmp_param.setName(pv_name)
+            if pv_schema.get("$ref", "empty") == "#/complex":
+                tmp_param.setType(manageComplexType(pv_value["type"], pv_value["include"], self.associated_class))
+            else:
+                tmp_param.setType(getROSDatatypeFromJSON(pv_schema["type"], self.associated_class))
+                if isinstance(tmp_param.type, String) and pv_value:
+                    tmp_param.setDefaultValue("\"{}\"".format(pv_value))
+                elif isinstance(tmp_param.type, Bool) and pv_value:
+                    tmp_param.setDefaultValue(pv_value.lower())
+                elif pv_value:
+                    tmp_param.setDefaultValue(pv_value)
 
             return tmp_param
+        else:
+            tmp_struct = Struct(self.associated_class, "{}_t".format(pv_name))
+            tmp_struct.createInstanceWithName(pv_name)
 
-    # TODO Work from here - Z.
+            for key, value in pv_schema["properties"].items():
+                tmp_struct.addVariable(self.getVariableFromJSON(key, value, pv_value[key]))
+            return tmp_struct
+
     def getStateJSON(self):
         parameters = []
         variables = []
@@ -142,7 +114,7 @@ class MainThread(AADLThread):
         # TODO - assumption: AADL and XML file locations are the same
         json_file = os.path.join(global_filepath.aadl_model_dir, json_file)
         json_schema = os.path.join(global_filepath.aadl_model_dir, json_schema)
-        json_base_schema = json_file = sys.path[0]+"/internal_state_base.schema.json"
+        json_base_schema = sys.path[0]+"/internal_state_base.schema.json"
 
         try:
             loaded_json_file = json.load(open(json_file))
@@ -152,9 +124,6 @@ class MainThread(AADLThread):
             print("invalid json file")
             return parameters, variables
 
-        print(json.dumps(loaded_json_file))
-        print(json.dumps(loaded_json_schema))
-
         try:
             jsonschema.validate(loaded_json_file, loaded_json_base_schema)
             jsonschema.validate(loaded_json_file, loaded_json_schema)
@@ -162,47 +131,18 @@ class MainThread(AADLThread):
             print("validation failed")
             return parameters, variables
 
-        return parameters, variables
+        if self.JSON_PARAMS in loaded_json_schema[self.JSON_STATE]["properties"]:
+            list_of_params = loaded_json_schema[self.JSON_STATE]["properties"][self.JSON_PARAMS]["properties"]
+            values_of_params = loaded_json_file[self.JSON_PARAMS]
+            for key, value in list_of_params.items():
+                parameters.append(self.getVariableFromJSON(key, value, values_of_params.get(key)))
 
-    # Ogni process/node ha un file che descrive params e vars, questo metodo si occupa
-    # di processarlo ed aggiungere la variabili e parametri corretti
-    def getStateASN(self):
-        parameters = []
-        variables = []
+        if self.JSON_VARS in loaded_json_schema[self.JSON_STATE]["properties"]:
+            list_of_vars = loaded_json_schema[self.JSON_STATE]["properties"][self.JSON_VARS]["properties"]
+            values_of_vars = loaded_json_file[self.JSON_VARS]
+            for key, value in list_of_vars.items():
+                variables.append(self.getVariableFromJSON(key, value, values_of_vars.get(key)))
 
-        # @TODO: per ora è assegnato al process come Source_Text, vedere se è da cambiare
-        asn_file = tfs.getSourceText(self.process)
-
-        if asn_file is None:
-            log.warning("No Params and Vars ASN.1 file specified for {}".format(self.associated_class.node_name))
-            return parameters, variables
-
-        # @TODO: il percorso del file AADL è lo stesso del file XML
-        ocarina_ros_path = global_filepath.aadl_model_dir
-        parsed_asn = parse_file(os.path.join(ocarina_ros_path, asn_file))
-
-        # Estraggo tutti i tipi che NON sono Params o Vars
-        custom_types = []
-        for t in parsed_asn[self.STATE_ASN_DEFINITION]['types']:
-            if t != self.STATE_ASN_PARAMS and \
-                    t != self.STATE_ASN_VARS:
-                custom_types.append(t)
-
-        params_asn = parsed_asn[self.STATE_ASN_DEFINITION]['types'][self.STATE_ASN_PARAMS]['members']
-        vars_asn = parsed_asn[self.STATE_ASN_DEFINITION]['types'][self.STATE_ASN_VARS]['members']
-
-        for index, p_v in enumerate(params_asn + vars_asn):
-
-            tmp_param = self.getVariableFromASN1(p_v)
-
-            if index < len(params_asn):
-                parameters.append(tmp_param)
-            else:
-                variables.append(tmp_param)
-
-        # TODO remove this
-        print(parameters)
-        print(variables)
         return parameters, variables
 
     def createHandlerForParameter(self, p, struct_name=""):
