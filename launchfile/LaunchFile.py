@@ -1,6 +1,6 @@
 import XMLTags
 import logging
-import FolderTreeFunctions as folderTree
+import folder_tree_functions as folderTree
 import os
 
 log = logging.getLogger("root")

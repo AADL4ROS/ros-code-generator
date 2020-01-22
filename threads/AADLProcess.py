@@ -15,9 +15,8 @@ class AADLProcess:
         self.system = system
         self.namespace = self.system.namespace
 
-        ##############################
-        ### PARAMETRI DELLA CLASSE ###
-        ##############################
+        # Class paramters
+
         self.aadl_node_name = tfs.getName(self.process)
         self.class_name = self.aadl_node_name.title()
         self.node_name = self.aadl_node_name.title()
@@ -28,32 +27,22 @@ class AADLProcess:
         self.class_public_methods = []
         self.class_private_methods = []
 
-        ############################
-        ### TRANSFORMATION FRAME ###
-        ############################
+        # transformation frame
         self.node_uses_tf = False
 
-        ######################
-        ### INTERNAL STATE ###
-        ######################
+        # Internal state
         self.node_configuration = None
 
-        ####################
-        ### SOURCE FILES ###
-        ####################
+        # Source files
         self.source_text_files = []
 
-        #########################################
-        ### PARAMETRI PER GESTIONE DEL SYSTEM ###
-        #########################################
+        # System management parameters
         self.generated = False
 
         # Contiene la lista dei threads che compongono ogni processo
         self.threads = []
 
-    #######################
-    ### GET MAIN THREAD ###
-    #######################
+    # Get main thread
 
     def getMainThread(self):
         for t in self.threads:
@@ -61,9 +50,7 @@ class AADLProcess:
                 return t
         return None
 
-    ############################
-    ### TRANSFORMATION FRAME ###
-    ############################
+    # transformation frame
     def setUsesTransformationFrame(self, state):
         if self.node_uses_tf:
             return
@@ -80,9 +67,7 @@ class AADLProcess:
 
             self.addLibrary(ROSBase_TF_Interface())
 
-    ###############
-    ### LIBRARY ###
-    ###############
+    # library
     def addLibrary(self, _lib, add_to_cmake=True, add_to_package_xml=True):
         for l in self.class_libraries:
             if l.isEqualTo(_lib):
@@ -106,9 +91,7 @@ class AADLProcess:
         except ValueError:
             return False
 
-    #######################################
-    ### INTERNAL STATE AND SOURCE FILES ###
-    #######################################
+    # Internal state and source files
 
     def setNodeConfiguration(self, node_config):
         self.node_configuration = node_config
@@ -129,9 +112,7 @@ class AADLProcess:
                 return s
         return None
 
-    #################
-    ### VARIABLES ###
-    #################
+    # Variables
 
     def addInternalVariable(self, _var):
         for v in self.class_internal_vars:
@@ -146,9 +127,8 @@ class AADLProcess:
         except ValueError:
             return False
 
-    #################
-    ### CONSTANTS ###
-    #################
+    # Constants
+
     def addConstant(self, _const):
         self.class_constants.append(_const)
 
@@ -159,9 +139,7 @@ class AADLProcess:
         except ValueError:
             return False
 
-    ###############
-    ### METHODS ###
-    ###############
+    # Methods
 
     def addPublicMethod(self, _method):
         if _method not in self.class_public_methods:
@@ -185,9 +163,7 @@ class AADLProcess:
         except ValueError:
             return False
 
-    ##################
-    ### COMPARISON ###
-    ##################
+    # Comparison
 
     def elementIsInList(self, elem, list):
         for l in list:

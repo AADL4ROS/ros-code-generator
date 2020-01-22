@@ -1,7 +1,7 @@
 import os
 import systems.SystemsManager as sm
 from systems.System import System
-import FolderTreeFunctions as folderTree
+import folder_tree_functions as folderTree
 
 
 class Service:

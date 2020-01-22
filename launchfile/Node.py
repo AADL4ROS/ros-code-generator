@@ -34,8 +34,8 @@ class Node:
         except Exception:
             return False
 
-        (topic_properties_namespace, default_topic_name) = self.getDefaultTopicName(port)
-        (topic_properties_namespace, new_topic_name) = self.getTopicName(connection)
+        (topic_properties_namespace, default_topic_name) = tfs.getDefaultTopicName(port)
+        (topic_properties_namespace, new_topic_name) = tfs.getTopicName(connection)
 
         if default_topic_name is None or new_topic_name is None:
             log.warning("No topic remap for port {} of process {}".format(port_name, self.name))
@@ -56,14 +56,6 @@ class Node:
         self.addRemap(r)
 
         return True
-
-    # Cerco il nome di default del topic associato al node
-    def getDefaultTopicName(self, port):
-        return tfs.getDefaultTopicName(port)
-
-    # Cerco il nome del topic nuovo associato alla connesione
-    def getTopicName(self, connection):
-        return tfs.getTopicName(connection)
 
     def generateCode(self):
         text = ""

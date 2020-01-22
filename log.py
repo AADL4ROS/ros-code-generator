@@ -24,7 +24,7 @@ def setup_custom_logger(name):
 
 def is_valid_log_level(level):
     global log_level_choices
-    return (str(level).upper() in log_level_choices)
+    return str(level).upper() in log_level_choices
 
 
 def set_log_level(level):

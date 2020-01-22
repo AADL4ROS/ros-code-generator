@@ -1,5 +1,5 @@
 from CObject import CObject
-import FolderTreeFunctions as folderTree
+import folder_tree_functions as ftf
 import os
 
 
@@ -33,7 +33,7 @@ class Include(CObject):
         return "{}/{}.h".format(self.associated_class.system.namespace, self.file_name)
 
     def saveFile(self):
-        include_folder = folderTree.getIncludeFolderForSystemFolder(self.associated_class.system.system_folder)
+        include_folder = ftf.getIncludeFolderForSystemFolder(self.associated_class.system.system_folder)
 
         file_name_with_extension = "{}.h".format(self.file_name)
 

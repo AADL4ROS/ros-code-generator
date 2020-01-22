@@ -229,8 +229,8 @@ class SubscriberPublisher(AADLThread):
         #############
 
         (status, desc) = self.getDefaultTopicName(self.output_port_name, output=True)
-        if status == False:
-            return (status, desc)
+        if not status:
+            return status, desc
 
         #####################
         ### PUBLISHER VAR ###
@@ -245,17 +245,17 @@ class SubscriberPublisher(AADLThread):
                                                .format(self.var_publisher_pub.name, self.output_type.generateCode(),
                                                        self.topic))
 
-        return (True, "")
+        return True, ""
 
     def populateData(self):
         self.main_thread = self.associated_class.getMainThread()
 
-        if self.main_thread == None:
-            return (False, "Unable to get the Main Thread")
+        if self.main_thread is None:
+            return False, "Unable to get the Main Thread"
 
         thread_function = tfs.getSubprogram(self.thread)
-        if thread_function == None:
-            return (False, "Unable to find the right Subprogram")
+        if thread_function is None:
+            return False, "Unable to find the right Subprogram"
 
         ############################
         ### TRANSFORMATION FRAME ###
@@ -268,15 +268,15 @@ class SubscriberPublisher(AADLThread):
         ### SUBSCRIBER ###
         ##################
         (status, desc) = self.populateSubscriberData()
-        if status == False:
-            return (status, desc)
+        if not status:
+            return status, desc
 
         #################
         ### PUBLISHER ###
         #################
         (status, desc) = self.populatePublisherData()
-        if status == False:
-            return (status, desc)
+        if not status:
+            return status, desc
 
         ###################
         ### SOURCE TEXT ###
@@ -285,7 +285,7 @@ class SubscriberPublisher(AADLThread):
         self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
                                                                             tfs.getSourceName(thread_function))
         # Aggiungo la chiamata alla funzione custome
-        if self.source_text_function != None:
+        if self.source_text_function:
             self.source_text_function.setFunctionType(self.output_type)
             self.source_text_function.addFunctionParameter(self.sub_input_var)
             self.source_text_function.setTF(self.thread_uses_tf)
@@ -293,6 +293,6 @@ class SubscriberPublisher(AADLThread):
             code = "{}.publish({});".format(self.var_publisher_pub.name, self.source_text_function.generateInlineCode())
             self.sub_callback.addMiddleCode(code)
         else:
-            return (False, "Unable to find Source_Text or Source_Name")
+            return False, "Unable to find Source_Text or Source_Name"
 
-        return (True, "")
+        return True, ""

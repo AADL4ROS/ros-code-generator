@@ -4,7 +4,7 @@ import os
 
 import threads.AADLThreadFunctionsSupport as tfs
 
-import FolderTreeFunctions as folderTree
+import folder_tree_functions as folderTree
 import systems.SystemsManager as sm
 
 from cmakelists.CMakeLists import CMakeLists
@@ -42,8 +42,8 @@ class System:
 
         # Resetto la struttura di cartelle (eliminando anche tutti i file) solamente alla prima generazione
         # del namespace, in tutte le altre i file non vengono eliminati
-        self.system_folder = folderTree.createFolderTreeForSystem(self.namespace,
-                                                                  delete=(not sm.isSystemAlreadyReset(self.namespace)))
+        self.system_folder = folderTree.createSystemFolderTree(self.namespace,
+                                                               delete=(not sm.isSystemAlreadyReset(self.namespace)))
         sm.addResetSystem(self.namespace)
 
         # Contiene tutti i nodi da generare

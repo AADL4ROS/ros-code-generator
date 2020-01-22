@@ -28,44 +28,38 @@ class Timer(AADLThread):
     def populateData(self):
         main_thread = self.associated_class.getMainThread()
 
-        if main_thread == None:
-            return (False, "Unable to get the Main Thread")
+        if main_thread is None:
+            return False, "Unable to get the Main Thread"
 
         # Ottengo le informazioni necessarie per i thread di tipo Timer:
         # - Source Text
         # - Period
 
         thread_function = tfs.getSubprogram(self.thread)
-        if thread_function == None:
-            return (False, "Unable to find the right Subprogram")
+        if thread_function is None:
+            return False, "Unable to find the right Subprogram"
 
-        ############################
-        ### TRANSFORMATION FRAME ###
-        ############################
+        # TRANSFORMATION FRAME
 
         # Controllo l'uso del Transformation Frame
         self.thread_uses_tf = self.setUsesTransformationFrame()
 
-        ###################
-        ### Source Text ###
-        ###################
+        # Source Text
 
         self.source_text_function = self.createSourceTextFileFromSourceText(tfs.getSourceText(thread_function),
                                                                             tfs.getSourceName(thread_function))
 
-        if self.source_text_function == None:
-            return (False, "Unable to find property Source_Text or Source_Name")
+        if self.source_text_function is None:
+            return False, "Unable to find property Source_Text or Source_Name"
 
         self.source_text_function.setTF(self.thread_uses_tf)
 
-        #################
-        ### FREQUENCY ###
-        #################
+        # FREQUENCY
 
         (period, period_unit) = tfs.getPeriod(self.thread)
 
-        if period == None or period_unit == None:
-            return (False, "Unable to find property Period with relative value and unit")
+        if period is None or period_unit is None:
+            return False, "Unable to find property Period with relative value and unit"
 
         # Conversione in secondi della frequenza a partire da qualunque unità di misura
         try:
@@ -74,12 +68,9 @@ class Timer(AADLThread):
             self.frequency_in_hz = 1.0 / period_quantity.magnitude
             self.period_in_seconds = period_quantity.magnitude
         except ValueError:
-            return (False, "Unable to convert Period in seconds")
+            return False, "Unable to convert Period in seconds"
 
-        #############
-        ### TIMER ###
-        #############
-
+        # TIMER
         var_timer = Variable(self.associated_class)
         var_timer.setName("timer_{}".format(self.name))
         var_timer.setType(ROS_Timer(self.associated_class))
@@ -100,8 +91,8 @@ class Timer(AADLThread):
         input_par.setName("")
         self.timerCallback.addInputParameter(input_par)
 
-        # Aggiungo la chiamata alla funzione custome
-        if self.source_text_function != None:
+        # Aggiungo la chiamata alla funzione custom
+        if self.source_text_function:
             code = "{};".format(self.source_text_function.generateInlineCode())
             self.timerCallback.addMiddleCode(code)
 
@@ -111,4 +102,4 @@ class Timer(AADLThread):
                                           .format(var_timer.name, self.period_in_seconds,
                                                   self.timerCallback.getThreadPointer()))
 
-        return (True, "")
+        return True, ""

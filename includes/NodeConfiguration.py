@@ -1,6 +1,6 @@
 from includes.Include import Include
 from comments.Comment import Comment
-from libraries.Library import Library, ROSBase_TF_Interface
+from libraries.Library import ROSBase_TF_Interface
 from structs.Struct import Struct
 
 

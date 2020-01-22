@@ -13,7 +13,7 @@ launch_folder_name = 'launch'
 include_folder_name = 'include'
 
 
-def createFolderTreeForSystem(namespace, delete=True):
+def createSystemFolderTree(namespace, delete=True):
     # Sanitize del nome della cartella del system
     # system_name = system_name.replace(".", "_")
     system_name = namespace.replace("/", "_")
@@ -45,7 +45,8 @@ def createFolderTreeForSystem(namespace, delete=True):
     return system_folder
 
 
-def cleanLaunchFolderForSystemFolder(system_folder):
+def cleanSystemLaunchFolder(system_folder):
+    # TODO check here
     output_folder = getLaunchFolderForSystemFolder(system_folder)
     for the_file in os.listdir(output_folder):
         file_path = os.path.join(output_folder, the_file)

@@ -103,9 +103,7 @@ def main():
     else:
         global_filepath.output_dir = os.path.realpath(os.path.join(current_folder, options.out_dir))
 
-    #####################################
-    # Step 1: Run the prototype changer #
-    #####################################
+    # Step 1: Run the prototype changer
 
     print_header("Starting procedure")
 
@@ -132,9 +130,7 @@ def main():
     step_number += 1
     print("{}. Prototype changed".format(step_number))
 
-    ################################
-    # Step 2: Collecting all files #
-    ################################
+    # Step 2: Collecting all files
 
     # Leggo il contenuto della cartella che contiene il system che mi è stato passato con anche il suo file,
     # a questo punto leggo tutti i with e per ogni file presente mi cerco se è da usare oppure no
@@ -200,9 +196,7 @@ def main():
     for f in files_to_import:
         print("\t + " + f)
 
-    ###################
-    # Step 3: Ocarina #
-    ###################
+    # Step 3: Ocarina
 
     """
     ocarina -aadlv2 -g ever_xml [-r system_name] files
@@ -239,9 +233,7 @@ def main():
         print(output.decode())
         sys.exit(0)
 
-    ###########################
-    # Step 4: Code Generation #
-    ###########################
+    # Step 4: Code Generation
 
     # Set the global_filepath parameters
     global_filepath.xml_folder_path = xml_model_folder
@@ -260,9 +252,8 @@ def main():
     step_number += 1
     print("{}. Code generation ended correctly.".format(step_number))
 
-    ####################
-    # Step 4: Clean-up #
-    ####################
+    # Step 4: Clean-up
+
     step_number += 1
     print("{}. Cleaning up:".format(step_number))
 
